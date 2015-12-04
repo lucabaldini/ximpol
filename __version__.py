@@ -1,2 +1,2 @@
-TAG = '0.0.2'
-BUILD_DATE = 'Fri, 04 Dec 2015 12:05:42 -0800'
+TAG = '0.0.3'
+BUILD_DATE = 'Fri, 04 Dec 2015 12:11:49 -0800'
