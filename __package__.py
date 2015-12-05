@@ -28,6 +28,8 @@ import os
 XIMPOL_ROOT = os.path.abspath(os.path.dirname(__file__))
 XIMPOL_DIST = os.path.join(XIMPOL_ROOT, 'dist')
 XIMPOL_DOC = os.path.join(XIMPOL_ROOT, 'doc')
+XIMPOL_IRF = os.path.join(XIMPOL_ROOT, 'irf')
+XIMPOL_UTILS = os.path.join(XIMPOL_ROOT, 'utils')
 
 
 """ Version information.

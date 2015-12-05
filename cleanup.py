@@ -53,6 +53,7 @@ def cleanupdist():
 
 
 if __name__ == '__main__':
-    for folderPath in [XIMPOL_ROOT, XIMPOL_DOC]:
+    for folderPath in [XIMPOL_ROOT, XIMPOL_DIST, XIMPOL_DOC, XIMPOL_IRF,
+                       XIMPOL_UTILS]:
         cleanup(folderPath)
     cleanupdist()
