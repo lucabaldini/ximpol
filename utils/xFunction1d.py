@@ -26,6 +26,8 @@ import numpy
 import scipy.interpolate
 import scipy.integrate
 
+from ximpol.__logging__ import logger
+
 
 
 class xFunction1d(scipy.interpolate.interp1d):
@@ -52,6 +54,36 @@ class xFunction1d(scipy.interpolate.interp1d):
         scipy.interpolate.interp1d.__init__(self, x, y, kind,
                                             assume_sorted = False)
         self.__Normalization = None
+
+    def __mul__(self, other):
+        """ Multiply two functions.
+        """
+        pass
+
+    def __len__(self):
+        """ Return the lenght of the underlying arrays.
+        """
+        return len(self.x)
+
+    def optimize(self, rtol = 0.01, atol = 0):
+        """ Optimize the sampling grid for a function.
+        
+        TODO: need to work on this one.
+        """
+        logger.info('Optimizing grid (rtol = %e, atol = %e)...' % (rtol, atol))
+        newx = [self.x[0]]
+        newy = [self.y[0]]
+        for _x, _y in zip(self.x, self.y)[1:-1]:
+            delta = abs(_y - newy[-1])
+            ave = 0.5*(_y + newy[-1])
+            if delta/ave > rtol or delta > atol:
+                newx.append(_x)
+                newy.append(_y)
+        newx.append(self.x[-1])
+        newy.append(self.y[-1])
+        logger.info('Done, %d samples reduced to %d.' % (len(self), len(newx)))
+        scipy.interpolate.interp1d.__init__(self, newx, newy,
+                                            assume_sorted = False)
 
     def xmin(self):
         """ Return the minimun of the function support.
