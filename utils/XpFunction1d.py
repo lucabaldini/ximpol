@@ -51,6 +51,7 @@ class XpFunction1d(scipy.interpolate.interp1d):
         """
         scipy.interpolate.interp1d.__init__(self, x, y, kind,
                                             assume_sorted = False)
+        self.__Normalization = None
 
     def xmin(self):
         """ Return the minimun of the function support.
@@ -80,8 +81,14 @@ class XpFunction1d(scipy.interpolate.interp1d):
     def norm(self):
         """ Evaluate the normalization of the function, i.e., the integral
         over the entire support.
+
+        Note that we cache the value of the integral the first time the
+        method is called, in order to avoid making the calculation over and
+        over again.
         """
-        return self.integral(self.xmin(), self.xmax())
+        if self.__Normalization is None:
+            self.__Normalization = self.integral(self.xmin(), self.xmax())
+        return self.__Normalization
 
     def draw(self, npoints = 200):
         """ Draw the function.
@@ -99,8 +106,8 @@ def test():
     """
     x = numpy.linspace(0, 2*numpy.pi, 20)
     y = numpy.sin(x)
-    f1 = XpFunction1dBase(x, y, 'linear')
-    f2 = XpFunction1dBase(x, y, 'quadratic')
+    f1 = XpFunction1d(x, y, 'linear')
+    f2 = XpFunction1d(x, y, 'quadratic')
     _x = numpy.array([0, numpy.radians(30), numpy.radians(45),
                       numpy.radians(60), 0.5*numpy.pi])
     _y = numpy.array([0, 0.5, 0.5*numpy.sqrt(2), 0.5*numpy.sqrt(3), 1])
