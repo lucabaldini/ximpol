@@ -25,12 +25,12 @@
 import os
 import numpy
 
-from ximpol.utils.XpFunction1d import XpFunction1d
+from ximpol.utils.xFunction1d import xFunction1d
 from ximpol.__logging__ import logger, abort
 
 
 
-class XpFunction1dTxtFile(XpFunction1d):
+class xFunction1dTxtFile(xFunction1d):
 
     """ Function interpolating values read from an ascii file.
     """
@@ -44,7 +44,7 @@ class XpFunction1dTxtFile(XpFunction1d):
             abort('%s is not a file')
         logger.info('Reading data values from %s...' % filePath)
         x, y = numpy.loadtxt(filePath, unpack = True)
-        XpFunction1d.__init__(self, x, y, kind)
+        xFunction1d.__init__(self, x, y, kind)
 
 
 
@@ -60,10 +60,10 @@ def test():
     for _x, _y in zip(x, y):
         _f.write('%f\t%f\n' % (_x, _y))
     _f.close()
-    f = XpFunction1dTxtFile(filePath)
+    f = xFunction1dTxtFile(filePath)
     f.draw()
     rm(filePath)
-    f = XpFunction1dTxtFile('missing_file')
+    f = xFunction1dTxtFile('missing_file')
 
 
 if __name__ == '__main__':

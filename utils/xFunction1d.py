@@ -28,7 +28,7 @@ import scipy.integrate
 
 
 
-class XpFunction1d(scipy.interpolate.interp1d):
+class xFunction1d(scipy.interpolate.interp1d):
 
     """ Light-weight wrapper over the scipy scipy.interpolate.interp1d class.
     """
@@ -106,8 +106,8 @@ def test():
     """
     x = numpy.linspace(0, 2*numpy.pi, 20)
     y = numpy.sin(x)
-    f1 = XpFunction1d(x, y, 'linear')
-    f2 = XpFunction1d(x, y, 'quadratic')
+    f1 = xFunction1d(x, y, 'linear')
+    f2 = xFunction1d(x, y, 'quadratic')
     _x = numpy.array([0, numpy.radians(30), numpy.radians(45),
                       numpy.radians(60), 0.5*numpy.pi])
     _y = numpy.array([0, 0.5, 0.5*numpy.sqrt(2), 0.5*numpy.sqrt(3), 1])
