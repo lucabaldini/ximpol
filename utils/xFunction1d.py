@@ -30,19 +30,22 @@ from ximpol.__logging__ import logger
 
 
 
-def optimizegrd(x, y, rtol = 0.01, atol = 0):
+def optimizegrd(x, y, rtol = 0.01, atol = None):
     """ Optimize the sampling grid for a function.
         
-    TODO: need to work on this one.
+    TODO: this is not very clever and I am sure we could make it better.
     """
+    atol = atol or abs(min(y))
     newx = [x[0]]
     newy = [y[0]]
-    for _x, _y in zip(x, y)[1:-1]:
-        delta = abs(_y - newy[-1])
-        ave = 0.5*(_y + newy[-1])
-        if delta/ave > rtol or delta > atol:
-            newx.append(_x)
-            newy.append(_y)
+    for i in range(1, len(x) - 2):
+        deltam = abs(y[i] - newy[-1])
+        deltap = abs(y[i] - y[i+1])
+        ave = 0.5*(y[i] + newy[-1])
+        if deltam/ave > rtol or deltap/ave > rtol or \
+           deltam > atol or deltap > atol:
+            newx.append(x[i])
+            newy.append(y[i])
     newx.append(x[-1])
     newy.append(y[-1])
     return newx, newy
@@ -75,6 +78,7 @@ class xFunction1d(scipy.interpolate.interp1d):
         scipy.interpolate.interp1d.__init__(self, x, y, kind,
                                             assume_sorted = False)
         self.__Normalization = None
+        self.__Kind = kind
 
     def __mul__(self, other):
         """ Multiply two functions.
@@ -96,13 +100,12 @@ class xFunction1d(scipy.interpolate.interp1d):
 
     def optimize(self, rtol = 0.01, atol = 0):
         """ Optimize the sampling array.
-
-        TODO: need to set the type!
         """
         logger.info('Optimizing grid (rtol = %e, atol = %e)...' % (rtol, atol))
         newx, newy = optimizegrd(self.x, self.y, rtol, atol)
         logger.info('Done, %d samples reduced to %d.' % (len(self), len(newx)))
-        scipy.interpolate.interp1d.__init__(self, newx, newy)
+        scipy.interpolate.interp1d.__init__(self, newx, newy,
+                                            kind = self.__Kind)
 
     def xmin(self):
         """ Return the minimun of the function support.
