@@ -35,7 +35,7 @@ class xFunction1dTxtFile(xFunction1d):
     """ Function interpolating values read from an ascii file.
     """
 
-    def __init__(self, filePath, kind = 'quadratic'):
+    def __init__(self, filePath, kind, xmin = -numpy.inf, xmax = numpy.inf):
         """
         """
         if not os.path.exists(filePath):
@@ -44,7 +44,7 @@ class xFunction1dTxtFile(xFunction1d):
             abort('%s is not a file')
         logger.info('Reading data values from %s...' % filePath)
         x, y = numpy.loadtxt(filePath, unpack = True)
-        xFunction1d.__init__(self, x, y, kind)
+        xFunction1d.__init__(self, x, y, kind, xmin, xmax)
 
 
 
@@ -60,8 +60,8 @@ def test():
     for _x, _y in zip(x, y):
         _f.write('%f\t%f\n' % (_x, _y))
     _f.close()
-    f = xFunction1dTxtFile(filePath)
-    f.draw()
+    f = xFunction1dTxtFile(filePath, 'linear')
+    f.plot()
     rm(filePath)
     f = xFunction1dTxtFile('missing_file')
 
