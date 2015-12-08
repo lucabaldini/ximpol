@@ -59,6 +59,16 @@ class xFitsDataFormatBase:
             header['COMMENT'] = comment
         return header
 
+    @staticmethod
+    def columns(specs, arrays, **kwargs):
+        """
+        """
+        cols = []
+        for i, (name, fmt) in enumerate(specs):
+            col = fits.Column(name = name, format = fmt, array = arrays[i])
+            cols.append(col)
+        return fits.ColDefs(cols)
+
 
 
 def test():

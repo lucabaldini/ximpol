@@ -89,10 +89,7 @@ def mkXipeArf(emin = 1., emax = 9.9, estep = 0.01):
     print(repr(specrespHeader))
 
     logger.info('Filling in SPECRESP data...')
-    elo = fits.Column(name = 'ENERG_LO', format = 'E', array = elo)
-    ehi = fits.Column(name = 'ENERG_HI', format = 'E', array = ehi)
-    specresp = fits.Column(name = 'SPECRESP', format = 'E', array = specresp)
-    cols = fits.ColDefs([elo, ehi, specresp])
+    cols = xFitsDataFormatArf.specrespColumns([elo, ehi, specresp])
     specrefHdu = fits.BinTableHDU.from_columns(cols, header = specrespHeader)
 
 

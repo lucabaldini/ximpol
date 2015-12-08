@@ -78,6 +78,12 @@ class xFitsDataFormatArf(xFitsDataFormatBase):
         ('CREATOR' , None      , 's/w task which wrote this dataset'),
         ('RESPFILE', None      , None)
     ]
+
+    SPECRESP_DATA_SPECS = [
+        ('ENERG_LO', 'E'),
+        ('ENERG_HI', 'E'),
+        ('SPECRESP', 'E')
+    ]
     
     @staticmethod
     def primaryHeader(comments = [], **kwargs):
@@ -92,7 +98,15 @@ class xFitsDataFormatArf(xFitsDataFormatBase):
         """
         specs = xFitsDataFormatArf.SPECRESP_HEADER_SPECS
         return xFitsDataFormatBase.header(specs, comments, **kwargs)
-    
+
+    @staticmethod
+    def specrespColumns(arrays, **kwargs):
+        """
+        """
+        specs = xFitsDataFormatArf.SPECRESP_DATA_SPECS
+        return xFitsDataFormatBase.columns(specs, arrays, **kwargs)
+
+
 
 
 def test():
