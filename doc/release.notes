@@ -1,3 +1,7 @@
+
+-------------------------------------------------------------------------------
+ximpol (0.0.4) - Tue, 08 Dec 2015 11:33:40 -0800
+-------------------------------------------------------------------------------
 - Added a first stab at the effective area table definition.
 - Added ascii data files for the XIPE IRFs (as in the proposal).
 - Script to generate the .arf file for XIPE based on the ascii table.
