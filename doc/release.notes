@@ -1,3 +1,7 @@
+- Added a first stab at the effective area table definition.
+- Added ascii data files for the XIPE IRFs (as in the proposal).
+- Script to generate the .arf file for XIPE based on the ascii table.
+- Added a general-purpose one-dimensional function class.
 
 -------------------------------------------------------------------------------
 ximpol (0.0.3) - Fri, 04 Dec 2015 12:11:49 -0800
@@ -7,11 +11,9 @@ ximpol (0.0.3) - Fri, 04 Dec 2015 12:11:49 -0800
 -------------------------------------------------------------------------------
 ximpol (0.0.2) - Fri, 04 Dec 2015 12:05:42 -0800
 -------------------------------------------------------------------------------
-
 - Folder structure created
 
 -------------------------------------------------------------------------------
 ximpol (0.0.1) - Fri, 04 Dec 2015 06:39:19 -0800
 -------------------------------------------------------------------------------
-
 - Initial setup of the github repository.
