@@ -31,68 +31,40 @@ from ximpol.__package__ import XIMPOL_DETECTOR, XIMPOL_IRF
 from ximpol.__logging__ import logger
 from ximpol.utils.xFunction1dTxtFile import xFunction1dTxtFile
 from ximpol.fileio.xFitsDataFormatArf import xFitsDataFormatArf
+from ximpol.detector.__XipeBaseline__ import *
 
 
 
-def mkXipeArf(emin = 1., emax = 9.9, estep = 0.01):
-    """ 
+def mkXipeArf():
+    """ Create the .arf file for the XIPE baseline configuration.
     """
     outputFileName = 'xipe_proposal.arf'
     outputFilePath = os.path.join(XIMPOL_IRF, 'fits', outputFileName)
     if os.path.exists(outputFilePath):
         ximpol.__utils__.rm(outputFilePath)
-    
-    baseFolder = os.path.join(XIMPOL_DETECTOR, 'data')
     logger.info('Loading mirror effective area...')
-    optsAeffFileName = 'aeff_optics_xipe_m4_x3.asc'
-    optsAeffFilePath = os.path.join(baseFolder, optsAeffFileName)
-    optsAeff = xFunction1dTxtFile(optsAeffFilePath, 'linear',
-                                  xmin = emin, xmax = emax)
-
+    optsAeff = xFunction1dTxtFile(OPTS_AEFF_FILE_PATH, 'linear',
+                                  xmin = ENERGY_MIN, xmax = ENERGY_MAX)
     logger.info('Loading detector quantum efficiency...')
-    gpdEffFileName = 'eff_hedme8020_1atm_1cm_cuts80p_be50um_p_x.asc'
-    gpdEffFilePath = os.path.join(baseFolder, gpdEffFileName)
-    gpdEff = xFunction1dTxtFile(gpdEffFilePath, 'linear',
-                                  xmin = emin, xmax = emax)
-
+    gpdEff = xFunction1dTxtFile(GPD_QEFF_FILE_PATH, 'linear',
+                                xmin = ENERGY_MIN, xmax = ENERGY_MAX)
     logger.info('Evaluating effective area...')
     xipeAeff = optsAeff*gpdEff
-
     logger.info('Filling in arrays...')
-    elo = numpy.arange(emin, emax, estep)
-    ehi = numpy.append(elo[1:], emax)
-    emean = 0.5*(elo + ehi)
-    specresp = xipeAeff(emean)
-    nbins = len(specresp)
-    logger.info('Done, %d effectivea area values calculated.' % nbins)
-
+    specresp = xipeAeff(ENERGY_MEAN)
+    logger.info('Done, %d effectivea area values calculated.' % len(specresp))
     logger.info('Creating PRIMARY header and HDU...')
     primaryHeader = xFitsDataFormatArf.primaryHeader()
     print(repr(primaryHeader))
     primaryHdu = fits.PrimaryHDU(header = primaryHeader)
-    
     logger.info('Creating SPECRESP header and HDU...')
-    kwspecs = {
-        'TELESCOP': 'XIPE',
-        'INSTRUME': 'GPD',
-        'NAXIS2'  : nbins,
-        'RESPFILE': outputFileName
-    }
-    comments = [
-        'Gas mixture: Ne/DME 80/20',
-        'Pressure: 1 Atm',
-        'Absorption gap: 1 cm',
-        'Quality cut efficiency: 80%',
-        'Window: Be, 50 um'
-    ]
-    specrespHeader = xFitsDataFormatArf.specrespHeader(comments, **kwspecs)
+    PRIMARY_HEADER_KWARGS['RESPFILE'] = outputFileName
+    specrespHeader = xFitsDataFormatArf.specrespHeader(SPECRESP_HEADER_COMMENTS,
+                                                       **PRIMARY_HEADER_KWARGS)
     print(repr(specrespHeader))
-
     logger.info('Filling in SPECRESP data...')
-    cols = xFitsDataFormatArf.specrespColumns([elo, ehi, specresp])
+    cols = xFitsDataFormatArf.specrespColumns([ENERGY_LO, ENERGY_HI, specresp])
     specrefHdu = fits.BinTableHDU.from_columns(cols, header = specrespHeader)
-
-
     logger.info('Writing output file...')
     hdulist = fits.HDUList([primaryHdu, specrefHdu])
     hdulist.info()
