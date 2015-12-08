@@ -22,8 +22,6 @@
 
 
 
-from astropy.io import fits
-
 from ximpol.fileio.xFitsDataFormatBase import xFitsDataFormatBase
 from ximpol.__logging__ import logger
 
