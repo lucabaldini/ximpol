@@ -30,12 +30,34 @@ from ximpol.__logging__ import logger
 
 
 
+def optimizegrd(x, y, rtol = 0.01, atol = None):
+    """ Optimize the sampling grid for a function.
+        
+    TODO: this is not very clever and I am sure we could make it better.
+    """
+    atol = atol or abs(min(y))
+    newx = [x[0]]
+    newy = [y[0]]
+    for i in range(1, len(x) - 2):
+        deltam = abs(y[i] - newy[-1])
+        deltap = abs(y[i] - y[i+1])
+        ave = 0.5*(y[i] + newy[-1])
+        if deltam/ave > rtol or deltap/ave > rtol or \
+           deltam > atol or deltap > atol:
+            newx.append(x[i])
+            newy.append(y[i])
+    newx.append(x[-1])
+    newy.append(y[-1])
+    return newx, newy
+
+
+
 class xFunction1d(scipy.interpolate.interp1d):
 
     """ Light-weight wrapper over the scipy scipy.interpolate.interp1d class.
     """
 
-    def __init__(self, x, y, kind = 'quadratic'):
+    def __init__(self, x, y, kind, xmin = -numpy.inf, xmax = numpy.inf):
         """ Constructor.
 
         x and y are arrays of the tabulated function points and the kind
@@ -43,7 +65,7 @@ class xFunction1d(scipy.interpolate.interp1d):
         being:
         - 'linear'   : linear interpolation
         - 'nearest'  : nearest value
-        - 'zero'     : ?
+        - 'zero'     : zero-order spline
         - 'slinear'  : first-order spline
         - 'quadratic': second-order spline
         - 'cubic'    : third-order spline
@@ -51,14 +73,25 @@ class xFunction1d(scipy.interpolate.interp1d):
         Note that we explicitely set the assume_sorted argument of the
         scipy.interpolate.interp1d to false.
         """
+        _mask = (x >= xmin)*(x <= xmax)
+        x, y = x[_mask], y[_mask]
         scipy.interpolate.interp1d.__init__(self, x, y, kind,
                                             assume_sorted = False)
         self.__Normalization = None
+        self.__Kind = kind
 
     def __mul__(self, other):
         """ Multiply two functions.
+
+        TODO: how do we decide on the kind, here?
         """
-        pass
+        _xmin = max(self.xmin(), other.xmin())
+        _xmax = min(self.xmax(), other.xmax())
+        assert(_xmax > _xmin)
+        _x = numpy.concatenate((self.x, other.x))
+        _x = _x[(_x >= _xmin)*(_x <= _xmax)]
+        _y = self(_x)*other(_x)
+        return xFunction1d(_x, _y, 'linear')
 
     def __len__(self):
         """ Return the lenght of the underlying arrays.
@@ -66,24 +99,13 @@ class xFunction1d(scipy.interpolate.interp1d):
         return len(self.x)
 
     def optimize(self, rtol = 0.01, atol = 0):
-        """ Optimize the sampling grid for a function.
-        
-        TODO: need to work on this one.
+        """ Optimize the sampling array.
         """
         logger.info('Optimizing grid (rtol = %e, atol = %e)...' % (rtol, atol))
-        newx = [self.x[0]]
-        newy = [self.y[0]]
-        for _x, _y in zip(self.x, self.y)[1:-1]:
-            delta = abs(_y - newy[-1])
-            ave = 0.5*(_y + newy[-1])
-            if delta/ave > rtol or delta > atol:
-                newx.append(_x)
-                newy.append(_y)
-        newx.append(self.x[-1])
-        newy.append(self.y[-1])
+        newx, newy = optimizegrd(self.x, self.y, rtol, atol)
         logger.info('Done, %d samples reduced to %d.' % (len(self), len(newx)))
         scipy.interpolate.interp1d.__init__(self, newx, newy,
-                                            assume_sorted = False)
+                                            kind = self.__Kind)
 
     def xmin(self):
         """ Return the minimun of the function support.
@@ -122,11 +144,11 @@ class xFunction1d(scipy.interpolate.interp1d):
             self.__Normalization = self.integral(self.xmin(), self.xmax())
         return self.__Normalization
 
-    def draw(self, npoints = 200):
+    def plot(self, npts = 1000, pad = 1e-6):
         """ Draw the function.
         """
         import matplotlib.pyplot as plt
-        _x = numpy.linspace(self.xmin(), self.xmax(), npoints)
+        _x = numpy.linspace((1 + pad)*self.xmin(), (1 - pad)*self.xmax(), npts)
         _y = self.evaluate(_x)
         plt.plot(_x, _y, '-', self.x, self.y, 'o')
         plt.show()
@@ -148,7 +170,7 @@ def test():
     print(f2(_x) - _y)
     print(f2.integral(0, numpy.pi))
     print(f2.norm())
-    f2.draw()
+    f2.plot()
     
 
 

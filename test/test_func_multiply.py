@@ -24,47 +24,41 @@
 
 import os
 import numpy
+import matplotlib.pyplot as plt
 
-from ximpol.utils.xFunction1d import xFunction1d
-from ximpol.__logging__ import logger, abort
-
-
-
-class xFunction1dTxtFile(xFunction1d):
-
-    """ Function interpolating values read from an ascii file.
-    """
-
-    def __init__(self, filePath, kind, xmin = -numpy.inf, xmax = numpy.inf):
-        """
-        """
-        if not os.path.exists(filePath):
-            abort('Could not find input file %s' % filePath)
-        if not os.path.isfile(filePath):
-            abort('%s is not a file')
-        logger.info('Reading data values from %s...' % filePath)
-        x, y = numpy.loadtxt(filePath, unpack = True)
-        xFunction1d.__init__(self, x, y, kind, xmin, xmax)
+from ximpol.utils.xFunction1dTxtFile import xFunction1dTxtFile
+from ximpol.__package__ import XIMPOL_DETECTOR
+from ximpol.__logging__ import logger
 
 
+""" Purpose: test the function multiplication.
+"""
 
-def test():
-    """ Test code.
-    """
-    from ximpol.__package__ import XIMPOL_UTILS
-    from ximpol.__utils__ import rm
-    filePath = os.path.join(XIMPOL_UTILS, 'tmp.txt')
-    x = numpy.linspace(0, 2*numpy.pi, 20)
-    y = numpy.sin(x)
-    _f = open(filePath, 'w')
-    for _x, _y in zip(x, y):
-        _f.write('%f\t%f\n' % (_x, _y))
-    _f.close()
-    f = xFunction1dTxtFile(filePath, 'linear')
-    f.plot()
-    rm(filePath)
-    f = xFunction1dTxtFile('missing_file')
+# Load the effective area of the XIPE optics and the quantum efficiency
+# of the GPD.
+#
+aeffPath = os.path.join(XIMPOL_DETECTOR, 'data' , 'aeff_optics_xipe_m4_x3.asc')
+effPath = os.path.join(XIMPOL_DETECTOR, 'data' ,
+                       'eff_hedme8020_1atm_1cm_cuts80p_be50um_p_x.asc')
+aeff = xFunction1dTxtFile(aeffPath, kind = 'linear', xmin = 1, xmax = 10)
+eff = xFunction1dTxtFile(effPath, kind = 'linear', xmin = 1, xmax = 10)
+
+# Multiply the two functions to get the actual effective area.
+#
+prod = aeff*eff
+
+# Plot stuff.
+#
+fig = plt.figure(figsize = (15, 10), facecolor = 'w')
+ax1 = fig.add_subplot(3, 1, 1)
+ax1.plot(aeff.x, aeff.y, 'o', color = 'blue')
+ax2 = fig.add_subplot(3, 1, 2)
+plt.yscale('log')
+ax2.plot(eff.x, eff.y, 'o', color = 'black')
+ax3 = fig.add_subplot(3, 1, 3)
+plt.yscale('log')
+ax3.plot(prod.x, prod.y, 'o', color = 'red')
+plt.show()
 
 
-if __name__ == '__main__':
-    test()
+

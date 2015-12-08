@@ -38,9 +38,9 @@ from ximpol.__logging__ import logger
 # Load the XIPE effective are in two flavors---standard and optimized.
 #
 filePath = os.path.join(XIMPOL_DETECTOR, 'data' , 'aeff_optics_xipe_m4_x3.asc')
-stdaeff = xFunction1dTxtFile(filePath, kind = 'linear')
-optaeff = xFunction1dTxtFile(filePath, kind = 'linear')
-optaeff.optimize(rtol = 0.03, atol = 15)
+stdaeff = xFunction1dTxtFile(filePath, kind = 'linear', xmin = 1)
+optaeff = xFunction1dTxtFile(filePath, kind = 'linear', xmin = 1)
+optaeff.optimize(rtol = 0.05, atol = 15)
 
 # Sample the two curves over a fine grid and evaluate the maximum absolute and
 # relative differences.
