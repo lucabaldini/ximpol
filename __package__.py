@@ -31,6 +31,8 @@ XIMPOL_DIST = os.path.join(XIMPOL_ROOT, 'dist')
 XIMPOL_DOC = os.path.join(XIMPOL_ROOT, 'doc')
 XIMPOL_FILEIO = os.path.join(XIMPOL_ROOT, 'fileio')
 XIMPOL_IRF = os.path.join(XIMPOL_ROOT, 'irf')
+XIMPOL_NOTEBOOKS = os.path.join(XIMPOL_ROOT, 'notebooks')
+XIMPOL_SRCMODEL = os.path.join(XIMPOL_ROOT, 'srcmodel')
 XIMPOL_TEST = os.path.join(XIMPOL_ROOT, 'test')
 XIMPOL_UTILS = os.path.join(XIMPOL_ROOT, 'utils')
 
