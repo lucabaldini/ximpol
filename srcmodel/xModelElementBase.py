@@ -27,16 +27,19 @@ from ximpol.__logging__ import abort
 
 
 class ModelElementKeyMissing(Exception):
+    
     pass
 
 
 
 class ModelElementKeyUnknown(Exception):
+
     pass
 
 
 
 class ModelElementKeyTypeError(Exception):
+
     pass
 
 
@@ -56,16 +59,19 @@ class xModelElementBase(dict):
         dict.__init__(self, **kwargs)
         for key in self.REQUIRED_KEYS:
             if not self.has_key(key):
-                raise ModelElementKeyMissing('key "%s" is required by %s.' %\
-                                             (key, self.__class__.__name__))
+                msg = 'missing key "%s" in %s.' %\
+                      (key, self.__class__.__name__)
+                raise ModelElementKeyMissing(msg)
         for key in self.keys():
             if key not in self.REQUIRED_KEYS + self.OPTIONAL_KEYS:
-                raise ModelElementKeyUnknown('unknown key "%s" for %s.' %\
-                                             (key, self.__class__.__name__))
+                msg = 'unknown key "%s" in %s.' %\
+                      (key, self.__class__.__name__)
+                raise ModelElementKeyUnknown(msg)
         for key, val in self.TYPE_DICT.items():
-            if self.has_key(key) and not isinstance(kwargs[key], val):
-                raise ModelElementKeyTypeError('bad type for key "%s" in %s' %\
-                                               (key, self.__class__.__name__))
+            if self.has_key(key) and not isinstance(self[key], val):
+                msg = 'bad key type (%s) for "%s" in %s' %\
+                      (type(self[key]), key, self.__class__.__name__)
+                raise ModelElementKeyTypeError(msg)
 
     def __getattr__(self, key):
         """
