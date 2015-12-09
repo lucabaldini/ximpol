@@ -41,7 +41,7 @@ class ModelElementKeyTypeError(Exception):
 
 
 
-class xModelElementBase:
+class xModelElementBase(dict):
 
     """
     """
@@ -53,29 +53,24 @@ class xModelElementBase:
     def __init__(self, **kwargs):
         """
         """
+        dict.__init__(self, **kwargs)
         for key in self.REQUIRED_KEYS:
-            if not kwargs.has_key(key):
+            if not self.has_key(key):
                 raise ModelElementKeyMissing('key "%s" is required by %s.' %\
                                              (key, self.__class__.__name__))
-        for key in kwargs.keys():
+        for key in self.keys():
             if key not in self.REQUIRED_KEYS + self.OPTIONAL_KEYS:
                 raise ModelElementKeyUnknown('unknown key "%s" for %s.' %\
                                              (key, self.__class__.__name__))
         for key, val in self.TYPE_DICT.items():
-            if kwargs.has_key(key) and not isinstance(kwargs[key], val):
+            if self.has_key(key) and not isinstance(kwargs[key], val):
                 raise ModelElementKeyTypeError('bad type for key "%s" in %s' %\
                                                (key, self.__class__.__name__))
-        self.__Kwargs = kwargs
 
-    def __str__(self):
-        """ Default string formatting.
-        """
-        return str(self.__Kwargs)
-
-    def __getattr__(self, name):
+    def __getattr__(self, key):
         """
         """
-        return self.__Kwargs[name]
+        return self[key]
 
 
 
