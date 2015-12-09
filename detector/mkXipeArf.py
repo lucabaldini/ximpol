@@ -38,7 +38,7 @@ from ximpol.detector.__XipeBaseline__ import *
 def mkXipeArf():
     """ Create the .arf file for the XIPE baseline configuration.
     """
-    outputFileName = 'xipe_proposal.arf'
+    outputFileName = 'xipe_%s.arf' % IRF_LABEL
     outputFilePath = os.path.join(XIMPOL_IRF, 'fits', outputFileName)
     if os.path.exists(outputFilePath):
         ximpol.__utils__.rm(outputFilePath)

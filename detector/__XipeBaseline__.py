@@ -33,6 +33,8 @@ from ximpol.__package__ import XIMPOL_DETECTOR
 proposal to ESA.
 """
 
+IRF_LABEL = 'baseline'
+
 BASE_FOLDER = os.path.join(XIMPOL_DETECTOR, 'data')
 
 OPTS_AEFF_FILE_NAME = 'aeff_optics_xipe_m4_x3.asc'

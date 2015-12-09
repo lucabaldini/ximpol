@@ -67,7 +67,7 @@ def test():
     """
     import os
     from ximpol.__package__ import XIMPOL_IRF
-    filePath = os.path.join(XIMPOL_IRF, 'fits', 'xipe_proposal.arf')
+    filePath = os.path.join(XIMPOL_IRF, 'fits', 'xipe_baseline.arf')
     f = xInputArfFile(filePath)
     
 

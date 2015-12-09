@@ -38,7 +38,7 @@ from ximpol.detector.__XipeBaseline__ import *
 def mkXipeMrf():
     """ Create the .mrf file for the XIPE baseline configuration.
     """
-    outputFileName = 'xipe_proposal.mrf'
+    outputFileName = 'xipe_%s.mrf' % IRF_LABEL
     outputFilePath = os.path.join(XIMPOL_IRF, 'fits', outputFileName)
     if os.path.exists(outputFilePath):
         ximpol.__utils__.rm(outputFilePath)
@@ -50,7 +50,8 @@ def mkXipeMrf():
     logger.info('Filling in arrays...')
 
     gpdmodfresp = gpdModf(ENERGY_MEAN)
-    logger.info('Done, %d Modulation factor values calculated.' % len(gpdmodfresp))
+    logger.info('Done, %d Modulation factor values calculated.' %\
+                len(gpdmodfresp))
     logger.info('Creating PRIMARY header and HDU...')
     primaryHeader = xFitsDataFormatMrf.primaryHeader()
     print(repr(primaryHeader))
@@ -61,7 +62,8 @@ def mkXipeMrf():
                                                        **PRIMARY_HEADER_KWARGS)
     print(repr(modfrespHeader))
     logger.info('Filling in MODFRESP data...')
-    cols = xFitsDataFormatMrf.modfrespColumns([ENERGY_LO, ENERGY_HI, gpdmodfresp])
+    cols = xFitsDataFormatMrf.modfrespColumns([ENERGY_LO, ENERGY_HI,
+                                               gpdmodfresp])
     modfrefHdu = fits.BinTableHDU.from_columns(cols, header = modfrespHeader)
     logger.info('Writing output file...')
     hdulist = fits.HDUList([primaryHdu, modfrefHdu])

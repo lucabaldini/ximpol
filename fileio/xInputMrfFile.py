@@ -67,7 +67,7 @@ def test():
     """
     import os
     from ximpol.__package__ import XIMPOL_IRF
-    filePath = os.path.join(XIMPOL_IRF, 'fits', 'xipe_proposal.mrf')
+    filePath = os.path.join(XIMPOL_IRF, 'fits', 'xipe_baseline.mrf')
     f = xInputMrfFile(filePath)
 
 
