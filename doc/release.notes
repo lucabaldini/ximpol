@@ -1,4 +1,5 @@
 
+- Added a script that generates the header for the mrf file.
 -Added a script to generate the .mrf file based on the ascii table provided.
 
 -------------------------------------------------------------------------------
