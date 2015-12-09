@@ -1,0 +1,22 @@
+test source :
+    
+    point source :
+        
+        RA : { value : 0., unit : deg }
+        Dec : { value : 0., unit : deg }
+        
+        spectrum :
+            
+            main :
+                
+                powerlaw :
+                    
+                    logK : { value : 1., unit : photons/keV/cm2 }
+                    index : { value : 2. }
+        
+                polarization :
+                
+                    linear :
+                    
+                       degree : { value : 0.1 }
+                       angle : { value : 90., unit : deg }
