@@ -52,11 +52,11 @@ def test():
     """ Test code.
     """
     from ximpol.srcmodel.xModelElementBase import ModelElementKeyMissing,\
-        ModelElementKeyUnknown, ModelElementKeyTypeError
+        ModelElementKeyUnknown, ModelElementTypeError
     print(xModelParameter(value = 3))
     try: 
         print(xModelParameter(value = '3'))
-    except ModelElementKeyTypeError as e:
+    except ModelElementTypeError as e:
         print(e)
     print(xModelParameter(value = 3, unit = 'keV'))
     try:

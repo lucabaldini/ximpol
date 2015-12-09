@@ -38,7 +38,7 @@ class ModelElementKeyUnknown(Exception):
 
 
 
-class ModelElementKeyTypeError(Exception):
+class ModelElementTypeError(Exception):
 
     pass
 
@@ -46,7 +46,20 @@ class ModelElementKeyTypeError(Exception):
 
 class xModelElementBase(dict):
 
-    """
+    """ Small class encapsulating a dictionary providing additional capability
+    for controlling the keys and their type.
+
+    The basic idea is that we just grab Python dictionaries from a yaml file
+    and provide here a mechanism to make sure that all the bits are in place
+    to be able to instantiate proper class objects from those dictionaries.
+
+    xModelElementBase has no required/optional keys and therefore corresponding
+    xModelElementBase objects can only be instantiated as empty dictionaries
+    (i.e., with no keyword arguments), after which they behave almost exactly as
+    plain Python dictionaries.
+
+    More interestingly, subclasses can redifne the REQUIRED_KEYS, OPTIONAL_KEYS
+    and TYPE_DICT members to provide control on the data structure. 
     """
 
     REQUIRED_KEYS = []
@@ -54,7 +67,18 @@ class xModelElementBase(dict):
     TYPE_DICT = {}
 
     def __init__(self, **kwargs):
-        """
+        """ Constructor.
+        
+        Here is where all the control over the keys and values take place. 
+        More specifically:
+        1\ A ModelElementKeyMissing exception is thrown if any of the
+        required keys is missing in the keyword arguments.
+        2\ A ModelElementKeyUnknown exception is thrown if one of the keys
+        in the keyword arguments is not listed in either the required or
+        optional keys.
+        3\ A ModelElementTypeError exception is thrown if the type of any of
+        the values in the keyword arguments does not match that specified in
+        the TYPE_DICT member.
         """
         dict.__init__(self, **kwargs)
         for key in self.REQUIRED_KEYS:
@@ -71,10 +95,14 @@ class xModelElementBase(dict):
             if self.has_key(key) and not isinstance(self[key], val):
                 msg = 'bad key type (%s) for "%s" in %s' %\
                       (type(self[key]), key, self.__class__.__name__)
-                raise ModelElementKeyTypeError(msg)
+                raise ModelElementTypeError(msg)
 
     def __getattr__(self, key):
-        """
+        """ Overload __getattr__ method.
+
+        Given an element instance of the xModelElementBase class, this is
+        essentially to be able to write element.key as a shortcut for
+        element['key'], which is handy at times.
         """
         return self[key]
 
@@ -83,8 +111,11 @@ class xModelElementBase(dict):
 def test():
     """ Test code.
     """
-    pass
-
+    print(xModelElementBase())
+    try:
+        print(xModelElementBase(**{'key': 'value'}))
+    except ModelElementKeyUnknown as e:
+        print(e)
 
 
 if __name__ == '__main__':
