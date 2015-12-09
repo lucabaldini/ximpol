@@ -59,7 +59,7 @@ def mkXipeArf():
     primaryHdu = fits.PrimaryHDU(header = primaryHeader)
     logger.info('Creating SPECRESP header and HDU...')
     PRIMARY_HEADER_KWARGS['RESPFILE'] = outputFileName
-    specrespHeader = xFitsDataFormatArf.specrespHeader(SPECRESP_HEADER_COMMENTS,
+    specrespHeader = xFitsDataFormatArf.specrespHeader(RESP_HEADER_COMMENTS,
                                                        **PRIMARY_HEADER_KWARGS)
     print(repr(specrespHeader))
     logger.info('Filling in SPECRESP data...')

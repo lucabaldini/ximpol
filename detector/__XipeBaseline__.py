@@ -68,7 +68,7 @@ PRIMARY_HEADER_KWARGS = {
     'NAXIS2'  : len(ENERGY_MEAN),
 }
 
-SPECRESP_HEADER_COMMENTS = [
+RESP_HEADER_COMMENTS = [
     'Gas mixture: %s' % GAS_MIXTURE,
     'Pressure: %.3f Atm' % GAS_PRESSURE,
     'Absorption gap: %.3f cm' % ABS_GAP_THICKNESS,
