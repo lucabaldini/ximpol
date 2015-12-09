@@ -22,6 +22,8 @@
 
 
 
+import numbers
+
 from ximpol.srcmodel.xModelElementBase import xModelElementBase
 
 
@@ -33,7 +35,7 @@ class xModelParameter(xModelElementBase):
 
     REQUIRED_KEYS = ['value']
     OPTIONAL_KEYS = ['unit']
-    TYPE_DICT = {'value': float}
+    TYPE_DICT = {'value': numbers.Number}
 
     def __str__(self):
         """
@@ -50,12 +52,11 @@ def test():
     """ Test code.
     """
     from ximpol.srcmodel.xModelElementBase import ModelElementKeyMissing,\
-        ModelElementKeyUnknown, ModelElementKeyCastError
+        ModelElementKeyUnknown, ModelElementKeyTypeError
     print(xModelParameter(value = 3))
-    print(xModelParameter(value = '3'))
     try: 
-        print(xModelParameter(value = 'test'))
-    except ModelElementKeyCastError as e:
+        print(xModelParameter(value = '3'))
+    except ModelElementKeyTypeError as e:
         print(e)
     print(xModelParameter(value = 3, unit = 'keV'))
     try:

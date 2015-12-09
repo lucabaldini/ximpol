@@ -36,7 +36,7 @@ class ModelElementKeyUnknown(Exception):
 
 
 
-class ModelElementKeyCastError(Exception):
+class ModelElementKeyTypeError(Exception):
     pass
 
 
@@ -61,13 +61,10 @@ class xModelElementBase:
             if key not in self.REQUIRED_KEYS + self.OPTIONAL_KEYS:
                 raise ModelElementKeyUnknown('unknown key "%s" for %s.' %\
                                              (key, self.__class__.__name__))
-        for key, typeCast in self.TYPE_DICT.items():
-            if kwargs.has_key(key):
-                try:
-                    kwargs[key] = typeCast(kwargs[key])
-                except Exception as e:
-                    raise ModelElementKeyCastError('%s in %s' %\
-                                                   (e, self.__class__.__name__))
+        for key, val in self.TYPE_DICT.items():
+            if kwargs.has_key(key) and not isinstance(kwargs[key], val):
+                raise ModelElementKeyTypeError('bad type for key "%s" in %s' %\
+                                               (key, self.__class__.__name__))
         self.__Kwargs = kwargs
 
     def __str__(self):
