@@ -66,10 +66,10 @@ def test():
     """ Test code.
     """
     import os
-    from ximpol.__package__ import XIMPOL_ROOT
-    filePath = os.path.join(XIMPOL_ROOT, 'notebooks', 'data', 'late_timepc.arf')
+    from ximpol.__package__ import XIMPOL_IRF
+    filePath = os.path.join(XIMPOL_IRF, 'fits', 'xipe_proposal.arf')
     f = xInputArfFile(filePath)
-
+    
 
 
 if __name__ == '__main__':
