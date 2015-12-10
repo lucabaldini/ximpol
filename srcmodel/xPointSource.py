@@ -34,27 +34,28 @@ class xPointSource(xModelElementBase):
 
     REQUIRED_KEYS = ['RA', 'Dec', 'spectrum']
 
-    def __init__(self, **kwargs):
+    def __init__(self, name, **kwargs):
         """
         """
-        xModelElementBase.__init__(self, **kwargs)
-        self.RA = xModelParameter(**self.RA)
-        self.Dec = xModelParameter(**self.Dec)
+        xModelElementBase.__init__(self, name, **kwargs)
+        self.RA = xModelParameter('RA', **self.RA)
+        self.Dec = xModelParameter('Dec', **self.Dec)
 
     def __str__(self):
         """ String formatting.
         """
-        return 'Point source at (RA = %s, Dec = %s)' % (self.RA, self.Dec)
+        return 'Point source %s at (%s, %s)' %\
+            (self.name(), self.RA, self.Dec)
 
 
 
 def test():
     """ Test code.
     """
-    kwargs = {'RA': {'value': 23.63875, 'unit': 'deg'},
-              'Dec': {'value': 51.736298, 'unit': 'deg'},
-              'spectrum': 'test'}
-    s = xPointSource(**kwargs)
+    s = xPointSource('PKS 768',
+                     RA = {'value': 23.63875, 'unit': 'deg'},
+                     Dec = {'value': 51.736298, 'unit': 'deg'},
+                     spectrum = 'main')
     print(s)
 
     

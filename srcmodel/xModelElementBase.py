@@ -53,12 +53,16 @@ class xModelElementBase(dict):
     and provide here a mechanism to make sure that all the bits are in place
     to be able to instantiate proper class objects from those dictionaries.
 
+    Since many model elements do have name, we provide a corresponding argument
+    to the constructor, and a private class member and a method to retrieve it.
+    The name defaults to None but can be used by subclasses.
+
     xModelElementBase has no required/optional keys and therefore corresponding
     xModelElementBase objects can only be instantiated as empty dictionaries
     (i.e., with no keyword arguments), after which they behave almost exactly as
     plain Python dictionaries.
 
-    More interestingly, subclasses can redifne the REQUIRED_KEYS, OPTIONAL_KEYS
+    More interestingly, subclasses can redefine the REQUIRED_KEYS, OPTIONAL_KEYS
     and TYPE_DICT members to provide control on the data structure. 
     """
 
@@ -66,7 +70,7 @@ class xModelElementBase(dict):
     OPTIONAL_KEYS = []
     TYPE_DICT = {}
 
-    def __init__(self, **kwargs):
+    def __init__(self, name = None, **kwargs):
         """ Constructor.
         
         Here is where all the control over the keys and values take place. 
@@ -80,6 +84,7 @@ class xModelElementBase(dict):
         the values in the keyword arguments does not match that specified in
         the TYPE_DICT member.
         """
+        self.__Name = name
         dict.__init__(self, **kwargs)
         for key in self.REQUIRED_KEYS:
             if not self.has_key(key):
@@ -97,6 +102,11 @@ class xModelElementBase(dict):
                       (type(self[key]), key, self.__class__.__name__)
                 raise ModelElementTypeError(msg)
 
+    def name(self):
+        """ Return the element name.
+        """
+        return self.__Name
+
     def __getattr__(self, key):
         """ Overload __getattr__ method.
 
@@ -106,14 +116,23 @@ class xModelElementBase(dict):
         """
         return self[key]
 
+    def __str__(self):
+        """ String formatting.
+        """
+        _str = dict.__str__(self)
+        if self.name() is not None:
+            _str = '%s = %s' % (self.name(), _str)
+        return _str
 
+    
 
 def test():
     """ Test code.
     """
     print(xModelElementBase())
+    print(xModelElementBase('test'))
     try:
-        print(xModelElementBase(**{'key': 'value'}))
+        print(xModelElementBase(key = 'value'))
     except ModelElementKeyUnknown as e:
         print(e)
 

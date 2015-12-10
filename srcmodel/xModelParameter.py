@@ -30,7 +30,7 @@ from ximpol.srcmodel.xModelElementBase import xModelElementBase
 
 class xModelParameter(xModelElementBase):
 
-    """
+    """ Small class representing a model parameter.
     """
 
     REQUIRED_KEYS = ['value']
@@ -40,10 +40,12 @@ class xModelParameter(xModelElementBase):
     def __str__(self):
         """
         """
-        try:
-            return '%f %s' % (self.value, self.unit)
-        except KeyError:
-            return '%f' % self.value
+        _str = '%f' % self.value
+        if self.name() is not None:
+            _str = '%s = %s' % (self.name(), _str)
+        if self.has_key('unit'):
+            _str = '%s %s' % (_str, self.unit)
+        return _str
 
     
 
@@ -53,7 +55,9 @@ def test():
     """
     from ximpol.srcmodel.xModelElementBase import ModelElementKeyMissing,\
         ModelElementKeyUnknown, ModelElementTypeError
+    print(xModelParameter('p', value = 3))
     print(xModelParameter(value = 3))
+    print(xModelParameter('p', value = 3, unit = 'keV'))
     try: 
         print(xModelParameter(value = '3'))
     except ModelElementTypeError as e:

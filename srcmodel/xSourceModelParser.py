@@ -48,7 +48,7 @@ class xSourceModelParser(xInputFileBase):
             assert(len(data.items()) == 1)
             srcType, srcData = data.items()[0]
             try:
-                source = SOURCE_CLASS_DICT[srcType](**srcData)
+                source = SOURCE_CLASS_DICT[srcType](srcName, **srcData)
                 logger.info(source)
                 self.__SourceList.append(source)
             except KeyError:
