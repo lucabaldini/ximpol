@@ -53,8 +53,16 @@ def cleanupdist():
 
 
 if __name__ == '__main__':
-    for folderPath in [XIMPOL_ROOT, XIMPOL_DETECTOR, XIMPOL_DIST, XIMPOL_DOC,
-                       XIMPOL_FILEIO, XIMPOL_IRF, XIMPOL_NOTEBOOKS,
-                       XIMPOL_SRCMODEL, XIMPOL_TEST, XIMPOL_UTILS]:
+    for folderPath in [XIMPOL_ROOT,
+                       XIMPOL_BIN,
+                       XIMPOL_DETECTOR,
+                       XIMPOL_DIST,
+                       XIMPOL_DOC,
+                       XIMPOL_FILEIO,
+                       XIMPOL_IRF,
+                       XIMPOL_NOTEBOOKS,
+                       XIMPOL_SRCMODEL,
+                       XIMPOL_TEST,
+                       XIMPOL_UTILS]:
         cleanup(folderPath)
     cleanupdist()

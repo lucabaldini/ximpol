@@ -26,6 +26,7 @@ import os
 """ Basic folder structure of the package.
 """
 XIMPOL_ROOT = os.path.abspath(os.path.dirname(__file__))
+XIMPOL_BIN = os.path.join(XIMPOL_ROOT, 'bin')
 XIMPOL_DETECTOR = os.path.join(XIMPOL_ROOT, 'detector')
 XIMPOL_DIST = os.path.join(XIMPOL_ROOT, 'dist')
 XIMPOL_DOC = os.path.join(XIMPOL_ROOT, 'doc')
