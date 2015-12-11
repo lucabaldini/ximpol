@@ -24,6 +24,7 @@
 
 from ximpol.srcmodel.xModelElementBase import xModelElementBase
 from ximpol.srcmodel.xModelParameter import xModelParameter
+from ximpol.srcmodel.xSpectralComponent import xSpectralComponent
 
 
 
@@ -40,25 +41,46 @@ class xPointSource(xModelElementBase):
         xModelElementBase.__init__(self, name, **kwargs)
         self.RA = xModelParameter('RA', **self.RA)
         self.Dec = xModelParameter('Dec', **self.Dec)
+        for key, value in self.spectrum.items():
+            self.spectrum[key] = xSpectralComponent(key, **value)
+
+    def spectralComponents(self):
+        """ Return the (unordered) list of spectral components.
+        """
+        return self.spectrum.values()
+
+    def spectralComponent(self, name = 'main'):
+        """ Return a given spectral component.
+
+        By default returns the component named "main".
+        """
+        return self.spectrum[name]
 
     def __str__(self):
         """ String formatting.
         """
-        return 'Point source %s at (%s, %s)' %\
-            (self.name(), self.RA, self.Dec)
+        _str = 'Point source %s at (%s, %s)' % (self.name(), self.RA, self.Dec)
+        for comp in self.spectralComponents():
+            _str += '\n- %s' % comp
+        return _str
+
 
 
 
 def test():
     """ Test code.
     """
-    s = xPointSource('PKS 768',
-                     RA = {'value': 23.63875, 'unit': 'deg'},
-                     Dec = {'value': 51.736298, 'unit': 'deg'},
-                     spectrum = 'main')
+    import os
+    import yaml
+    from ximpol.__package__ import XIMPOL_SRCMODEL
+    filePath = os.path.join(XIMPOL_SRCMODEL, 'yaml', 'simple_source.yaml')
+    tree = yaml.load(open(filePath))
+    srcName = 'test source'
+    srcType = 'point source'
+    s = xPointSource(srcName, **tree[srcName][srcType])
     print(s)
 
-    
+
 
 if __name__ == '__main__':
     test()
