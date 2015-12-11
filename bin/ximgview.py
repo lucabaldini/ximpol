@@ -24,6 +24,7 @@
 import argparse
 import matplotlib.pyplot as plt
 from astropy.io import fits
+import aplpy
 
 from ximpol.__logging__ import logger, startmsg
 
@@ -35,7 +36,10 @@ parser.add_argument('filePath', type = str,
 args = parser.parse_args()
 
 startmsg()
-data = fits.getdata(args.filePath)
-plt.imshow(data, cmap = 'afmhot')
-plt.colorbar()
+hdulist = fits.open(args.filePath)
+hdulist.info()
+data = hdulist[0].data
+fig = aplpy.FITSFigure(hdulist[0], figure = plt.figure(0))
+fig.add_grid()
+fig.show_colorscale(cmap = 'afmhot')
 plt.show()
