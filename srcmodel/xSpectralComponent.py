@@ -72,7 +72,15 @@ class xSpectralComponent(xModelElementBase):
 def test():
     """ Test code.
     """
-    c = xSpectralComponent('main', shape = 'powerlaw', polarization = {})
+    import os
+    import yaml
+    from ximpol.__package__ import XIMPOL_SRCMODEL
+    filePath = os.path.join(XIMPOL_SRCMODEL, 'yaml', 'simple_source.yaml')
+    tree = yaml.load(open(filePath))
+    srcName = 'test source'
+    srcType = 'point source'
+    name = 'main'
+    c = xSpectralComponent(name, **tree[srcName][srcType]['spectrum'][name])
     print(c)
 
     
