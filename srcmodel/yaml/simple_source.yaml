@@ -9,10 +9,12 @@ test source :
             
             main :
                 
-                powerlaw :
+                shape:
+
+                    powerlaw :
                     
-                    logK : { value : 1., unit : photons/keV/cm2 }
-                    index : { value : 2. }
+                        logK : { value : 1., unit : photons/keV/cm2 }
+                        index : { value : 2. }
         
                 polarization :
                 
