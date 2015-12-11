@@ -1,4 +1,7 @@
 
+-------------------------------------------------------------------------------
+ximpol (0.0.6) - Fri, 11 Dec 2015 06:39:21 -0800
+-------------------------------------------------------------------------------
 - Many minor changes.
 - First stab at a parser for the source model.
 - FITS images of some sources added, along with a small visualization script.
