@@ -38,7 +38,7 @@ from ximpol.detector.__XipeBaseline__ import *
 def mkXipeArf():
     """ Create the .arf file for the XIPE baseline configuration.
     """
-    outputFileName = 'xipe_proposal.arf'
+    outputFileName = 'xipe_%s.arf' % IRF_LABEL
     outputFilePath = os.path.join(XIMPOL_IRF, 'fits', outputFileName)
     if os.path.exists(outputFilePath):
         ximpol.__utils__.rm(outputFilePath)
@@ -59,7 +59,7 @@ def mkXipeArf():
     primaryHdu = fits.PrimaryHDU(header = primaryHeader)
     logger.info('Creating SPECRESP header and HDU...')
     PRIMARY_HEADER_KWARGS['RESPFILE'] = outputFileName
-    specrespHeader = xFitsDataFormatArf.specrespHeader(SPECRESP_HEADER_COMMENTS,
+    specrespHeader = xFitsDataFormatArf.specrespHeader(RESP_HEADER_COMMENTS,
                                                        **PRIMARY_HEADER_KWARGS)
     print(repr(specrespHeader))
     logger.info('Filling in SPECRESP data...')

@@ -33,6 +33,8 @@ from ximpol.__package__ import XIMPOL_DETECTOR
 proposal to ESA.
 """
 
+IRF_LABEL = 'baseline'
+
 BASE_FOLDER = os.path.join(XIMPOL_DETECTOR, 'data')
 
 OPTS_AEFF_FILE_NAME = 'aeff_optics_xipe_m4_x3.asc'
@@ -68,7 +70,7 @@ PRIMARY_HEADER_KWARGS = {
     'NAXIS2'  : len(ENERGY_MEAN),
 }
 
-SPECRESP_HEADER_COMMENTS = [
+RESP_HEADER_COMMENTS = [
     'Gas mixture: %s' % GAS_MIXTURE,
     'Pressure: %.3f Atm' % GAS_PRESSURE,
     'Absorption gap: %.3f cm' % ABS_GAP_THICKNESS,
