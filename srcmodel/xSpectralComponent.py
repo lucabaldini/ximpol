@@ -32,20 +32,41 @@ class xSpectralComponent(xModelElementBase):
     """
     """
 
-    REQUIRED_KEYS = ['shape']
-    OPTIONAL_KEYS = ['polarization']
+    REQUIRED_KEYS = ['shape', 'polarization']
+    OPTIONAL_KEYS = []
 
     def __init__(self, name, **kwargs):
         """
         """
         xModelElementBase.__init__(self, name, **kwargs)
+        self.linearPolarization()['angle'] = xModelParameter(
+            'polarization angle', **self.linearPolarization()['angle'])
+        self.linearPolarization()['degree'] = xModelParameter(
+            'polarization degree', **self.linearPolarization()['degree'])
 
-    #def __str__(self):
-    #    """ String formatting.
-    #    """
-    #    return 'Point source %s at (%s, %s)' %\
-    #        (self.name(), self.RA, self.Dec)
+    def linearPolarization(self):
+        """
+        """
+        return self.polarization['linear']
 
+    def linearPolarizationAngle(self):
+        """
+        """
+        return self.linearPolarization()['angle']
+
+    def linearPolarizationDegree(self):
+        """
+        """
+        return self.linearPolarization()['degree']
+
+    def __str__(self):
+        """ String formatting.
+        """
+        _str = 'Spectral shape: %s, %s, %s' %\
+               (self.shape, self.linearPolarizationDegree(),
+                self.linearPolarizationAngle())
+        return _str
+        
 
 
 def test():

@@ -30,7 +30,7 @@ from ximpol.srcmodel.xSpectralComponent import xSpectralComponent
 
 class xPointSource(xModelElementBase):
 
-    """
+    """ Class encapsulating a model for a point source.
     """
 
     REQUIRED_KEYS = ['RA', 'Dec', 'spectrum']
