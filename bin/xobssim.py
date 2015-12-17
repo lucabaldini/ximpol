@@ -6,6 +6,9 @@ from ximpol.srcmodel.xGenerator import xGenerator
 from ximpol.srcmodel.xSpectralComponent import xSpectralComponent
 from ximpol.irf.xAeff import xAeff
 from ximpol.irf.xPsf import xPsf
+from ximpol.irf.xModulation import xModulation
+
+
 from ximpol.event.xEvent import xEvent
 from ximpol.event.xEventList import xEventList
 
@@ -20,8 +23,9 @@ if __name__=='__main__':
     emin=1
     emax=10
     
-    aeff=xAeff()
-    psf=xPsf()
+    aeff       = xAeff()
+    psf        = xPsf()
+    modulation = xModulation()
 
     C=lambda t: 10.0*(1.0+sp.cos(t))
     gamma=lambda t: -2.1
