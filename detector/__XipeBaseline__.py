@@ -56,8 +56,16 @@ QUAL_CUT_EFFICIENCY = 0.8
 WINDOW_MATERIAL = 'Be'
 WINDOW_THICKNESS = 50. # um
 
+
 ENERGY_MIN = 1.0       # keV
 ENERGY_MAX = 9.9       # keV
+#Note modified to comform to eres energy bounds--mpr
+#ENERGY_MIN = 2.0       # keV
+#ENERGY_MAX = 8.0       # keV
+
+
+NUM_CHANNELS = 1024
+
 ENERGY_STEP = 0.01     # keV
 ENERGY_LO = numpy.arange(ENERGY_MIN, ENERGY_MAX, ENERGY_STEP)
 ENERGY_HI = numpy.append(ENERGY_LO[1:], ENERGY_MAX)
