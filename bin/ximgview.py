@@ -21,7 +21,11 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-import argparse
+
+__description__ = 'Quick FITS image viewer'
+
+
+
 import matplotlib.pyplot as plt
 from astropy.io import fits
 import aplpy
@@ -30,16 +34,25 @@ from ximpol.__logging__ import logger, startmsg
 
 
 
-parser = argparse.ArgumentParser(description = '')
-parser.add_argument('filePath', type = str,
-                    help = 'the input .fits file containing the image')
-args = parser.parse_args()
+def ximgview(filePath):
+    """ Quick FITS image viewer.
+    """
+    hdulist = fits.open(filePath)
+    hdulist.info()
+    data = hdulist[0].data
+    fig = aplpy.FITSFigure(hdulist[0], figure = plt.figure(0))
+    fig.add_grid()
+    fig.show_colorscale(cmap = 'afmhot')
+    plt.show()
 
-startmsg()
-hdulist = fits.open(args.filePath)
-hdulist.info()
-data = hdulist[0].data
-fig = aplpy.FITSFigure(hdulist[0], figure = plt.figure(0))
-fig.add_grid()
-fig.show_colorscale(cmap = 'afmhot')
-plt.show()
+
+
+if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser(description=__description__)
+    parser.add_argument('file_path', type=str,
+                        help='the input FITS image file')
+    args = parser.parse_args()
+    startmsg()
+    ximgview(args.file_path)
+

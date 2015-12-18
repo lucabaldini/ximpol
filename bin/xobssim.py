@@ -24,8 +24,15 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
+
 __description__ = 'Run the ximpol fast simulator'
 
+
+
+import time
+import scipy
+from scipy import interpolate
+from matplotlib import pyplot as plt
 
 from ximpol.srcmodel.xSource import xSource
 from ximpol.srcmodel.xGenerator import xGenerator
@@ -35,21 +42,16 @@ from ximpol.irf.xPsf import xPsf
 from ximpol.irf.xModulation import xModulation
 from ximpol.event.xEvent import xEvent
 from ximpol.event.xEventList import xEventList
+from ximpol.utils.xChrono import xChrono
 from ximpol.__logging__ import logger, startmsg
-
-import time
-import scipy
-from scipy import interpolate
-from matplotlib import pyplot as plt
-
-
 
 
 
 def xobbsim(outputFilePath):
     """ ximpol fast simulator.
     """
-    t0=time.time()
+    chrono = xChrono()
+    logger.info('Setting up the source model...')
     tmin=0
     tmax=10
     emin=1
@@ -65,10 +67,6 @@ def xobbsim(outputFilePath):
     
     mySource=xSource('Crab')
     ra0,dec0=mySource.getRADec()
-
-    
-    print mySource.getLB()
-    print ra0, dec0
     spectrum=xSpectralComponent('spectrum')
     
     times  = scipy.linspace(tmin,tmax,100)
@@ -82,14 +80,15 @@ def xobbsim(outputFilePath):
         pass
     
     lc   = interpolate.UnivariateSpline(times,flux,k=1,s=0)
-    
+    logger.info('Done %s.' % chrono)
+    logger.info('Extracting the event times...')
     S = xGenerator(lc,lc.integral)
-    S.setMinMax(tmin,tmax)
-    
+    S.setMinMax(tmin,tmax)    
     events_times = S.generate()
+    logger.info('Done %s, %d events generated.' % (chrono, len(events_times)))
+
     event_list   = xEventList()
-    
-    print 'generating %d events...' % len(events_times)
+    logger.info('Entering the event loop...')
     for i,event_time in enumerate(events_times):
         _event      = xEvent()
         _event.time = event_time
@@ -106,7 +105,11 @@ def xobbsim(outputFilePath):
         _event.angle= modulation.extract(_event.energy, phi0)
         event_list.fill(_event)        
         pass
+    logger.info('Done %s.' % chrono)
+    logger.info('Writing output file %s...' % outputFilePath)
     event_list.write_fits(outputFilePath)
+
+    logger.info('Plotting stuff...')
     fig=plt.figure(figsize=(10,10),facecolor='w')
     #plt.subplots_adjust(hspace=0.001)
     ax = plt.subplot(221)
@@ -129,7 +132,7 @@ def xobbsim(outputFilePath):
     plt.xscale('log')
     plt.yscale('log')
     plt.xlabel('Energy [keV]')
-    print time.time()-t0
+    logger.info('All done %s!' % chrono)
     plt.show()
     
     #spectrum.plot(scipy.linspace(1,10,100))
