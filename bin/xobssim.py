@@ -1,5 +1,31 @@
 #!/usr/bin/env python
-import time
+# *********************************************************************
+# * Copyright (C) 2015                                                *
+# * Nicola Omodei (nicola.omodei@stanford.edu)                        *
+# * Melissa Pesce-Rollins (melissa.pesce.rollins@pi.infn.it)          *
+# * Luca Baldini (luca.baldini@pi.infn.it)                            *
+# *                                                                   *
+# * For the license terms see the file LICENSE, distributed           *
+# * along with this software.                                         *
+# *********************************************************************
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU GengReral Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+
+__description__ = 'Run the ximpol fast simulator'
+
 
 from ximpol.srcmodel.xSource import xSource
 from ximpol.srcmodel.xGenerator import xGenerator
@@ -7,16 +33,22 @@ from ximpol.srcmodel.xSpectralComponent import xSpectralComponent
 from ximpol.irf.xAeff import xAeff
 from ximpol.irf.xPsf import xPsf
 from ximpol.irf.xModulation import xModulation
-
-
 from ximpol.event.xEvent import xEvent
 from ximpol.event.xEventList import xEventList
+from ximpol.__logging__ import logger, startmsg
 
-import scipy as sp  
+import time
+import scipy
 from scipy import interpolate
 from matplotlib import pyplot as plt
 
-if __name__=='__main__':
+
+
+
+
+def xobbsim(outputFilePath):
+    """ ximpol fast simulator.
+    """
     t0=time.time()
     tmin=0
     tmax=10
@@ -28,7 +60,7 @@ if __name__=='__main__':
     psf        = xPsf()
     modulation = xModulation()
 
-    C=lambda t: 10.0*(1.0+sp.cos(t))
+    C=lambda t: 10.0*(1.0+scipy.cos(t))
     gamma=lambda t: -2.1
     
     mySource=xSource('Crab')
@@ -39,7 +71,7 @@ if __name__=='__main__':
     print ra0, dec0
     spectrum=xSpectralComponent('spectrum')
     
-    times  = sp.linspace(tmin,tmax,100)
+    times  = scipy.linspace(tmin,tmax,100)
     flux   = []
     events = []
     for t in times:
@@ -74,7 +106,7 @@ if __name__=='__main__':
         _event.angle= modulation.extract(_event.energy, phi0)
         event_list.fill(_event)        
         pass
-    event_list.write_fits('test.fits')
+    event_list.write_fits(outputFilePath)
     fig=plt.figure(figsize=(10,10),facecolor='w')
     #plt.subplots_adjust(hspace=0.001)
     ax = plt.subplot(221)
@@ -93,15 +125,27 @@ if __name__=='__main__':
     plt.ylabel('Energy [keV]')
 
     ax = plt.subplot(224)
-    plt.hist(event_list.energy_array,bins=sp.logspace(0,1,50),histtype='step')
+    plt.hist(event_list.energy_array,bins=scipy.logspace(0,1,50),histtype='step')
     plt.xscale('log')
     plt.yscale('log')
     plt.xlabel('Energy [keV]')
     print time.time()-t0
     plt.show()
     
-    #spectrum.plot(sp.linspace(1,10,100))
+    #spectrum.plot(scipy.linspace(1,10,100))
     #plt.xscale('log')
     #plt.yscale('log')
     #spectrum.polarization(0.1,89)
     #mySource.addComponent(spectrum)
+
+
+
+if __name__=='__main__':
+    import argparse
+    parser = argparse.ArgumentParser(description=__description__)
+    parser.add_argument('-o', '--output-file', type=str, default=None,
+                        required=True,
+                        help='the output FITS event file')
+    args = parser.parse_args()
+    startmsg()
+    xobbsim(args.output_file)
