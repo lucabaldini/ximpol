@@ -31,6 +31,7 @@ __description__ = 'Run the ximpol fast simulator'
 
 import time
 import scipy
+import numpy
 from scipy import interpolate
 from matplotlib import pyplot as plt
 
@@ -52,11 +53,13 @@ def xobbsim(output_file_path, duration, start_time=0., time_steps=100,
     """ ximpol fast simulator.
     """
     chrono = xChrono()
+    logger.info('Setting the random seed to %d...' % random_seed)
+    numpy.random.seed(random_seed)
     logger.info('Loading the instrument response functions...')
     aeff       = xAeff()
     psf        = xPsf()
     modulation = xModulation()
-
+    logger.info('Done %s.' % chrono)
     logger.info('Setting up the source model...')
     stop_time = start_time + duration
     emin=1
@@ -157,7 +160,7 @@ if __name__=='__main__':
                         help='the start time (MET in s) of the simulation')
     parser.add_argument('-n', '--time-steps', type=int, default=100,
                         help='the number of steps for sampling the lightcurve')
-    parser.add_argument('-s', '--random-seed', type=int, default=0.,
+    parser.add_argument('-s', '--random-seed', type=int, default=0,
                         help='the random seed for the simulation')
     args = parser.parse_args()
     startmsg()
