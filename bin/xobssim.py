@@ -22,6 +22,7 @@ if __name__=='__main__':
     tmax=10
     emin=1
     emax=10
+    phi0= 44.
     
     aeff       = xAeff()
     psf        = xPsf()
@@ -70,7 +71,7 @@ if __name__=='__main__':
         _event.energy=S.generate(1)[0]
         _ra,_dec=psf.smear(ra0,dec0)
         _event.setRADec(_ra,_dec)
-        _event.angle=0.0
+        _event.angle= modulation.extract(_event.energy, phi0)
         event_list.fill(_event)        
         pass
     event_list.write_fits('test.fits')
