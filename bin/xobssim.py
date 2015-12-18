@@ -47,21 +47,22 @@ from ximpol.__logging__ import logger, startmsg
 
 
 
-def xobbsim(outputFilePath):
+def xobbsim(output_file_path, duration, start_time=0., time_steps=100,
+            random_seed=0):
     """ ximpol fast simulator.
     """
     chrono = xChrono()
-    logger.info('Setting up the source model...')
-    tmin=0
-    tmax=10
-    emin=1
-    emax=10
-    phi0= 44.
-    
+    logger.info('Loading the instrument response functions...')
     aeff       = xAeff()
     psf        = xPsf()
     modulation = xModulation()
 
+    logger.info('Setting up the source model...')
+    stop_time = start_time + duration
+    emin=1
+    emax=10
+    phi0= 44.
+    
     C=lambda t: 10.0*(1.0+scipy.cos(t))
     gamma=lambda t: -2.1
     
@@ -69,7 +70,7 @@ def xobbsim(outputFilePath):
     ra0,dec0=mySource.getRADec()
     spectrum=xSpectralComponent('spectrum')
     
-    times  = scipy.linspace(tmin,tmax,100)
+    times  = scipy.linspace(start_time, stop_time, time_steps)
     flux   = []
     events = []
     for t in times:
@@ -83,7 +84,7 @@ def xobbsim(outputFilePath):
     logger.info('Done %s.' % chrono)
     logger.info('Extracting the event times...')
     S = xGenerator(lc,lc.integral)
-    S.setMinMax(tmin,tmax)    
+    S.setMinMax(start_time,stop_time)    
     events_times = S.generate()
     logger.info('Done %s, %d events generated.' % (chrono, len(events_times)))
 
@@ -106,8 +107,8 @@ def xobbsim(outputFilePath):
         event_list.fill(_event)        
         pass
     logger.info('Done %s.' % chrono)
-    logger.info('Writing output file %s...' % outputFilePath)
-    event_list.write_fits(outputFilePath)
+    logger.info('Writing output file %s...' % output_file_path)
+    event_list.write_fits(output_file_path)
 
     logger.info('Plotting stuff...')
     fig=plt.figure(figsize=(10,10),facecolor='w')
@@ -149,6 +150,16 @@ if __name__=='__main__':
     parser.add_argument('-o', '--output-file', type=str, default=None,
                         required=True,
                         help='the output FITS event file')
+    parser.add_argument('-d', '--duration', type=float, default=None,
+                        required=True,
+                        help='the duration (in s) of the simulation')
+    parser.add_argument('-t', '--start-time', type=float, default=0.,
+                        help='the start time (MET in s) of the simulation')
+    parser.add_argument('-n', '--time-steps', type=int, default=100,
+                        help='the number of steps for sampling the lightcurve')
+    parser.add_argument('-s', '--random-seed', type=int, default=0.,
+                        help='the random seed for the simulation')
     args = parser.parse_args()
     startmsg()
-    xobbsim(args.output_file)
+    xobbsim(args.output_file, args.duration, args.start_time,
+            args.time_steps, args.random_seed)
