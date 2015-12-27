@@ -98,7 +98,7 @@ def startmsg():
     from ximpol.__version__ import TAG, BUILD_DATE
     print('\n    Welcome to ximple version %s (built on %s).\n' %\
               (TAG, BUILD_DATE))
-    print('    Copyright (C) 2015\n    Luca Baldini (luca.baldini@pi.infn.it),\n    Nicola Omodei (nicola.omodei@stanford.edu),\n    Melissa Pesce-Rollins (melissa.pesce.rollins@pi.infn.it) \n\n    ximple comes with ABSOLUTELY NO WARRANTY.\n    This is free software, and you are welcome to redistribute it under certain\n    conditions. See the LICENSE file for details.\n\n    Visit https://github.com/lucabaldini/ximpol/wiki for more information.\n')
+    print('    Copyright (C) 2015 Luca Baldini, Nicola Omodei, Melissa Pesce-Rollins\n\n    ximple comes with ABSOLUTELY NO WARRANTY.\n    This is free software, and you are welcome to redistribute it under certain\n    conditions. See the LICENSE file for details.\n\n    Visit https://github.com/lucabaldini/ximpol/wiki for more information.\n')
 
 
     

@@ -26,7 +26,7 @@ import os
 import ximpol.__utils__ as __utils__
 
 from ximpol.__logging__ import logger
-from ximpol.__package__ import XIMPOL_VERSION_FILE_PATH, versionInfo,\
+from ximpol.__package__ import XIMPOL_VERSION_FILE_PATH, version_info,\
     XIMPOL_RELEASE_NOTES_PATH, XIMPOL_DIST, XIMPOL_ROOT
 
 
@@ -38,7 +38,7 @@ TAG_MODES = ['major', 'minor', 'patch']
 def updateVersionInfo(mode, dryRun = False):
     """ Update the __tag__.py module with the new tag and build date.
     """
-    prevTag, prevBuildDate = versionInfo()
+    prevTag, prevBuildDate = version_info()
     logger.info('Previous tag was %s...' % prevTag)
     version, release, patch = [int(item) for item in prevTag.split('.')]
     if mode == 'major':
@@ -104,7 +104,7 @@ def tagPackage(mode, dryRun = False):
 def distsrc():
     """ Create a plain source distribution.
     """
-    tag, buildDate = versionInfo()
+    tag, buildDate = version_info()
     logger.info('Creating plain source distribution...')
     distDir = os.path.join(XIMPOL_DIST, 'src')
     srcLogFilePath = 'src.log'

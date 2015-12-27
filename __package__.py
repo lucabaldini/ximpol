@@ -30,6 +30,7 @@ XIMPOL_BIN = os.path.join(XIMPOL_ROOT, 'bin')
 XIMPOL_DETECTOR = os.path.join(XIMPOL_ROOT, 'detector')
 XIMPOL_DIST = os.path.join(XIMPOL_ROOT, 'dist')
 XIMPOL_DOC = os.path.join(XIMPOL_ROOT, 'doc')
+XIMPOL_EVENT = os.path.join(XIMPOL_ROOT, 'event')
 XIMPOL_FILEIO = os.path.join(XIMPOL_ROOT, 'fileio')
 XIMPOL_IRF = os.path.join(XIMPOL_ROOT, 'irf')
 XIMPOL_NOTEBOOKS = os.path.join(XIMPOL_ROOT, 'notebooks')
@@ -41,7 +42,8 @@ XIMPOL_UTILS = os.path.join(XIMPOL_ROOT, 'utils')
 """ Version information.
 """
 XIMPOL_VERSION_FILE_PATH = os.path.join(XIMPOL_ROOT, '__version__.py')
-def versionInfo():
+
+def version_info():
     """ Read the tag and build date straight from the appropriate file.
     
     Use this when you don't want to import the module (i.e., at release time,

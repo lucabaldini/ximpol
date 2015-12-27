@@ -28,13 +28,13 @@ from ximpol.__logging__ import logger
 from ximpol.__package__ import *
 
 
-def cleanup(folderPath, patterns = ['*~', '*.pyc', '*.pyo']):
+def cleanup(folder_path, patterns = ['*~', '*.pyc', '*.pyo']):
     """ Cleanup a folder.
     """
-    logger.info('Cleaning up folder %s...' % folderPath)
+    logger.info('Cleaning up folder %s...' % folder_path)
     fileList = []
     for pattern in patterns:
-        fileList += glob.glob(os.path.join(folderPath, pattern))
+        fileList += glob.glob(os.path.join(folder_path, pattern))
     for filePath in fileList:
         logger.info('Removing %s...' % filePath)
         os.remove(filePath)
@@ -53,16 +53,17 @@ def cleanupdist():
 
 
 if __name__ == '__main__':
-    for folderPath in [XIMPOL_ROOT,
-                       XIMPOL_BIN,
-                       XIMPOL_DETECTOR,
-                       XIMPOL_DIST,
-                       XIMPOL_DOC,
-                       XIMPOL_FILEIO,
-                       XIMPOL_IRF,
-                       XIMPOL_NOTEBOOKS,
-                       XIMPOL_SRCMODEL,
-                       XIMPOL_TEST,
-                       XIMPOL_UTILS]:
-        cleanup(folderPath)
+    for folder_path in [XIMPOL_ROOT,
+                        XIMPOL_BIN,
+                        XIMPOL_DETECTOR,
+                        XIMPOL_DIST,
+                        XIMPOL_DOC,
+                        XIMPOL_EVENT,
+                        XIMPOL_FILEIO,
+                        XIMPOL_IRF,
+                        XIMPOL_NOTEBOOKS,
+                        XIMPOL_SRCMODEL,
+                        XIMPOL_TEST,
+                        XIMPOL_UTILS]:
+        cleanup(folder_path)
     cleanupdist()
