@@ -29,7 +29,7 @@ from ximpol.__package__ import *
 
 
 def cleanup(folder_path, patterns = ['*~', '*.pyc', '*.pyo']):
-    """ Cleanup a folder.
+    """Cleanup a folder.
     """
     logger.info('Cleaning up folder %s...' % folder_path)
     fileList = []
@@ -39,8 +39,8 @@ def cleanup(folder_path, patterns = ['*~', '*.pyc', '*.pyo']):
         logger.info('Removing %s...' % filePath)
         os.remove(filePath)
 
-def cleanupdist():
-    """
+def cleanup_dist():
+    """Cleanup the distribution folder.
     """
     if os.path.exists(XIMPOL_DIST):
         logger.info('Removing %s altogether...' % XIMPOL_DIST)
@@ -61,9 +61,10 @@ if __name__ == '__main__':
                         XIMPOL_EVENT,
                         XIMPOL_FILEIO,
                         XIMPOL_IRF,
+                        XIMPOL_LIB,
                         XIMPOL_NOTEBOOKS,
                         XIMPOL_SRCMODEL,
                         XIMPOL_TEST,
                         XIMPOL_UTILS]:
         cleanup(folder_path)
-    cleanupdist()
+    cleanup_dist()
