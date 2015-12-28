@@ -52,6 +52,8 @@ class testInterpolatedUnivariateSplineLinear(unittest.TestCase):
         self.assertEqual(len(self.s1), self.num_points)
 
     def test_evaluation(self):
+        """Test the object evaluation.
+        """
         # This is a linear interpolator, so the interpolated values must
         # be identical, within rounding errors, to the original grid of
         # values.
