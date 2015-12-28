@@ -1,5 +1,6 @@
 
--Added script to generate the rmf file. Still not working perfectly. 
+- Added script to generate the rmf file. Still not working perfectly.
+- Some folder refactoring.
 
 -------------------------------------------------------------------------------
 ximpol (0.0.7) - Fri, 11 Dec 2015 13:33:49 -0800
