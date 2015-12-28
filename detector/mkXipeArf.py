@@ -71,8 +71,8 @@ def mkXipeArf():
     hdulist.writeto(outputFilePath)
     logger.info('Done, bye!')
     return outputFilePath
-    
-    
+
+
 
 if __name__ == '__main__':
     filePath = mkXipeArf()

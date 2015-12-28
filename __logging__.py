@@ -36,9 +36,14 @@ consoleHandler.setFormatter(consoleFormatter)
 logger.addHandler(consoleHandler)
 
 
+def suppress_logging():
+    """Set the logging level to critical.
+    """
+    logger.setLevel(logging.CRITICAL)
+
 
 class XpFileFormatter(logging.Formatter):
-    
+
     """ Logging file formatter class.
     """
 
@@ -58,12 +63,12 @@ class XpFileFormatter(logging.Formatter):
 
 
 class XpFileHandler(logging.FileHandler):
-    
+
     """ Logging file handler class.
     """
 
     def __init__(self, filePath, mode = 'a', encoding = None, delay = False):
-        """ Constructor.
+        """Constructor.
         """
         logger.info('Opening output log file %s...' % filePath)
         logging.FileHandler.__init__(self, filePath, mode, encoding, delay)
@@ -72,7 +77,7 @@ class XpFileHandler(logging.FileHandler):
         logger.addHandler(self)
 
     def close(self):
-        """
+        """Close the file.
         """
         if self in logger.handlers:
             logger.removeHandler(self)
@@ -83,7 +88,7 @@ class XpFileHandler(logging.FileHandler):
 
 
 def abort(message = ''):
-    """ Abort the execution.
+    """Abort the execution.
     """
     if message != '':
         message = '%s. Abort.' % message
@@ -93,7 +98,7 @@ def abort(message = ''):
 
 
 def startmsg():
-    """ Print the start message.
+    """Print the start message.
     """
     from ximpol.__version__ import TAG, BUILD_DATE
     print('\n    Welcome to ximple version %s (built on %s).\n' %\
@@ -101,6 +106,6 @@ def startmsg():
     print('    Copyright (C) 2015 Luca Baldini, Nicola Omodei, Melissa Pesce-Rollins\n\n    ximple comes with ABSOLUTELY NO WARRANTY.\n    This is free software, and you are welcome to redistribute it under certain\n    conditions. See the LICENSE file for details.\n\n    Visit https://github.com/lucabaldini/ximpol/wiki for more information.\n')
 
 
-    
+
 if __name__ == '__main__':
     startmsg()

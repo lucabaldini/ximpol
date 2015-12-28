@@ -58,6 +58,7 @@ class xInterpolatedUnivariateSpline(InterpolatedUnivariateSpline):
         from which the data points are loaded.
         """
         if isinstance(x, str):
+            file_path = x
             logger.info('Reading data values from %s...' % file_path)
             x, y = numpy.loadtxt(file_path, unpack = True)
         assert(len(x) == len(y))
