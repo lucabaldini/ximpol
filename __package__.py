@@ -23,25 +23,23 @@
 
 import os
 
-""" Basic folder structure of the package.
-"""
+"""Basic folder structure of the package."""
 XIMPOL_ROOT = os.path.abspath(os.path.dirname(__file__))
 XIMPOL_BIN = os.path.join(XIMPOL_ROOT, 'bin')
+XIMPOL_CORE = os.path.join(XIMPOL_ROOT, 'core')
 XIMPOL_DETECTOR = os.path.join(XIMPOL_ROOT, 'detector')
 XIMPOL_DIST = os.path.join(XIMPOL_ROOT, 'dist')
 XIMPOL_DOC = os.path.join(XIMPOL_ROOT, 'doc')
 XIMPOL_EVENT = os.path.join(XIMPOL_ROOT, 'event')
 XIMPOL_FILEIO = os.path.join(XIMPOL_ROOT, 'fileio')
 XIMPOL_IRF = os.path.join(XIMPOL_ROOT, 'irf')
-XIMPOL_LIB = os.path.join(XIMPOL_ROOT, 'lib')
 XIMPOL_NOTEBOOKS = os.path.join(XIMPOL_ROOT, 'notebooks')
 XIMPOL_SRCMODEL = os.path.join(XIMPOL_ROOT, 'srcmodel')
 XIMPOL_TEST = os.path.join(XIMPOL_ROOT, 'test')
 XIMPOL_UTILS = os.path.join(XIMPOL_ROOT, 'utils')
 
 
-""" Version information.
-"""
+"""Version information."""
 XIMPOL_VERSION_FILE_PATH = os.path.join(XIMPOL_ROOT, '__version__.py')
 
 def version_info():
@@ -56,8 +54,7 @@ def version_info():
     return TAG, BUILD_DATE
 
 
-""" Release notes.
-"""
+""" Release notes."""
 XIMPOL_RELEASE_NOTES_PATH = os.path.join(XIMPOL_DOC, 'release.notes')
 
 

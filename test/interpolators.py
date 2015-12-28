@@ -23,7 +23,7 @@
 
 import unittest
 
-from ximpol.lib.xInterpolatedUnivariateSpline import *
+from ximpol.core.xInterpolatedUnivariateSpline import *
 
 
 
