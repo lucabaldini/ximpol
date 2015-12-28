@@ -62,6 +62,7 @@ if __name__ == '__main__':
                         XIMPOL_IRF,
                         XIMPOL_NOTEBOOKS,
                         XIMPOL_SRCMODEL,
+                        XIMPOL_RELEASE,
                         XIMPOL_TEST,
                         XIMPOL_UTILS]:
         cleanup(folder_path)
