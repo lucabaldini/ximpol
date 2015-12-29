@@ -33,15 +33,24 @@ TAG = None
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
+
+# https://pypi.python.org/pypi/sphinxcontrib-napoleon
+# As of Sphinx 1.3, the napoleon extension will come packaged with Sphinx
+# under sphinx.ext.napoleon. The sphinxcontrib.napoleon extension will
+# continue to work with Sphinx <= 1.2.
+
+import sphinx
+major, minor, patch = [int(item) for item in sphinx.__version__.split('.')]
+assert(major == 1)
+if minor <= 2:
+    _napoleon = 'sphinxcontrib.napoleon'
+else:
+    _napoleon = 'sphinx.ext.napoleon'
+
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
-    # https://pypi.python.org/pypi/sphinxcontrib-napoleon
-    # As of Sphinx 1.3, the napoleon extension will come packaged with Sphinx
-    # under sphinx.ext.napoleon. The sphinxcontrib.napoleon extension will
-    # continue to work with Sphinx <= 1.2.
-    #'sphinxcontrib.napoleon'
-    'sphinx.ext.napoleon'
+    _napoleon
 ]
 
 # Add any paths that contain templates here, relative to this directory.
