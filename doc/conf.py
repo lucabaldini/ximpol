@@ -22,6 +22,8 @@ sys.path.insert(0, os.path.abspath('../../ximpol'))
 sys.path.insert(0, os.path.abspath('../..'))
 sys.path.insert(0, os.path.abspath('..'))
 
+print(os.path.abspath(os.path.curdir))
+print(sys.path)
 from ximpol.__version__ import TAG
 
 # -- General configuration ------------------------------------------------
