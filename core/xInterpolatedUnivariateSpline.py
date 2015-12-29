@@ -91,7 +91,7 @@ class xInterpolatedUnivariateSpline(InterpolatedUnivariateSpline):
     """
 
     def __init__(self, x, y = None, w=None, bbox=[None, None], k=3,
-                 xmin=-numpy.inf, xmax=numpy.inf):
+                 xmin=numpy.NINF, xmax=numpy.PINF):
         """Constructor.
 
         The arguments are the same of those taken by the native scipy class,
@@ -200,7 +200,7 @@ class xInterpolatedUnivariateSplineLinear(xInterpolatedUnivariateSpline):
         The maximum x-value to be used in the input x-array.
     """
 
-    def __init__(self, x, y = None, xmin=-numpy.inf, xmax=numpy.inf):
+    def __init__(self, x, y = None, xmin=numpy.NINF, xmax=numpy.PINF):
         """ Constructor.
         """
         xInterpolatedUnivariateSpline.__init__(self, x, y, None, [None, None],
