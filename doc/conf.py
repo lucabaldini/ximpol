@@ -23,8 +23,8 @@ sys.path.insert(0, os.path.abspath('..'))
 sys.path.insert(0, os.path.abspath('../..'))
 sys.path.insert(0, os.path.abspath('../../ximpol'))
 
-#from ximpol.__version__ import TAG
-TAG = None
+import ximpol
+from ximpol.__version__ import TAG
 
 # -- General configuration ------------------------------------------------
 
