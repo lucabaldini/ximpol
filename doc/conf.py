@@ -40,7 +40,8 @@ extensions = [
     # As of Sphinx 1.3, the napoleon extension will come packaged with Sphinx
     # under sphinx.ext.napoleon. The sphinxcontrib.napoleon extension will
     # continue to work with Sphinx <= 1.2.
-    'sphinxcontrib.napoleon'
+    #'sphinxcontrib.napoleon'
+    'sphinx.ext.napoleon'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
