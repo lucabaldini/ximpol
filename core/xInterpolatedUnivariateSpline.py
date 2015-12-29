@@ -31,20 +31,63 @@ from ximpol.__logging__ import logger
 
 class xInterpolatedUnivariateSpline(InterpolatedUnivariateSpline):
 
-    """Light-weight wrapper over the standard InterpolatedUnivariateSpline
-    class provided by scipy.interpolate, see
-    http://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.InterpolatedUnivariateSpline.html
+    """Light-weight wrapper over the standard
+    `scipy.interpolate.InterpolatedUnivariateSpline
+    <http://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.InterpolatedUnivariateSpline.html>`_.
 
     The basic additional features we are implementing here are:
-    1\ we do keep track of the original arrays passed to the interpolator;
-    2\ optional xmin and xmax parameters can be passed to the constructor
-       to limit the range over which the interpolator is defined;
-    3\ multiplication is supported.
 
+    1. we do keep track of the original arrays passed to the interpolator;
+    2. optional xmin and xmax parameters can be passed to the constructor\
+    to limit the range over which the interpolator is defined (this is\
+    particularly useful when reading data from file);
+    3. sum and multiplication are supported;
+    4. initialization from a text file is supported.
+
+    Parameters
+    ----------
+    x : array or string
+        Input x values (mind they are supposed to be sorted). If `x` is a
+        string, it is interpreted as a path to a text file from which the
+        data points are loaded (do not specify `y` in this case).
+
+    y : array, optional
+        Input y values (this is only optional if `x` is a file path, and
+        required otherwise).
+
+    w : array, optional
+        Weights for spline fitting (must be positive). If None (default),
+        weights are all equal.
+
+    bbox : array, optional
+        2-sequence specifying the boundary of the approximation interval. If
+        None (default), ``bbox=[x[0], x[-1]]``.
+
+    k : int, optional
+        Degree of the smoothing spline. Must be 1 <= `k` <= 5.
+
+    xmin : float, optional
+        The minimum x-value to be used in the input x-array.
+
+    xmax : float, optional
+        The maximum x-value to be used in the input x-array.
+
+    Examples
+    --------
+    >>> from ximpol.core.xInterpolatedUnivariateSpline import xInterpolatedUnivariateSpline
+    >>> x = numpy.linspace(0, 2*numpy.pi, 20)
+    >>> y = numpy.sin(x)
+    >>> f = xInterpolatedUnivariateSpline(x, y)
+    >>> a = f(1.0)
+    >>> f.plot()
+
+    Note
+    ----
     Note that the interface to the base class has changed from numpy 0.14.
-    An ext argument can be passed to the constructor starting with scipy
-    0.15 to control the extrapolation behavior and a check_finite argument is
-    available in 0.16. We currently do not use either one.
+    An `ext` argument can be passed to the constructor starting with scipy
+    0.15 to control the extrapolation behavior and a `check_finite` argument is
+    available in 0.16 to avoid `nans` in the input data.
+    We currently do not use either one.
     """
 
     def __init__(self, x, y = None, w=None, bbox=[None, None], k=3,
@@ -77,7 +120,7 @@ class xInterpolatedUnivariateSpline(InterpolatedUnivariateSpline):
         return _x
 
     def __mul__(self, other):
-        """Multiplication operator.
+        """Overloaded multiplication operator.
         """
         assert(self.__class__.__name__ == other.__class__.__name__)
         _x = self.__xmerge(other)
@@ -85,7 +128,7 @@ class xInterpolatedUnivariateSpline(InterpolatedUnivariateSpline):
         return self.__class__(_x, _y)
 
     def __add__(self, other):
-        """Addition operator.
+        """Overloaded sum operator.
         """
         assert(self.__class__.__name__ == other.__class__.__name__)
         _x = self.__xmerge(other)
@@ -133,9 +176,30 @@ class xInterpolatedUnivariateSpline(InterpolatedUnivariateSpline):
 
 class xInterpolatedUnivariateSplineLinear(xInterpolatedUnivariateSpline):
 
-    """xInterpolatedUnivariateSpline subclass implementing the simplest
-    poassible linear interpolator.
+    """ximpol.core.xInterpolatedUnivariateSpline subclass implementing the
+    simplest possible linear interpolator.
+
+    Note that none of the fancy interpolation parameters supported by the
+    base class is used here.
+
+    Parameters
+    ----------
+    x : array or string
+        Input x values (mind they are supposed to be sorted). If `x` is a
+        string, it is interpreted as a path to a text file from which the
+        data points are loaded (do not specify `y` in this case).
+
+    y : array, optional
+        Input y values (this is only optional if `x` is a file path, and
+        required otherwise).
+
+    xmin : float, optional
+        The minimum x-value to be used in the input x-array.
+
+    xmax : float, optional
+        The maximum x-value to be used in the input x-array.
     """
+
     def __init__(self, x, y = None, xmin=-numpy.inf, xmax=numpy.inf):
         """ Constructor.
         """
