@@ -1,2 +1,5 @@
 # ximpol
-Fast simulation tools for an x-ray polarimetric mission
+
+An X-ray polarimetry simulation framework
+
+The ximpol documentation is `here <http://ximpol.readthedocs.org/en/latest/>`_.
