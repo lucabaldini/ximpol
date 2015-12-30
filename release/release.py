@@ -67,15 +67,14 @@ def updateReleaseNotes(tag, dryRun = False):
     """ Write the new tag and build date on top of the release notes
     (which must be kept up to date during the release process).
     """
-    hline = '-'*79
     logger.info('Reading in %s...' % XIMPOL_RELEASE_NOTES_PATH)
     notes = open(XIMPOL_RELEASE_NOTES_PATH).read().strip('\n')
     logger.info('Writing out %s...' % XIMPOL_RELEASE_NOTES_PATH)
     if not dryRun:
         outputFile = open(XIMPOL_RELEASE_NOTES_PATH, 'w')
-        outputFile.writelines('\n%s\nximpol (%s) - %s\n%s\n' %\
-                                  (hline, tag, BUILD_DATE, hline))
-        outputFile.writelines(notes)
+        outputFile.writelines(notes)[:2]
+        outputFile.writelines('\n*\nximpol (%s) - %s\n*\n' % (tag, BUILD_DATE))
+        outputFile.writelines(notes)[2:]
         outputFile.close()
     logger.info('Done.')
 
@@ -130,7 +129,7 @@ if __name__ == '__main__':
     (opts, args) = parser.parse_args()
     if not opts.tagmode and not (opts.src):
         parser.print_help()
-        parser.error('Please specify at least one valid option.')        
+        parser.error('Please specify at least one valid option.')
     tag = None
     if opts.tagmode is not None:
         if opts.tagmode not in TAG_MODES:
@@ -139,6 +138,3 @@ if __name__ == '__main__':
         tagPackage(opts.tagmode, opts.dryrun)
     if opts.src and not opts.dryrun:
         distsrc()
-
-
-
