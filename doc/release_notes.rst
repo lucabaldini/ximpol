@@ -1,4 +1,8 @@
-Release notes
+Re
+*
+ximpol (0.0.9) - Wed, 30 Dec 2015 07:48:26 -0800
+*
+lease notes
 =============
 
 * Major folder restructuring to make the layout compatible with

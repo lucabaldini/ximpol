@@ -72,9 +72,9 @@ def updateReleaseNotes(tag, dryRun = False):
     logger.info('Writing out %s...' % XIMPOL_RELEASE_NOTES_PATH)
     if not dryRun:
         outputFile = open(XIMPOL_RELEASE_NOTES_PATH, 'w')
-        outputFile.writelines(notes)[:2]
+        outputFile.writelines(notes[:2])
         outputFile.writelines('\n*\nximpol (%s) - %s\n*\n' % (tag, BUILD_DATE))
-        outputFile.writelines(notes)[2:]
+        outputFile.writelines(notes[2:])
         outputFile.close()
     logger.info('Done.')
 
