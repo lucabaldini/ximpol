@@ -11,6 +11,9 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   installation
+   quick_start
+   code_development
    release_notes
    about
 
