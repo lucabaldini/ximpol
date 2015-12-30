@@ -67,14 +67,15 @@ def updateReleaseNotes(tag, dryRun = False):
     """ Write the new tag and build date on top of the release notes
     (which must be kept up to date during the release process).
     """
+    title = 'Release notes\n=============\n\n'
     logger.info('Reading in %s...' % XIMPOL_RELEASE_NOTES_PATH)
-    notes = open(XIMPOL_RELEASE_NOTES_PATH).read().strip('\n')
+    notes = open(XIMPOL_RELEASE_NOTES_PATH).read().strip('\n').strip(title)
     logger.info('Writing out %s...' % XIMPOL_RELEASE_NOTES_PATH)
     if not dryRun:
         outputFile = open(XIMPOL_RELEASE_NOTES_PATH, 'w')
-        outputFile.writelines(notes[:2])
-        outputFile.writelines('\n*\nximpol (%s) - %s\n*\n' % (tag, BUILD_DATE))
-        outputFile.writelines(notes[2:])
+        outputFile.writelines(title)
+        outputFile.writelines('\n*ximpol (%s) - %s*\n\n' % (tag, BUILD_DATE))
+        outputFile.writelines(notes)
         outputFile.close()
     logger.info('Done.')
 
