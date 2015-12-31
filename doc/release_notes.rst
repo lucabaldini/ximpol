@@ -1,6 +1,9 @@
 Release notes
 =============
 
+* Started migrating the documentation from the github wiki to the rst sphinx
+  files.
+
 
 *ximpol (0.0.10) - Wed, 30 Dec 2015 07:53:08 -0800*
 
