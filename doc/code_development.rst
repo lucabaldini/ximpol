@@ -65,8 +65,37 @@ so that you have the executables off hand. Here is an example:
 
 
 
-Coding conventions
-------------------
+Coding guidelines
+-----------------
+
+Though we'll never be able to follow any set of coding conventions religiously,
+`PEP 0008 <https://www.python.org/dev/peps/pep-0008/>`_ is our starting point.
+A short recap of the most salient guidelines:
+
+* Use 4 spaces for indentation level (no TABS).
+* Limit all lines to 79 characters.
+* Surround top-level function and class definitions with two blank lines.
+  Method definitions inside a class are surrounded by a single blank line.
+  Use blank lines in functions, sparingly, to indicate logical sections.
+* Use one import per line, right at the top of the module.
+* Use single quote characters for strings and double quotes characters for 
+  triple-quoted strings.
+* Avoid extraneous white spaces, and especially avoid more than one space
+  around an assigment.
+* Don't use spaces around the `=` sign when used to indicate a keyword argument
+  or a default parameter value.
+* Modules should have short, all-lowercase names.
+* Class names should normally use the CapWords convention (for ximpol starting
+  with a `x`).
+* Function and member names should be lowercase, with words separated by
+  underscores as necessary to improve readability.
+* Constants are usually defined on a module level and written in all capital
+  letters with underscores separating words.
+* Always use a `def` statement instead of an assignment statement that binds a
+  `lambda` expression directly to an identifier. 
+
+An example module, illustrating the basic guidelines, is available
+`here <https://github.com/lucabaldini/ximpol/tree/master/doc/codestyle.py>`_.
 
 
 Documenting code
