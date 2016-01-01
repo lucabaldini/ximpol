@@ -1,10 +1,6 @@
 #!/usr/bin/env python
-# *********************************************************************
-# * Copyright (C) 2015 Luca Baldini (luca.baldini@pi.infn.it)         *
-# *                                                                   *
-# * For the license terms see the file LICENSE, distributed           *
-# * along with this software.                                         *
-# *********************************************************************
+#
+# Copyright (C) 2015, the ximpol team.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -42,7 +38,7 @@ def suppress_logging():
     logger.setLevel(logging.CRITICAL)
 
 
-class XpFileFormatter(logging.Formatter):
+class xFileFormatter(logging.Formatter):
 
     """ Logging file formatter class.
     """
@@ -62,9 +58,9 @@ class XpFileFormatter(logging.Formatter):
 
 
 
-class XpFileHandler(logging.FileHandler):
+class xFileHandler(logging.FileHandler):
 
-    """ Logging file handler class.
+    """Logging file handler class.
     """
 
     def __init__(self, filePath, mode = 'a', encoding = None, delay = False):
@@ -73,7 +69,7 @@ class XpFileHandler(logging.FileHandler):
         logger.info('Opening output log file %s...' % filePath)
         logging.FileHandler.__init__(self, filePath, mode, encoding, delay)
         self.setLevel(logging.DEBUG)
-        self.setFormatter(XpFileFormatter())
+        self.setFormatter(xFileFormatter())
         logger.addHandler(self)
 
     def close(self):
@@ -103,7 +99,7 @@ def startmsg():
     from ximpol.__version__ import TAG, BUILD_DATE
     print('\n    Welcome to ximple version %s (built on %s).\n' %\
               (TAG, BUILD_DATE))
-    print('    Copyright (C) 2015 Luca Baldini, Nicola Omodei, Melissa Pesce-Rollins\n\n    ximple comes with ABSOLUTELY NO WARRANTY.\n    This is free software, and you are welcome to redistribute it under certain\n    conditions. See the LICENSE file for details.\n\n    Visit https://github.com/lucabaldini/ximpol/wiki for more information.\n')
+    print('    Copyright (C) 2015, the ximpol team.\n\n    ximple comes with ABSOLUTELY NO WARRANTY.\n    This is free software, and you are welcome to redistribute it under certain\n    conditions. See the LICENSE file for details.\n\n    Visit https://github.com/lucabaldini/ximpol for more information.\n')
 
 
 

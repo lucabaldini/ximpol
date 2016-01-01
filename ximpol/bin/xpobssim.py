@@ -1,13 +1,6 @@
 #!/usr/bin/env python
-# *********************************************************************
-# * Copyright (C) 2015                                                *
-# * Nicola Omodei (nicola.omodei@stanford.edu)                        *
-# * Melissa Pesce-Rollins (melissa.pesce.rollins@pi.infn.it)          *
-# * Luca Baldini (luca.baldini@pi.infn.it)                            *
-# *                                                                   *
-# * For the license terms see the file LICENSE, distributed           *
-# * along with this software.                                         *
-# *********************************************************************
+#
+# Copyright (C) 2015, the ximpol team.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU GengReral Public License as published by
@@ -24,9 +17,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-
 __description__ = 'Run the ximpol fast simulator'
-
 
 
 import time
@@ -47,10 +38,9 @@ from ximpol.utils.xChrono import xChrono
 from ximpol.__logging__ import logger, startmsg
 
 
-
-def xobbsim(output_file_path, duration, start_time=0., time_steps=100,
+def xpobssim(output_file_path, duration, start_time=0., time_steps=100,
             random_seed=0):
-    """ ximpol fast simulator.
+    """ximpol fast simulator.
     """
     chrono = xChrono()
     logger.info('Setting the random seed to %d...' % random_seed)
@@ -65,14 +55,14 @@ def xobbsim(output_file_path, duration, start_time=0., time_steps=100,
     emin=1
     emax=10
     phi0= 44.
-    
+
     C=lambda t: 10.0*(1.0+scipy.cos(t))
     gamma=lambda t: -2.1
-    
+
     mySource=xSource('Crab')
     ra0,dec0=mySource.getRADec()
     spectrum=xSpectralComponent('spectrum')
-    
+
     times  = scipy.linspace(start_time, stop_time, time_steps)
     flux   = []
     events = []
@@ -82,12 +72,12 @@ def xobbsim(output_file_path, duration, start_time=0., time_steps=100,
         f   = interpolate.UnivariateSpline(x,y,k=1,s=0)
         flux.append(f.integral(emin,emax))
         pass
-    
+
     lc   = interpolate.UnivariateSpline(times,flux,k=1,s=0)
     logger.info('Done %s.' % chrono)
     logger.info('Extracting the event times...')
     S = xGenerator(lc,lc.integral)
-    S.setMinMax(start_time,stop_time)    
+    S.setMinMax(start_time,stop_time)
     events_times = S.generate()
     logger.info('Done %s, %d events generated.' % (chrono, len(events_times)))
 
@@ -96,10 +86,10 @@ def xobbsim(output_file_path, duration, start_time=0., time_steps=100,
     for i,event_time in enumerate(events_times):
         _event      = xEvent()
         _event.time = event_time
-        
+
         spectrum.powerlaw(C(event_time),gamma(event_time))
         energy_array,count_spectrum_array =  aeff.convolve(spectrum)
-        
+
         f   = interpolate.UnivariateSpline(energy_array,count_spectrum_array,k=1,s=0)
         S   = xGenerator(f,f.integral)
         S.setMinMax(emin,emax)
@@ -107,7 +97,7 @@ def xobbsim(output_file_path, duration, start_time=0., time_steps=100,
         _ra,_dec=psf.smear(ra0,dec0)
         _event.setRADec(_ra,_dec)
         _event.angle= modulation.extract(_event.energy, phi0)
-        event_list.fill(_event)        
+        event_list.fill(_event)
         pass
     logger.info('Done %s.' % chrono)
     logger.info('Writing output file %s...' % output_file_path)
@@ -138,7 +128,7 @@ def xobbsim(output_file_path, duration, start_time=0., time_steps=100,
     plt.xlabel('Energy [keV]')
     logger.info('All done %s!' % chrono)
     plt.show()
-    
+
     #spectrum.plot(scipy.linspace(1,10,100))
     #plt.xscale('log')
     #plt.yscale('log')
@@ -164,5 +154,5 @@ if __name__=='__main__':
                         help='the random seed for the simulation')
     args = parser.parse_args()
     startmsg()
-    xobbsim(args.output_file, args.duration, args.start_time,
+    xpobssim(args.output_file, args.duration, args.start_time,
             args.time_steps, args.random_seed)
