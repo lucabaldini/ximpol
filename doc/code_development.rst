@@ -102,8 +102,8 @@ An example module, illustrating the basic guidelines, is available
 <https://github.com/lucabaldini/ximpol/tree/master/ximpol/utils/codestyle.py>`_.
 
 
-Documenting code
-----------------
+Documenting the code
+--------------------
 
 We use `sphinx <http://sphinx-doc.org/#>`_ to generate the ximpol
 `documentation <http://ximpol.readthedocs.org/en/latest/index.html>`_ (which
@@ -138,4 +138,17 @@ The actual documentation for the latest build is hosted on `Read the Docs
 <http://ximpol.readthedocs.org/en/latest/index.html>`_. You don't really have to
 worry about, as that is being automatically re-built from scratch every time a
 code change is pushed to out github repository. Cool, isn't it?
+
+
+Unit testing
+------------
+
+We use the Python `unittest <https://docs.python.org/2/library/unittest.html>`_
+module for the purpose (the documentation includes a whole bunch of good
+examples). While, again, we'll never be religious about this, it'd be great
+to provide as many unit tests as we can, while we develop code.
+
+We collect the unit tests in the `test` folder, and `test/spline.py
+<https://github.com/lucabaldini/ximpol/blob/master/ximpol/test/spline.py>`_ is
+a working example.
 
