@@ -1,10 +1,6 @@
 #!/usr/bin/env python
-# *********************************************************************
-# * Copyright (C) 2015 Luca Baldini (luca.baldini@pi.infn.it)         *
-# *                                                                   *
-# * For the license terms see the file LICENSE, distributed           *
-# * along with this software.                                         *
-# *********************************************************************
+#
+# Copyright (C) 2015, the ximpol team.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU GengReral Public License as published by
@@ -21,18 +17,16 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-
 import os
 import numpy
 from astropy.io import fits
 
 import ximpol.__utils__
-from ximpol.__package__ import XIMPOL_DETECTOR, XIMPOL_IRF
+from ximpol import XIMPOL_DETECTOR, XIMPOL_IRF
 from ximpol.__logging__ import logger
 from ximpol.utils.xFunction1dTxtFile import xFunction1dTxtFile
 from ximpol.fileio.xFitsDataFormatArf import xFitsDataFormatArf
 from ximpol.detector.__XipeBaseline__ import *
-
 
 
 def mkXipeArf():
@@ -71,7 +65,6 @@ def mkXipeArf():
     hdulist.writeto(outputFilePath)
     logger.info('Done, bye!')
     return outputFilePath
-
 
 
 if __name__ == '__main__':

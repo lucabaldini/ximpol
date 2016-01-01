@@ -1,8 +1,26 @@
 #!/usr/bin/env python
+#
+# Copyright (C) 2015, the ximpol team.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU GengReral Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+
 import os
 import astropy
 from astropy.io import fits
-from ximpol.__package__ import XIMPOL_IRF
+from ximpol import XIMPOL_IRF
 import scipy as sp
 from scipy import interpolate
 from ximpol.srcmodel.xGenerator import xGenerator
@@ -17,12 +35,12 @@ class xModulation():
         self.MODFRESP=data.field('MODFRESP')
         self.CentralEnergy=(self.ENERG_HI+self.ENERG_LO)*0.5
         self.modulation_spline = interpolate.UnivariateSpline(self.CentralEnergy,self.MODFRESP,k=1,s=0)
-        
+
         pass
-    
+
     def __call__(self,x):
         pass
-        
+
     def plot(self,**kwargs):
         from matplotlib import pyplot as plt
         plt.plot(self.CentralEnergy,self.MODFRESP,**kwargs)
@@ -37,9 +55,8 @@ class xModulation():
         S.setMinMax(0,2*sp.pi)
         return S.generate(1)[0]
 
-# TEST
 
-def test():
+def main():
     from scipy import random
     modulation=xModulation()
     modulation.plot()
@@ -55,7 +72,7 @@ def test():
     #plt.plot(x,f(x))
     #S=xSimulator(f,f.integral)
     #S.setMinMax(1,10)
-    
+
     #S.generate()
     ##S.plot()
     #plt.xscale('log')
@@ -63,5 +80,4 @@ def test():
     #S.nEvents
 
 if __name__=='__main__':
-    test()
-    
+    main()

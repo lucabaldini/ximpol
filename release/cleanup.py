@@ -22,7 +22,7 @@ import os
 import shutil
 from ximpol.__logging__ import logger
 from ximpol.__utils__ import cmd
-from ximpol.__package__ import *
+from ximpol import *
 
 
 def cleanup(folder_path, patterns = ['*~', '*.pyc', '*.pyo']):

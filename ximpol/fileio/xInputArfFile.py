@@ -1,10 +1,6 @@
 #!/usr/bin/env python
-# *********************************************************************
-# * Copyright (C) 2015 Luca Baldini (luca.baldini@pi.infn.it)         *
-# *                                                                   *
-# * For the license terms see the file LICENSE, distributed           *
-# * along with this software.                                         *
-# *********************************************************************
+#
+# Copyright (C) 2015, the ximpol team.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU GengReral Public License as published by
@@ -21,12 +17,10 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-
 from astropy.io import fits
 
 from ximpol.fileio.xInputFileBase import xInputFileBase
 from ximpol.__logging__ import logger
-
 
 
 class xInputArfFile(xInputFileBase):
@@ -58,18 +52,15 @@ class xInputArfFile(xInputFileBase):
         """
         """
         return self.__HDUList['SPECRESP']
-        
-        
 
- 
+
 def test():
     """ Test code.
     """
     import os
-    from ximpol.__package__ import XIMPOL_IRF
+    from ximpol import XIMPOL_IRF
     filePath = os.path.join(XIMPOL_IRF, 'fits', 'xipe_baseline.arf')
     f = xInputArfFile(filePath)
-    
 
 
 if __name__ == '__main__':

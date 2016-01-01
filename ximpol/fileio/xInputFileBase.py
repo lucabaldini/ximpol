@@ -1,10 +1,6 @@
 #!/usr/bin/env python
-# *********************************************************************
-# * Copyright (C) 2015 Luca Baldini (luca.baldini@pi.infn.it)         *
-# *                                                                   *
-# * For the license terms see the file LICENSE, distributed           *
-# * along with this software.                                         *
-# *********************************************************************
+#
+# Copyright (C) 2015, the ximpol team.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU GengReral Public License as published by
@@ -21,16 +17,14 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-
 import os
 
 from ximpol.__logging__ import logger, abort
 
 
-
 class xInputFileBase:
 
-    """ Small base class for a generic input file.
+    """Small base class for a generic input file.
     """
 
     def __init__(self, filePath, extension = None):
@@ -45,11 +39,8 @@ class xInputFileBase:
             abort('File is not a file :-)')
 
 
-
-def test():
-    """ Test code.
-    """
-    from ximpol.__package__ import XIMPOL_DETECTOR
+def main():
+    from ximpol import XIMPOL_DETECTOR
     filePath = os.path.join(XIMPOL_DETECTOR, 'data',
                             'aeff_optics_xipe_m4_x3.asc')
     f = xInputFileBase(filePath)
@@ -59,6 +50,5 @@ def test():
     f = xInputFileBase(XIMPOL_DETECTOR)
 
 
-
 if __name__ == '__main__':
-    test()
+    main()

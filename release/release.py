@@ -1,10 +1,6 @@
 #!/usr/bin/env python
-# *********************************************************************
-# * Copyright (C) 2015 Luca Baldini (luca.baldini@pi.infn.it)         *
-# *                                                                   *
-# * For the license terms see the file LICENSE, distributed           *
-# * along with this software.                                         *
-# *********************************************************************
+#
+# * Copyright (C) 2015, the ximpol team.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,13 +22,12 @@ import os
 import ximpol.__utils__ as __utils__
 
 from ximpol.__logging__ import logger
-from ximpol.__package__ import XIMPOL_VERSION_FILE_PATH, version_info,\
+from ximpol import XIMPOL_VERSION_FILE_PATH, version_info,\
     XIMPOL_RELEASE_NOTES_PATH, XIMPOL_DIST, XIMPOL_ROOT
 
 
 BUILD_DATE = time.strftime('%a, %d %b %Y %H:%M:%S %z')
 TAG_MODES = ['major', 'minor', 'patch']
-
 
 
 def updateVersionInfo(mode, dryRun = False):

@@ -1,10 +1,6 @@
 #!/usr/bin/env python
-# *********************************************************************
-# * Copyright (C) 2015 Luca Baldini (luca.baldini@pi.infn.it)         *
-# *                                                                   *
-# * For the license terms see the file LICENSE, distributed           *
-# * along with this software.                                         *
-# *********************************************************************
+#
+# Copyright (C) 2015, the ximpol team.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU GengReral Public License as published by
@@ -21,7 +17,6 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-
 import os
 import numpy
 
@@ -29,10 +24,9 @@ from ximpol.utils.xFunction1d import xFunction1d
 from ximpol.__logging__ import logger, abort
 
 
-
 class xFunction1dTxtFile(xFunction1d):
 
-    """ Function interpolating values read from an ascii file.
+    """Function interpolating values read from an ascii file.
     """
 
     def __init__(self, filePath, kind, xmin = -numpy.inf, xmax = numpy.inf):
@@ -48,10 +42,8 @@ class xFunction1dTxtFile(xFunction1d):
 
 
 
-def test():
-    """ Test code.
-    """
-    from ximpol.__package__ import XIMPOL_UTILS
+def main():
+    from ximpol import XIMPOL_UTILS
     from ximpol.__utils__ import rm
     filePath = os.path.join(XIMPOL_UTILS, 'tmp.txt')
     x = numpy.linspace(0, 2*numpy.pi, 20)
@@ -67,4 +59,4 @@ def test():
 
 
 if __name__ == '__main__':
-    test()
+    main()
