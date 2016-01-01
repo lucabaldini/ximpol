@@ -22,6 +22,7 @@ of docstrings for sphinx.
 
 See `PEP 0008 <https://www.python.org/dev/peps/pep-0008/>`_ for more details.
 (And note that the module name is short, descriptive, and all lowercase).
+Also note we use the Napoleon sphinx extension with the Numpy style.
 """
 
 
@@ -38,8 +39,8 @@ ELECTRON_MASS = 0.510998910 # MeV
 def square(x):
     """Return the square of x.
 
-    Parameters
-    ----------
+    Args
+    ----
     x : number or array
         The input x value (can be either a numeric type or an array).
 
@@ -65,10 +66,12 @@ class xSampleClass:
 
     """An example class, doing nothing useful.
 
-    Parameters
-    ----------
+    Args
+    ----
     name : string
-           The instance name.
+        The instance name.
+    description : string
+        An optional description.
 
     Examples
     --------
@@ -78,10 +81,14 @@ class xSampleClass:
     >>> print(c1 + c2)
     """
 
-    def __init__(self, name):
+    def __init__(self, name, description=None):
         """Constructor.
+
+        Note there are no spaces around the `=` sign for the default parameter
+        value.
         """
         self.name = name
+        self.description = description
 
     def __add__(self, other):
         """Implementation of the `+` operator.
@@ -93,11 +100,6 @@ class xSampleClass:
 
     def __str__(self):
         """String formatting.
-
-        Returns
-        -------
-        string
-            The object name.
         """
         return self.name
 

@@ -95,7 +95,7 @@ A short recap of the most salient guidelines:
   `lambda` expression directly to an identifier. 
 
 An example module, illustrating the basic guidelines, is available
-`here <https://github.com/lucabaldini/ximpol/tree/master/doc/codestyle.py>`_.
+`here on github <https://github.com/lucabaldini/ximpol/tree/master/ximpol/utils/codestyle.py>`_.
 
 
 Documenting code
