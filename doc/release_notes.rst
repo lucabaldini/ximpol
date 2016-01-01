@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.0.12) - Fri, 01 Jan 2016 07:51:56 -0800*
+
 * Some more edits and additions to the documentation.
 * Module core.xInterpolatedUnivariateSpline moved to core.spline.
 * __package__.py removed, and content moved to ximol.__init__.py, with all
