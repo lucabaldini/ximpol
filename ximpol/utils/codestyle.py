@@ -104,8 +104,6 @@ class xSampleClass:
         return self.name
 
 
-
-
 if __name__ == '__main__':
     c1 = xSampleClass('hello')
     c2 = xSampleClass('world!')

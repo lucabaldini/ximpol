@@ -21,8 +21,11 @@ you will need to tell git on your machine who you are, i.e.:
 >>> git config --global user.email you@example.com
 
 
-Cloning the repository - GNU/Linux and Mac OS
----------------------------------------------
+Cloning the repository
+----------------------
+
+(This will work on GNU/Linux and MAC. We should provide instructions for
+Windows as well.)
 
 Cloning the reprository is as easy as typing
 
@@ -70,7 +73,7 @@ Coding guidelines
 
 Though we'll never be able to follow any set of coding conventions religiously,
 `PEP 0008 <https://www.python.org/dev/peps/pep-0008/>`_ is our starting point.
-A short recap of the most salient guidelines:
+Take a second to give a look to this short recap of the most salient guidelines:
 
 * Use 4 spaces for indentation level (no TABS).
 * Limit all lines to 79 characters.
@@ -95,11 +98,39 @@ A short recap of the most salient guidelines:
   `lambda` expression directly to an identifier. 
 
 An example module, illustrating the basic guidelines, is available
-`here on github <https://github.com/lucabaldini/ximpol/tree/master/ximpol/utils/codestyle.py>`_.
+`here on github
+<https://github.com/lucabaldini/ximpol/tree/master/ximpol/utils/codestyle.py>`_.
 
 
 Documenting code
 ----------------
 
 We use `sphinx <http://sphinx-doc.org/#>`_ to generate the ximpol
-`documentation <http://ximpol.readthedocs.org/en/latest/index.html>`_.
+`documentation <http://ximpol.readthedocs.org/en/latest/index.html>`_ (which
+is the same big projects like Scipy, astropy and Python itself are using).
+We use the `Napoleon
+<https://sphinxcontrib-napoleon.readthedocs.org/en/latest/>`_ extension in the
+Numpy flavor, and creating inline documentation essentially boils down to
+providing suitable docstring with the appropriate syntax. It won't take
+more than a few minutes to get aquainted to the basic rules, and the
+`codestyle
+<https://github.com/lucabaldini/ximpol/tree/master/ximpol/utils/codestyle.py>`_
+module provides a minimal working example that, compiled with sphinx, would
+be rendered `like this
+<http://ximpol.readthedocs.org/en/latest/modules/codestyle.html#module-ximpol.utils.codestyle>`_.
+
+You can compile and view the ximpol documentation locally by doing
+
+>>> cd doc
+>>> make html
+>>> htmlview _build/html/index.html
+
+which is useful to make sure everything is in order when writing and
+documenting code.
+
+The actual documentation for the latest build is hosted on `Read the Docs
+<https://readthedocs.org/>`_ at `this link
+<http://ximpol.readthedocs.org/en/latest/index.html>`_. You don't really have to
+worry about, as that is being automatically re-built from scratch every time a
+code change is pushed to out github repository. Cool, isn't it?
+
