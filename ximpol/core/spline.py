@@ -1,10 +1,6 @@
 #!/usr/bin/env python
-# *********************************************************************
-# * Copyright (C) 2015 Luca Baldini (luca.baldini@pi.infn.it)         *
-# *                                                                   *
-# * For the license terms see the file LICENSE, distributed           *
-# * along with this software.                                         *
-# *********************************************************************
+#
+# Copyright (C) 2015, the ximpol team.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU GengReral Public License as published by
@@ -21,12 +17,14 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
+"""Spline utility module, building on top of the scipy.interpolate modules.
+"""
+
 
 import numpy
 from scipy.interpolate import InterpolatedUnivariateSpline
 
 from ximpol.__logging__ import logger
-
 
 
 class xInterpolatedUnivariateSpline(InterpolatedUnivariateSpline):
@@ -44,8 +42,8 @@ class xInterpolatedUnivariateSpline(InterpolatedUnivariateSpline):
     3. sum and multiplication are supported;
     4. initialization from a text file is supported.
 
-    Parameters
-    ----------
+    Args
+    ----
     x : array or string
         Input x values (mind they are supposed to be sorted). If `x` is a
         string, it is interpreted as a path to a text file from which the
@@ -182,8 +180,8 @@ class xInterpolatedUnivariateSplineLinear(xInterpolatedUnivariateSpline):
     Note that none of the fancy interpolation parameters supported by the
     base class is used here.
 
-    Parameters
-    ----------
+    Args
+    ----
     x : array or string
         Input x values (mind they are supposed to be sorted). If `x` is a
         string, it is interpreted as a path to a text file from which the

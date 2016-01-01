@@ -1,10 +1,6 @@
 #!/usr/bin/env python
-# *********************************************************************
-# * Copyright (C) 2015 Luca Baldini (luca.baldini@pi.infn.it)         *
-# *                                                                   *
-# * For the license terms see the file LICENSE, distributed           *
-# * along with this software.                                         *
-# *********************************************************************
+#
+# Copyright (C) 2015, the ximpol team.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU GengReral Public License as published by
@@ -23,16 +19,15 @@
 
 import unittest
 
-from ximpol.core.xInterpolatedUnivariateSpline import *
+from ximpol.core.spline import *
 from ximpol.detector.__XipeBaseline__ import OPTS_AEFF_FILE_PATH
 from ximpol.__logging__ import suppress_logging
 suppress_logging()
 
 
-
 class testInterpolatedUnivariateSplineLinear(unittest.TestCase):
 
-    """ Unit test for xInterpolatedUnivariateSplineLinear.
+    """Unit test for xInterpolatedUnivariateSplineLinear.
     """
 
     @classmethod
