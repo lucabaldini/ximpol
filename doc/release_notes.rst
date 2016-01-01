@@ -2,6 +2,7 @@ Release notes
 =============
 
 * Some more edits and additions to the documentation.
+* Module core.xInterpolatedUnivariateSpline moved to core.spline.
 
 
 *ximpol (0.0.11) - Thu, 31 Dec 2015 17:19:37 -0800*
