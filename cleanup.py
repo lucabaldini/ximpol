@@ -1,10 +1,6 @@
 #!/usr/bin/env python
-# *********************************************************************
-# * Copyright (C) 2015 Luca Baldini (luca.baldini@pi.infn.it)         *
-# *                                                                   *
-# * For the license terms see the file LICENSE, distributed           *
-# * along with this software.                                         *
-# *********************************************************************
+#
+# * Copyright (C) 2015, the ximpol team.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU GengReral Public License as published by
@@ -25,11 +21,13 @@ import glob
 import os
 import shutil
 from ximpol.__logging__ import logger
+from ximpol.__utils__ import cmd
 from ximpol.__package__ import *
 
 
 def cleanup(folder_path, patterns = ['*~', '*.pyc', '*.pyo']):
-    """Cleanup a folder."""
+    """Cleanup a folder.
+    """
     logger.info('Cleaning up folder %s...' % folder_path)
     fileList = []
     for pattern in patterns:
@@ -39,7 +37,8 @@ def cleanup(folder_path, patterns = ['*~', '*.pyc', '*.pyo']):
         os.remove(filePath)
 
 def cleanup_dist():
-    """Cleanup the distribution folder."""
+    """Cleanup the distribution folder.
+    """
     if os.path.exists(XIMPOL_DIST):
         logger.info('Removing %s altogether...' % XIMPOL_DIST)
         shutil.rmtree(XIMPOL_DIST)
@@ -47,6 +46,11 @@ def cleanup_dist():
     if os.path.exists(filePath):
         logger.info('Removing %s...' % filePath)
         os.remove(filePath)
+
+def cleanup_doc():
+    """Cleanup the doc folder.
+    """
+    cmd('cd %s; make clean' % XIMPOL_DOC)
 
 
 
@@ -67,3 +71,4 @@ if __name__ == '__main__':
                         XIMPOL_UTILS]:
         cleanup(folder_path)
     cleanup_dist()
+    cleanup_doc()
