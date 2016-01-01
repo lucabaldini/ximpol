@@ -111,11 +111,16 @@ is the same big projects like Scipy, astropy and Python itself are using).
 We use the `Napoleon
 <https://sphinxcontrib-napoleon.readthedocs.org/en/latest/>`_ extension in the
 Numpy flavor, and creating inline documentation essentially boils down to
-providing suitable docstring with the appropriate syntax. It won't take
-more than a few minutes to get aquainted to the basic rules, and the
-`codestyle
+
+* providing suitable docstrings with the appropriate syntax in the source files;
+* creating suitable .rst files in the `doc/modules` folder.
+
+It won't take more than a few minutes to get aquainted to the basic rules,
+and the `codestyle
 <https://github.com/lucabaldini/ximpol/tree/master/ximpol/utils/codestyle.py>`_
-module provides a minimal working example that, compiled with sphinx, would
+module, along with its fellow `modules/codestyle.rst
+<https://raw.githubusercontent.com/lucabaldini/ximpol/master/doc/modules/codestyle.rst>`_
+file, provide a minimal working example that, compiled with sphinx, would
 be rendered `like this
 <http://ximpol.readthedocs.org/en/latest/modules/codestyle.html#module-ximpol.utils.codestyle>`_.
 
