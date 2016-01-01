@@ -205,16 +205,12 @@ class xInterpolatedUnivariateSplineLinear(xInterpolatedUnivariateSpline):
                                                1, xmin, xmax)
 
 
-
-def test():
-    """ Test code.
-    """
+def main():
     x = numpy.linspace(0, 2*numpy.pi, 20)
     y = numpy.sin(x)
     f1 = xInterpolatedUnivariateSplineLinear(x, y)
     f1.plot()
 
 
-
 if __name__ == '__main__':
-    test()
+    main()

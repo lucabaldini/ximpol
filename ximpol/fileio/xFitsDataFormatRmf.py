@@ -1,12 +1,6 @@
 #!/usr/bin/env python
-# *********************************************************************
-# * Copyright (C) 2015 Luca Baldini (luca.baldini@pi.infn.it)         *
-# * Copyright (C) 2015 Melissa Pesce-Rollins                          *
-# *              (melissa.pesce.rollins@pi.infn.it)                   *
-# *                                                                   *
-# * For the license terms see the file LICENSE, distributed           *
-# * along with this software.                                         *
-# *********************************************************************
+#
+# * Copyright (C) 2015, the ximpol team.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU GengReral Public License as published by
@@ -23,15 +17,13 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-
 from ximpol.fileio.xFitsDataFormatBase import xFitsDataFormatBase
 from ximpol.__logging__ import logger
 
 
-
 class xFitsDataFormatRmf(xFitsDataFormatBase):
 
-    """ Specification for the arf data format.
+    """Specification for the arf data format.
     """
 
     PRIMARY_HEADER_SPECS = [
@@ -86,34 +78,32 @@ class xFitsDataFormatRmf(xFitsDataFormatBase):
     ]
 
     ERESRESP_EBOUNDS_HEADER_SPECS = [
-        ('XTENSION',   'BINTABLE',' binary table extension'),                     
-        ('BITPIX'  ,   8        ,'array data type'),                              
+        ('XTENSION',   'BINTABLE',' binary table extension'),
+        ('BITPIX'  ,   8        ,'array data type'),
         ('NAXIS'   ,   2        ,' number of array dimensions'),
-        ('NAXIS1'  ,  10        , 'length of dimension 1'),                       
-        ('NAXIS2' ,  1024       ,' length of dimension 2'),                       
-        ('PCOUNT' ,   0        ,' number of group parameters'),                   
-        ('GCOUNT',    1        , 'number of groups'),                             
-        ('TFIELDS',   3        ,' number of table fields'),                       
-        ('TTYPE1', 'CHANNEL '  ,'Channel'   ),                                    
-        ('TFORM1',  'I '      ,  'total number of channel subsets'),              
-        ('TTYPE2' ,'E_MIN  ' , 'Label for field 2'),                      
-        ('TFORM2',  'E' , 'data format of field: 4-byte REAL'),          
-        ('TUNIT2', 'keV ', 'physical unit of field'),                             
-        ('TTYPE3',  'E_MAX',  'data format of field: 4-byte REAL'),               
-        ('TFORM3', 'E ', 'data format of field: 4-byte REAL'),                    
+        ('NAXIS1'  ,  10        , 'length of dimension 1'),
+        ('NAXIS2' ,  1024       ,' length of dimension 2'),
+        ('PCOUNT' ,   0        ,' number of group parameters'),
+        ('GCOUNT',    1        , 'number of groups'),
+        ('TFIELDS',   3        ,' number of table fields'),
+        ('TTYPE1', 'CHANNEL '  ,'Channel'   ),
+        ('TFORM1',  'I '      ,  'total number of channel subsets'),
+        ('TTYPE2' ,'E_MIN  ' , 'Label for field 2'),
+        ('TFORM2',  'E' , 'data format of field: 4-byte REAL'),
+        ('TUNIT2', 'keV ', 'physical unit of field'),
+        ('TTYPE3',  'E_MAX',  'data format of field: 4-byte REAL'),
+        ('TFORM3', 'E ', 'data format of field: 4-byte REAL'),
         ('TUNIT3', 'keV ',  'physical unit of field'),
         ('EXTNAME', 'EBOUNDS ',' Name of this binary table extension'),
         ('CHANTYPE', 'PI  ',' Channel type'),
         ('TELESCOP', None      , 'mission/satellite name'),
         ('INSTRUME', None      , 'instrument/detector name'),
-        ('CONTENT', 'XRT Response Matrix' ,' File content'),                      
+        ('CONTENT', 'XRT Response Matrix' ,' File content'),
         ('HDUCLASS','OGIP    ' ,' Format conforms to OGIP/GSFC conventions'),
-        ('HDUCLAS1', 'RESPONSE', 'Extension contains response data  '),           
+        ('HDUCLAS1', 'RESPONSE', 'Extension contains response data  '),
         ('HDUCLAS2','EBOUNDS ',' Extension contains EBOUNDS'),
         ('DETCHANS',   1024 , 'Total number of detector channels')
     ]
-
-
 
     ERESRESP_DATA_SPECS = [
         ('ENERG_LO', 'E'),
@@ -137,7 +127,7 @@ class xFitsDataFormatRmf(xFitsDataFormatBase):
         """
         specs = xFitsDataFormatRmf.PRIMARY_HEADER_SPECS
         return xFitsDataFormatBase.header(specs, comments, **kwargs)
-    
+
     @staticmethod
     def eresrespHeader(comments = [], **kwargs):
         """
@@ -152,7 +142,7 @@ class xFitsDataFormatRmf(xFitsDataFormatBase):
         specs = xFitsDataFormatRmf.ERESRESP_EBOUNDS_HEADER_SPECS
         return xFitsDataFormatBase.header(specs, comments, **kwargs)
 
-    
+
     @staticmethod
     def eresrespColumns(arrays, **kwargs):
         """
@@ -168,13 +158,8 @@ class xFitsDataFormatRmf(xFitsDataFormatBase):
         specs = xFitsDataFormatRmf.ERESEBOUNDS_DATA_SPECS
         return xFitsDataFormatBase.columns(specs, arrays, **kwargs)
 
-     
 
-
-
-def test():
-    """ Test code.
-    """
+def main():
     logger.info('Creating .rmf PRIMARY header...')
     p = xFitsDataFormatRmf.primaryHeader()
     print(repr(p))
@@ -185,6 +170,4 @@ def test():
 
 
 if __name__ == '__main__':
-    test()
-    
-    
+    main()

@@ -1,10 +1,6 @@
 #!/usr/bin/env python
-# *********************************************************************
-# * Copyright (C) 2015 Luca Baldini (luca.baldini@pi.infn.it)         *
-# *                                                                   *
-# * For the license terms see the file LICENSE, distributed           *
-# * along with this software.                                         *
-# *********************************************************************
+#
+# Copyright (C) 2015, the ximpol team.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU GengReral Public License as published by
@@ -21,14 +17,12 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-
 from ximpol.io.xOutputFileBase import xOutputFileBase
-
 
 
 class xOutputFitsFile(xOutputFileBase):
 
-    """ Class wrapping an output fits file.
+    """Class wrapping an output fits file.
     """
 
     def __init__(self, filePath):
@@ -37,13 +31,9 @@ class xOutputFitsFile(xOutputFileBase):
         xOutputFileBase.__init__(self, filePath)
 
 
-
-def test():
-    """ Test code.
-    """
+def main():
     pass
 
 
-
 if __name__ == '__main__':
-    test()
+    main()

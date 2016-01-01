@@ -1,10 +1,6 @@
 #!/usr/bin/env python
-# *********************************************************************
-# * Copyright (C) 2015 Luca Baldini (luca.baldini@pi.infn.it)         *
-# *                                                                   *
-# * For the license terms see the file LICENSE, distributed           *
-# * along with this software.                                         *
-# *********************************************************************
+#
+# Copyright (C) 2015, the ximpol team.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU GengReral Public License as published by
@@ -21,17 +17,15 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-
 import time
 from astropy.io import fits
 
 from ximpol.__version__ import TAG
 
 
-
 class xFitsDataFormatBase:
 
-    """ Basic interface to a generic set of specifications for writing out
+    """Basic interface to a generic set of specifications for writing out
     fits files.
     """
 
@@ -70,10 +64,7 @@ class xFitsDataFormatBase:
         return fits.ColDefs(cols)
 
 
-
-def test():
-    """ Test code.
-    """
+def main():
     specs = [
         ('SIMPLE'  , True      , 'file does conform to FITS standard'),
         ('BITPIX'  , -32       , 'number of bits per data pixel'),
@@ -90,6 +81,5 @@ def test():
     print(repr(h))
 
 
-
 if __name__ == '__main__':
-    test()
+    main()

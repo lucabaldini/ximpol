@@ -1,10 +1,6 @@
 #!/usr/bin/env python
-# *********************************************************************
-# * Copyright (C) 2015 Luca Baldini (luca.baldini@pi.infn.it)         *
-# *                                                                   *
-# * For the license terms see the file LICENSE, distributed           *
-# * along with this software.                                         *
-# *********************************************************************
+#
+# * Copyright (C) 2015, the ximpol team.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU GengReral Public License as published by
@@ -21,7 +17,6 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-
 import numpy
 import scipy.interpolate
 import scipy.integrate
@@ -29,10 +24,9 @@ import scipy.integrate
 from ximpol.__logging__ import logger
 
 
-
 def optimizegrd(x, y, rtol = 0.01, atol = None):
     """ Optimize the sampling grid for a function.
-        
+
     TODO: this is not very clever and I am sure we could make it better.
     """
     atol = atol or abs(min(y))
@@ -116,7 +110,7 @@ class xFunction1d(scipy.interpolate.interp1d):
 
     def xmax(self):
         """ Return the maximum of the function support.
-        
+
         (Since the x array is sorted, we just return its last element).
         """
         return self.x[-1]
@@ -153,11 +147,8 @@ class xFunction1d(scipy.interpolate.interp1d):
         plt.plot(_x, _y, '-', self.x, self.y, 'o')
         plt.show()
 
-        
 
-def test():
-    """ Test code.
-    """
+def main():
     x = numpy.linspace(0, 2*numpy.pi, 20)
     y = numpy.sin(x)
     f1 = xFunction1d(x, y, 'linear')
@@ -171,8 +162,7 @@ def test():
     print(f2.integral(0, numpy.pi))
     print(f2.norm())
     f2.plot()
-    
 
 
 if __name__ == '__main__':
-    test()
+    main()

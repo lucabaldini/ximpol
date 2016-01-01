@@ -5,6 +5,8 @@ Release notes
 * Module core.xInterpolatedUnivariateSpline moved to core.spline.
 * __package__.py removed, and content moved to ximol.__init__.py, with all
   imports changed accordingly (issue #10).
+* Code to be executed in __main__ moved from test() to main() in all modules
+  (since the test code will be in the form of unit tests).
 
 
 *ximpol (0.0.11) - Thu, 31 Dec 2015 17:19:37 -0800*

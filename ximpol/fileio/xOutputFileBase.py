@@ -1,10 +1,6 @@
 #!/usr/bin/env python
-# *********************************************************************
-# * Copyright (C) 2015 Luca Baldini (luca.baldini@pi.infn.it)         *
-# *                                                                   *
-# * For the license terms see the file LICENSE, distributed           *
-# * along with this software.                                         *
-# *********************************************************************
+#
+# Copyright (C) 2015, the ximpol team.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU GengReral Public License as published by
@@ -21,31 +17,25 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-
 import os
 
 from ximpol.__logging__ import logger, abort
 
 
-
 class xOutputFileBase:
 
-    """ Small base class for a generic input file.
+    """Small base class for a generic input file.
     """
 
     def __init__(self, filePath):
         """ Constructor.
         """
         logger.info('Opening output file %s...' % filePath)
- 
 
 
-def test():
-    """ Test code.
-    """
+def main():
     f = xOutputFileBase('testFile')
 
 
-
 if __name__ == '__main__':
-    test()
+    main()

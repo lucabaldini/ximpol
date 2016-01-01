@@ -1,11 +1,6 @@
 #!/usr/bin/env python
-# *********************************************************************
-# * Copyright (C) 2015                                                *
-# * Luca Baldini (luca.baldini@pi.infn.it)                            *
-# *                                                                   *
-# * For the license terms see the file LICENSE, distributed           *
-# * along with this software.                                         *
-# *********************************************************************
+#
+# Copyright (C) 2015, the ximpol team.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU GengReral Public License as published by
@@ -22,18 +17,16 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-
 import time
-
 
 
 class xChrono:
 
-    """ Small chronometer class.
+    """Small chronometer class.
     """
 
     def __init__(self):
-        """ Constructor.
+        """Constructor.
 
         Note the chronometer is started unpon the instantiation of a class
         object.
@@ -41,17 +34,17 @@ class xChrono:
         self.start()
 
     def start(self):
-        """ Start the chronometer.
+        """Start the chronometer.
         """
         self.start_time = time.time()
 
     def elapsed_time(self):
-        """ Return the elapsed time.
+        """Return the elapsed time.
         """
         return time.time() - self.start_time
 
     def __call__(self):
-        """ Return the elapsed time.
+        """Return the elapsed time.
         """
         return self.elapsed_time()
 
@@ -61,10 +54,7 @@ class xChrono:
         return '[t0 + %.3f s]' % self()
 
 
-
-def test():
-    """ Test code.
-    """
+def main():
     c = xChrono()
     print(c)
     time.sleep(2)
@@ -75,4 +65,4 @@ def test():
 
 
 if __name__ == '__main__':
-    test()
+    main()

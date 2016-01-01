@@ -54,9 +54,7 @@ class xInputArfFile(xInputFileBase):
         return self.__HDUList['SPECRESP']
 
 
-def test():
-    """ Test code.
-    """
+def main():
     import os
     from ximpol import XIMPOL_IRF
     filePath = os.path.join(XIMPOL_IRF, 'fits', 'xipe_baseline.arf')
@@ -64,4 +62,4 @@ def test():
 
 
 if __name__ == '__main__':
-    test()
+    main()

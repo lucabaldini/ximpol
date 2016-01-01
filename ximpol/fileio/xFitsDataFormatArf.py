@@ -1,10 +1,6 @@
 #!/usr/bin/env python
-# *********************************************************************
-# * Copyright (C) 2015 Luca Baldini (luca.baldini@pi.infn.it)         *
-# *                                                                   *
-# * For the license terms see the file LICENSE, distributed           *
-# * along with this software.                                         *
-# *********************************************************************
+#
+# Copyright (C) 2015, the ximpol team.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU GengReral Public License as published by
@@ -21,15 +17,13 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-
 from ximpol.fileio.xFitsDataFormatBase import xFitsDataFormatBase
 from ximpol.__logging__ import logger
 
 
-
 class xFitsDataFormatArf(xFitsDataFormatBase):
 
-    """ Specification for the arf data format.
+    """Specification for the arf data format.
     """
 
     PRIMARY_HEADER_SPECS = [
@@ -82,7 +76,7 @@ class xFitsDataFormatArf(xFitsDataFormatBase):
         ('ENERG_HI', 'E'),
         ('SPECRESP', 'E')
     ]
-    
+
     @staticmethod
     def primaryHeader(comments = [], **kwargs):
         """
@@ -105,11 +99,7 @@ class xFitsDataFormatArf(xFitsDataFormatBase):
         return xFitsDataFormatBase.columns(specs, arrays, **kwargs)
 
 
-
-
-def test():
-    """ Test code.
-    """
+def main():
     logger.info('Creating .arf PRIMARY header...')
     p = xFitsDataFormatArf.primaryHeader()
     print(repr(p))
@@ -118,8 +108,5 @@ def test():
     print(repr(s))
 
 
-
 if __name__ == '__main__':
-    test()
-    
-    
+    main()
