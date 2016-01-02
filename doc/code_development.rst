@@ -116,7 +116,7 @@ Numpy flavor, and creating inline documentation essentially boils down to
 * creating suitable .rst files in the `doc/modules` folder.
 
 It won't take more than a few minutes to get aquainted to the basic rules,
-and the `codestyle
+and the `codestyle.py
 <https://github.com/lucabaldini/ximpol/tree/master/ximpol/utils/codestyle.py>`_
 module, along with its fellow `modules/codestyle.rst
 <https://raw.githubusercontent.com/lucabaldini/ximpol/master/doc/modules/codestyle.rst>`_
@@ -137,7 +137,7 @@ The actual documentation for the latest build is hosted on `Read the Docs
 <https://readthedocs.org/>`_ at `this link
 <http://ximpol.readthedocs.org/en/latest/index.html>`_. You don't really have to
 worry about, as that is being automatically re-built from scratch every time a
-code change is pushed to out github repository. Cool, isn't it?
+code change is pushed to the main github repository. Cool, isn't it?
 
 
 Unit testing
@@ -148,7 +148,9 @@ module for the purpose (the documentation includes a whole bunch of good
 examples). While, again, we'll never be religious about this, it'd be great
 to provide as many unit tests as we can, while we develop code.
 
-We collect the unit tests in the `test` folder, and `test/spline.py
+We collect the unit tests in the `test` folder; `test/codestyle.py
+<https://github.com/lucabaldini/ximpol/blob/master/ximpol/test/codestyle.py>`_
+is the simplest possible unit test, while  `test/spline.py
 <https://github.com/lucabaldini/ximpol/blob/master/ximpol/test/spline.py>`_ is
-a working example.
+an actual working example.
 
