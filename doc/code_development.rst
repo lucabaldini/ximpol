@@ -149,10 +149,10 @@ examples). While, again, we'll never be religious about this, it'd be great
 to provide as many unit tests as we can, while we develop code.
 
 We collect the unit tests in the `test` folder; `test/test_codestyle.py
-<https://github.com/lucabaldini/ximpol/blob/master/ximpol/test/codestyle.py>`_
-is the simplest possible unit test, while  `test/test_spline.py
-<https://github.com/lucabaldini/ximpol/blob/master/ximpol/test/spline.py>`_ is
-an actual working example. The file names for all the unit-testing python
+<https://github.com/lucabaldini/ximpol/blob/master/ximpol/test/test_codestyle.py>`_
+is the simplest possible unit test, while `test/test_spline.py
+<https://github.com/lucabaldini/ximpol/blob/master/ximpol/test/test_spline.py>`_
+is an actual working example. The file names for all the unit-testing python
 modules should start with `test_`, because that is the pattern that the test
 discovery will look for.
 
