@@ -115,6 +115,5 @@ class testInterpolatedUnivariateSplineLinear(unittest.TestCase):
         self.assertTrue(_delta.all() < 1e-9, 'max. diff. %.9f' % _delta.max())
 
 
-
 if __name__ == '__main__':
     unittest.main()
