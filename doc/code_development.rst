@@ -148,9 +148,9 @@ module for the purpose (the documentation includes a whole bunch of good
 examples). While, again, we'll never be religious about this, it'd be great
 to provide as many unit tests as we can, while we develop code.
 
-We collect the unit tests in the `test` folder; `test/codestyle.py
+We collect the unit tests in the `test` folder; `test/test_codestyle.py
 <https://github.com/lucabaldini/ximpol/blob/master/ximpol/test/codestyle.py>`_
-is the simplest possible unit test, while  `test/spline.py
+is the simplest possible unit test, while  `test/test_spline.py
 <https://github.com/lucabaldini/ximpol/blob/master/ximpol/test/spline.py>`_ is
 an actual working example.
 
