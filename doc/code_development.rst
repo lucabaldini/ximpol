@@ -152,5 +152,10 @@ We collect the unit tests in the `test` folder; `test/test_codestyle.py
 <https://github.com/lucabaldini/ximpol/blob/master/ximpol/test/codestyle.py>`_
 is the simplest possible unit test, while  `test/test_spline.py
 <https://github.com/lucabaldini/ximpol/blob/master/ximpol/test/spline.py>`_ is
-an actual working example.
+an actual working example. The file names for all the unit-testing python
+modules should start with `test_`, because that is the pattern that the test
+discovery will look for.
 
+To run the full suite:
+>>> cd ximpol/test
+>>> make test
