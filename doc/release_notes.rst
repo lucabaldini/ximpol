@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* Added a makefile for the unit tests, and some more documentation about it.
+
 
 *ximpol (0.0.12) - Fri, 01 Jan 2016 07:51:56 -0800*
 
