@@ -157,5 +157,6 @@ modules should start with `test_`, because that is the pattern that the test
 discovery will look for.
 
 To run the full suite:
+
 >>> cd ximpol/test
 >>> make test
