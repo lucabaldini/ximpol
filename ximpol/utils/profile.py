@@ -17,36 +17,43 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
+"""Collection of utilities for minimal code profiling.
+"""
+
+
 import time
 
 
 class xChrono:
 
     """Small chronometer class.
+
+    A chronometer essentially measures the elapsed time since it has been
+    started and is equipped to print itself to the standard output. (Note the
+    chronometer is reset unpon the instantiation of a class object.)
+
+    Examples
+    --------
+    >>> from ximpol.utils.profile import xChrono
+    >>> c = xChrono()
+    >>> # ... do something.
+    >>> print(c)
     """
 
     def __init__(self):
         """Constructor.
-
-        Note the chronometer is started unpon the instantiation of a class
-        object.
         """
-        self.start()
+        self.reset()
 
-    def start(self):
-        """Start the chronometer.
+    def reset(self):
+        """Reset the chronometer.
         """
         self.start_time = time.time()
-
-    def elapsed_time(self):
-        """Return the elapsed time.
-        """
-        return time.time() - self.start_time
 
     def __call__(self):
         """Return the elapsed time.
         """
-        return self.elapsed_time()
+        return time.time() - self.start_time
 
     def __str__(self):
         """ String formatting.
@@ -59,9 +66,8 @@ def main():
     print(c)
     time.sleep(2)
     print(c)
-    c.start()
+    c.reset()
     print(c)
-
 
 
 if __name__ == '__main__':
