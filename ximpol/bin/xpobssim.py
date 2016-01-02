@@ -34,7 +34,7 @@ from ximpol.irf.xPsf import xPsf
 from ximpol.irf.xModulation import xModulation
 from ximpol.event.xEvent import xEvent
 from ximpol.event.xEventList import xEventList
-from ximpol.utils.xChrono import xChrono
+from ximpol.utils.profile import xChrono
 from ximpol.__logging__ import logger, startmsg
 
 
