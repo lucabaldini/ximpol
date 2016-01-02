@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.0.15) - Sat, 02 Jan 2016 07:19:39 -0800*
+
 * xChrono class moved to utils.profile. Documentation and unit tests in place.
 
 
