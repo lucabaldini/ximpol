@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.0.14) - Sat, 02 Jan 2016 06:59:19 -0800*
+
 * Minor formatting fix.
 
 
