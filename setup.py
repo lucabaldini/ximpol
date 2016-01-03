@@ -22,7 +22,7 @@ import os
 import sys
 import glob
 
-from ximpol import PACKAGE_NAME, XIMPOL_BIN
+from ximpol import PACKAGE_NAME
 from ximpol.__version__ import TAG
 
 
@@ -42,7 +42,7 @@ _CLASSIFIERS = [
     'Topic :: Scientific/Engineering :: Astronomy',
     'Development Status :: 2 - Pre-Alpha'
 ]
-_SCRIPTS = glob.glob(os.path.join(XIMPOL_BIN, '*.py'))
+_SCRIPTS = glob.glob('ximpol/bin/*.py')
 _DEPENDENCIES =[
     'numpy',
     'matplotlib',
