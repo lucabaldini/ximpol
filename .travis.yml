@@ -9,4 +9,6 @@ notifications:
   email: false
  
 # Run test
-script: py.test
+script:
+  - export PYTHONPATH=../:$PYTHONPATH
+  - py.test
