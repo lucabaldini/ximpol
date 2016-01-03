@@ -23,6 +23,8 @@
 
 import os
 
+PACKAGE_NAME = 'ximpol'
+
 """Basic folder structure of the package.
 """
 XIMPOL_ROOT = os.path.abspath(os.path.dirname(__file__))
