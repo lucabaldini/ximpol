@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.0.16) - Sun, 03 Jan 2016 14:31:56 -0800*
+
 * ximpol is now linked to Travis CI, and the build output is shown and linked
   from the main github page.
 
