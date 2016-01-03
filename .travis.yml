@@ -8,7 +8,9 @@ sudo: false
 notifications:
   email: false
  
-# Run test
-script:
+install:
+  - pip install scipy
   - export PYTHONPATH=../:$PYTHONPATH
+
+script:
   - py.test
