@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* setup.py file added (issue #11).
+
 
 *ximpol (0.0.16) - Sun, 03 Jan 2016 14:31:56 -0800*
 
