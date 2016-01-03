@@ -160,3 +160,13 @@ To run the full suite:
 
 >>> cd ximpol/test
 >>> make test
+
+
+Continuous integration
+----------------------
+
+The ximpol github repository is linked to the
+`Travis CI <https://travis-ci.org/lucabaldini/ximpol>`_ (continuous integration)
+framework. The whole package is checked out every time a changed is pushed
+to github, and the unit tests are run. The build status is shown in the
+README file on the main ximpol github page.
