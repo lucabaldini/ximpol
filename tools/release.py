@@ -19,8 +19,9 @@
 
 import time
 import os
-import ximpol.__utils__ as __utils__
 
+from ximpol.utils.os_ import rm
+from ximpol.utils.system_ import cmd
 from ximpol.utils.logging_ import logger
 from ximpol import XIMPOL_VERSION_FILE_PATH, version_info,\
     XIMPOL_RELEASE_NOTES_PATH, XIMPOL_DIST, XIMPOL_ROOT
@@ -30,7 +31,7 @@ BUILD_DATE = time.strftime('%a, %d %b %Y %H:%M:%S %z')
 TAG_MODES = ['major', 'minor', 'patch']
 
 
-def updateVersionInfo(mode, dryRun = False):
+def updateVersionInfo(mode, dry_run=False):
     """ Update the __tag__.py module with the new tag and build date.
     """
     prevTag, prevBuildDate = version_info()
@@ -50,7 +51,7 @@ def updateVersionInfo(mode, dryRun = False):
     nextTag = '%s.%s.%s' % (version, release, patch)
     logger.info('Writing new tag (%s) to %s...' %\
                 (nextTag, XIMPOL_VERSION_FILE_PATH))
-    if not dryRun:
+    if not dry_run:
         outputFile = open(XIMPOL_VERSION_FILE_PATH, 'w')
         outputFile.writelines('TAG = \'%s\'\n' % nextTag)
         outputFile.writelines('BUILD_DATE = \'%s\'\n' % BUILD_DATE)
@@ -58,7 +59,7 @@ def updateVersionInfo(mode, dryRun = False):
     logger.info('Done.')
     return nextTag
 
-def updateReleaseNotes(tag, dryRun = False):
+def updateReleaseNotes(tag, dry_run=False):
     """ Write the new tag and build date on top of the release notes
     (which must be kept up to date during the release process).
     """
@@ -66,7 +67,7 @@ def updateReleaseNotes(tag, dryRun = False):
     logger.info('Reading in %s...' % XIMPOL_RELEASE_NOTES_PATH)
     notes = open(XIMPOL_RELEASE_NOTES_PATH).read().strip('\n').strip(title)
     logger.info('Writing out %s...' % XIMPOL_RELEASE_NOTES_PATH)
-    if not dryRun:
+    if not dry_run:
         outputFile = open(XIMPOL_RELEASE_NOTES_PATH, 'w')
         outputFile.writelines(title)
         outputFile.writelines('\n*ximpol (%s) - %s*\n\n' % (tag, BUILD_DATE))
@@ -74,7 +75,7 @@ def updateReleaseNotes(tag, dryRun = False):
         outputFile.close()
     logger.info('Done.')
 
-def tagPackage(mode, dryRun = False):
+def tagPackage(mode, dry_run=False):
     """ Tag the package.
 
     This means:
@@ -82,19 +83,17 @@ def tagPackage(mode, dryRun = False):
     (*) figure out the target tag and update the release.notes;
     (*) commit the modifications, tag and push.
     """
-    __utils__.cmd('git pull', verbose = True, dryRun = dryRun)
-    __utils__.cmd('git status', verbose = True, dryRun = dryRun)
-    tag = updateVersionInfo(mode, dryRun)
-    updateReleaseNotes(tag, dryRun)
+    cmd('git pull', verbose=True, dry_run=dry_run)
+    cmd('git status', verbose=True, dry_run=dry_run)
+    tag = updateVersionInfo(mode, dry_run)
+    updateReleaseNotes(tag, dry_run)
     msg = 'Prepare for tag %s.' % tag
-    __utils__.cmd('git commit -a -m "%s"' % msg, verbose = True,
-                  dryRun = dryRun)
-    __utils__.cmd('git push', verbose = True, dryRun = dryRun)
+    cmd('git commit -a -m "%s"' % msg, verbose=True, dry_run=dry_run)
+    cmd('git push', verbose=True, dry_run=dry_run)
     msg = 'tagging version %s' % tag
-    __utils__.cmd('git tag -a %s -m "%s"' % (tag, msg), verbose = True,
-                  dryRun = dryRun)
-    __utils__.cmd('git push --tags', verbose = True, dryRun = dryRun)
-    __utils__.cmd('git status', verbose = True, dryRun = dryRun)
+    cmd('git tag -a %s -m "%s"' % (tag, msg), verbose=True, dry_run=dry_run)
+    cmd('git push --tags', verbose = True, dry_run=dry_run)
+    cmd('git status', verbose = True, dry_run=dry_run)
 
 def distsrc():
     """ Create a plain source distribution.
@@ -104,11 +103,11 @@ def distsrc():
     distDir = os.path.join(XIMPOL_DIST, 'src')
     srcLogFilePath = 'src.log'
     # Create the distribution.
-    __utils__.cmd('python setup.py sdist --dist-dir=%s --prune' % distDir,
-                  verbose = False, logFilePath = srcLogFilePath)
+    cmd('python setup.py sdist --dist-dir=%s --prune' % distDir,
+        verbose=False, logFilePath=srcLogFilePath)
     # Cleanup.
-    __utils__.rm(srcLogFilePath)
-    __utils__.rm(os.path.join(XIMPOL_ROOT, 'MANIFEST'))
+    rm(srcLogFilePath)
+    rm(os.path.join(XIMPOL_ROOT, 'MANIFEST'))
     logger.info('Done.')
 
 

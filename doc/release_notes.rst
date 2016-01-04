@@ -6,6 +6,8 @@ Release notes
 * ximpol.__logging__ module moved to ximpol.utils.logging_ (issue #8).
   Note we use the trailing undescore to avoid name conflicts with the
   correponding module from the standard library.)
+* ximpol.__utils__ module splitted into ximpol.utils.os_ and
+  ximpol.utils.system_ (issue #8).
 
 
 *ximpol (0.0.16) - Sun, 03 Jan 2016 14:31:56 -0800*

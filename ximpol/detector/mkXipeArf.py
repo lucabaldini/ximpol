@@ -21,7 +21,7 @@ import os
 import numpy
 from astropy.io import fits
 
-import ximpol.__utils__
+from ximpol.utils.os_ import rm
 from ximpol import XIMPOL_DETECTOR, XIMPOL_IRF
 from ximpol.utils.logging_ import logger
 from ximpol.utils.xFunction1dTxtFile import xFunction1dTxtFile
@@ -35,7 +35,7 @@ def mkXipeArf():
     outputFileName = 'xipe_%s.arf' % IRF_LABEL
     outputFilePath = os.path.join(XIMPOL_IRF, 'fits', outputFileName)
     if os.path.exists(outputFilePath):
-        ximpol.__utils__.rm(outputFilePath)
+        rm(outputFilePath)
     logger.info('Loading mirror effective area...')
     optsAeff = xFunction1dTxtFile(OPTS_AEFF_FILE_PATH, 'linear',
                                   xmin = ENERGY_MIN, xmax = ENERGY_MAX)

@@ -21,7 +21,7 @@ import os
 import numpy
 from astropy.io import fits
 
-import ximpol.__utils__
+from ximpol.utils.os_ import rm
 from ximpol import XIMPOL_DETECTOR, XIMPOL_IRF
 from ximpol.logging_ import logger
 from ximpol.utils.xFunction1dTxtFile import xFunction1dTxtFile
@@ -35,7 +35,7 @@ def mkXipeMrf():
     outputFileName = 'xipe_%s.mrf' % IRF_LABEL
     outputFilePath = os.path.join(XIMPOL_IRF, 'fits', outputFileName)
     if os.path.exists(outputFilePath):
-        ximpol.__utils__.rm(outputFilePath)
+        rm(outputFilePath)
 
     logger.info('Loading modulation function...')
     gpdModf = xFunction1dTxtFile(GPD_MODF_FILE_PATH, 'linear')

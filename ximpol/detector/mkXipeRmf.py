@@ -24,7 +24,7 @@ import scipy
 from scipy import stats
 #from stats import norm
 
-import ximpol.__utils__
+from ximpol.utils.os_ import rm
 from ximpol import XIMPOL_DETECTOR, XIMPOL_IRF
 from ximpol.logging_ import logger
 from ximpol.utils.xFunction1dTxtFile import xFunction1dTxtFile
@@ -40,7 +40,7 @@ def mkXipeRmf():
     outputFileName = 'xipe_%s.rmf' % IRF_LABEL
     outputFilePath = os.path.join(XIMPOL_IRF, 'fits', outputFileName)
     if os.path.exists(outputFilePath):
-        ximpol.__utils__.rm(outputFilePath)
+        rm(outputFilePath)
 
     logger.info('Loading energy response function...')
     gpderes = xFunction1dTxtFile(GPD_ERES_FILE_PATH, 'linear')

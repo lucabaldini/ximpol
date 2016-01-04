@@ -21,7 +21,7 @@ import glob
 import os
 import shutil
 from ximpol.utils.logging_ import logger
-from ximpol.__utils__ import cmd
+from ximpol.utils.system_ import cmd
 from ximpol import *
 
 

@@ -44,7 +44,7 @@ class xFunction1dTxtFile(xFunction1d):
 
 def main():
     from ximpol import XIMPOL_UTILS
-    from ximpol.__utils__ import rm
+    from ximpol.utils.os_ import rm
     filePath = os.path.join(XIMPOL_UTILS, 'tmp.txt')
     x = numpy.linspace(0, 2*numpy.pi, 20)
     y = numpy.sin(x)
