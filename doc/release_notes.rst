@@ -2,6 +2,7 @@ Release notes
 =============
 
 * setup.py file added (issue #11).
+* release folder renamed as tools.
 
 
 *ximpol (0.0.16) - Sun, 03 Jan 2016 14:31:56 -0800*
