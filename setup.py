@@ -42,7 +42,7 @@ _CLASSIFIERS = [
     'Topic :: Scientific/Engineering :: Astronomy',
     'Development Status :: 2 - Pre-Alpha'
 ]
-_SCRIPTS = glob.glob('./ximpol/bin/*.py')
+_SCRIPTS = []#glob.glob('./ximpol/bin/*.py')
 _DEPENDENCIES =[
     'numpy',
     'matplotlib',
