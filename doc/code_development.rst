@@ -119,10 +119,10 @@ It won't take more than a few minutes to get aquainted to the basic rules,
 and the `codestyle.py
 <https://github.com/lucabaldini/ximpol/tree/master/ximpol/utils/codestyle.py>`_
 module, along with its fellow `modules/codestyle.rst
-<https://raw.githubusercontent.com/lucabaldini/ximpol/master/doc/modules/codestyle.rst>`_
+<https://raw.githubusercontent.com/lucabaldini/ximpol/master/doc/modules/utils.codestyle.rst>`_
 file, provide a minimal working example that, compiled with sphinx, would
 be rendered `like this
-<http://ximpol.readthedocs.org/en/latest/modules/codestyle.html#module-ximpol.utils.codestyle>`_.
+<http://ximpol.readthedocs.org/en/latest/modules/utils.codestyle.html#module-ximpol.utils.codestyle>`_.
 
 You can compile and view the ximpol documentation locally by doing
 
