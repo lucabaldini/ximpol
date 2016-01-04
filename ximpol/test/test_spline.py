@@ -20,7 +20,6 @@
 import unittest
 
 from ximpol.core.spline import *
-from ximpol.detector.__XipeBaseline__ import OPTS_AEFF_FILE_PATH
 from ximpol.__logging__ import suppress_logging
 suppress_logging()
 
@@ -43,9 +42,8 @@ class testInterpolatedUnivariateSplineLinear(unittest.TestCase):
         self.y2 = numpy.sin(self.x2)
         self.s1 = xInterpolatedUnivariateSplineLinear(self.x1, self.y1)
         self.s2 = xInterpolatedUnivariateSplineLinear(self.x2, self.y2)
-        self.aeff = xInterpolatedUnivariateSplineLinear(OPTS_AEFF_FILE_PATH)
 
-    def test_basic(self):
+    def test_len(self):
         """Test the basic object instantiation.
         """
         # Check we get the number of points right.
@@ -107,12 +105,6 @@ class testInterpolatedUnivariateSplineLinear(unittest.TestCase):
         _delta = abs(self.s1(_x) - _y)
         self.assertTrue(_delta < 1e-9, 'max. diff. %.9f' % _delta)
 
-    def test_text_file(self):
-        """Test interpolating from a text file.
-        """
-        _x, _y = numpy.loadtxt(OPTS_AEFF_FILE_PATH, unpack = True)
-        _delta = abs(self.aeff(_x) - _y)
-        self.assertTrue(_delta.all() < 1e-9, 'max. diff. %.9f' % _delta.max())
 
 
 if __name__ == '__main__':

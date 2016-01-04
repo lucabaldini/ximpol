@@ -44,14 +44,11 @@ class xInterpolatedUnivariateSpline(InterpolatedUnivariateSpline):
 
     Args
     ----
-    x : array or string
-        Input x values (mind they are supposed to be sorted). If `x` is a
-        string, it is interpreted as a path to a text file from which the
-        data points are loaded (do not specify `y` in this case).
+    x : array
+        Input x values (mind they are supposed to be sorted).
 
-    y : array, optional
-        Input y values (this is only optional if `x` is a file path, and
-        required otherwise).
+    y : array
+        Input y values.
 
     w : array, optional
         Weights for spline fitting (must be positive). If None (default),
@@ -98,22 +95,18 @@ class xInterpolatedUnivariateSpline(InterpolatedUnivariateSpline):
         If x is a string, it is interpreted as a path to a txt file name
         from which the data points are loaded.
         """
-        if isinstance(x, str):
-            file_path = x
-            logger.info('Reading data values from %s...' % file_path)
-            x, y = numpy.loadtxt(file_path, unpack = True)
         assert(len(x) == len(y))
         _mask = (x >= xmin)*(x <= xmax)
-        self.__x, self.__y = x[_mask], y[_mask]
+        self.x, self.y = x[_mask], y[_mask]
         InterpolatedUnivariateSpline.__init__(self, x, y, w, bbox, k)
 
-    def __xmerge(self, other):
+    def xmerge(self, other):
         """
         """
         _xmin = max(self.xmin(), other.xmin())
         _xmax = min(self.xmax(), other.xmax())
         assert(_xmax > _xmin)
-        _x = numpy.concatenate((self.x(), other.x()))
+        _x = numpy.concatenate((self.x, other.x))
         _x.sort()
         return _x
 
@@ -121,7 +114,7 @@ class xInterpolatedUnivariateSpline(InterpolatedUnivariateSpline):
         """Overloaded multiplication operator.
         """
         assert(self.__class__.__name__ == other.__class__.__name__)
-        _x = self.__xmerge(other)
+        _x = self.xmerge(other)
         _y = self(_x)*other(_x)
         return self.__class__(_x, _y)
 
@@ -129,7 +122,7 @@ class xInterpolatedUnivariateSpline(InterpolatedUnivariateSpline):
         """Overloaded sum operator.
         """
         assert(self.__class__.__name__ == other.__class__.__name__)
-        _x = self.__xmerge(other)
+        _x = self.xmerge(other)
         _y = self(_x) + other(_x)
         return self.__class__(_x, _y)
 
@@ -137,29 +130,19 @@ class xInterpolatedUnivariateSpline(InterpolatedUnivariateSpline):
         """Return the lenght of the underlying arrays used to construct the
         interpolator.
         """
-        return len(self.__x)
-
-    def x(self):
-        """Return the x array used to construct the interpolator.
-        """
-        return self.__x
-
-    def y(self):
-        """Return the y array used to construct the interpolator.
-        """
-        return self.__y
+        return len(self.x)
 
     def xmin(self):
         """Return the minimun of the x array used to construct the
         interpolator.
         """
-        return self.__x[0]
+        return self.x[0]
 
     def xmax(self):
         """Return the maximum of the x array used to construct the
         interpolator..
         """
-        return self.__x[-1]
+        return self.x[-1]
 
     def plot(self, npts=1000):
         """Plot the function.
@@ -167,7 +150,7 @@ class xInterpolatedUnivariateSpline(InterpolatedUnivariateSpline):
         import matplotlib.pyplot as plt
         _x = numpy.linspace(self.xmin(), self.xmax(), npts)
         _y = self(_x)
-        plt.plot(_x, _y, '-', self.__x, self.__y, 'o')
+        plt.plot(_x, _y, '-', self.x, self.y, 'o')
         plt.show()
 
 
@@ -182,14 +165,11 @@ class xInterpolatedUnivariateSplineLinear(xInterpolatedUnivariateSpline):
 
     Args
     ----
-    x : array or string
-        Input x values (mind they are supposed to be sorted). If `x` is a
-        string, it is interpreted as a path to a text file from which the
-        data points are loaded (do not specify `y` in this case).
+    x : array
+        Input x values (mind they are supposed to be sorted).
 
-    y : array, optional
-        Input y values (this is only optional if `x` is a file path, and
-        required otherwise).
+    y : array
+        Input y values.
 
     xmin : float, optional
         The minimum x-value to be used in the input x-array.
