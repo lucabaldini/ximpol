@@ -26,7 +26,7 @@ import os
 import sys
 import subprocess
 
-from ximpol.__logging__ import logger
+from ximpol.utils.logging_ import logger
 
 
 

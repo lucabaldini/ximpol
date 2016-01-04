@@ -19,7 +19,7 @@
 
 import os
 
-from ximpol.__logging__ import logger, abort
+from ximpol.utils.logging_ import logger, abort
 
 
 class xInputFileBase:

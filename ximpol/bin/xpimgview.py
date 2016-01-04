@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 from astropy.io import fits
 import aplpy
 
-from ximpol.__logging__ import logger, startmsg
+from ximpol.utils.logging_ import startmsg
 
 
 def xpimgview(file_path):

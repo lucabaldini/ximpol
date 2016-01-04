@@ -21,7 +21,7 @@ import os
 import numpy
 
 from ximpol.utils.xFunction1d import xFunction1d
-from ximpol.__logging__ import logger, abort
+from ximpol.utils.logging_ import logger, abort
 
 
 class xFunction1dTxtFile(xFunction1d):

@@ -24,7 +24,7 @@
 import numpy
 from scipy.interpolate import InterpolatedUnivariateSpline
 
-from ximpol.__logging__ import logger
+from ximpol.utils.logging_ import logger
 
 
 class xInterpolatedUnivariateSpline(InterpolatedUnivariateSpline):

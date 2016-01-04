@@ -20,7 +20,7 @@
 import glob
 import os
 import shutil
-from ximpol.__logging__ import logger
+from ximpol.utils.logging_ import logger
 from ximpol.__utils__ import cmd
 from ximpol import *
 
@@ -55,20 +55,22 @@ def cleanup_doc():
 
 
 if __name__ == '__main__':
-    for folder_path in [XIMPOL_ROOT,
-                        XIMPOL_BIN,
-                        XIMPOL_CORE,
-                        XIMPOL_DETECTOR,
-                        XIMPOL_DIST,
-                        XIMPOL_DOC,
-                        XIMPOL_EVENT,
-                        XIMPOL_FILEIO,
-                        XIMPOL_IRF,
-                        XIMPOL_NOTEBOOKS,
-                        XIMPOL_SRCMODEL,
-                        XIMPOL_RELEASE,
-                        XIMPOL_TEST,
-                        XIMPOL_UTILS]:
+    for folder_path in [
+            XIMPOL_ROOT,
+            XIMPOL_BIN,
+            XIMPOL_CORE,
+            XIMPOL_DETECTOR,
+            XIMPOL_DIST,
+            XIMPOL_DOC,
+            XIMPOL_EVENT,
+            XIMPOL_FILEIO,
+            XIMPOL_IRF,
+            XIMPOL_NOTEBOOKS,
+            XIMPOL_SRCMODEL,
+            XIMPOL_TEST,
+            XIMPOL_TOOLS,
+            XIMPOL_UTILS
+    ]:
         cleanup(folder_path)
     cleanup_dist()
     cleanup_doc()

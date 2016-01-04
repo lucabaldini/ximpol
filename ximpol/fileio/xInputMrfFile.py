@@ -20,7 +20,7 @@
 from astropy.io import fits
 
 from ximpol.fileio.xInputFileBase import xInputFileBase
-from ximpol.__logging__ import logger
+from ximpol.utils.logging_ import logger
 
 
 class xInputMrfFile(xInputFileBase):

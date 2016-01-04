@@ -21,7 +21,7 @@ import time
 import os
 import ximpol.__utils__ as __utils__
 
-from ximpol.__logging__ import logger
+from ximpol.utils.logging_ import logger
 from ximpol import XIMPOL_VERSION_FILE_PATH, version_info,\
     XIMPOL_RELEASE_NOTES_PATH, XIMPOL_DIST, XIMPOL_ROOT
 

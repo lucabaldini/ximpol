@@ -20,7 +20,7 @@
 import unittest
 
 from ximpol.core.spline import *
-from ximpol.__logging__ import suppress_logging
+from ximpol.utils.logging_ import suppress_logging
 suppress_logging()
 
 

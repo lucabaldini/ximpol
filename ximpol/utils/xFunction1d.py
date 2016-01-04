@@ -21,7 +21,7 @@ import numpy
 import scipy.interpolate
 import scipy.integrate
 
-from ximpol.__logging__ import logger
+from ximpol.utils.logging_ import logger
 
 
 def optimizegrd(x, y, rtol = 0.01, atol = None):

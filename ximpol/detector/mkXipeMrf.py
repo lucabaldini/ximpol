@@ -23,7 +23,7 @@ from astropy.io import fits
 
 import ximpol.__utils__
 from ximpol import XIMPOL_DETECTOR, XIMPOL_IRF
-from ximpol.__logging__ import logger
+from ximpol.logging_ import logger
 from ximpol.utils.xFunction1dTxtFile import xFunction1dTxtFile
 from ximpol.fileio.xFitsDataFormatMrf import xFitsDataFormatMrf
 from ximpol.detector.__XipeBaseline__ import *

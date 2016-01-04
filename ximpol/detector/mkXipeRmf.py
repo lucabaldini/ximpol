@@ -26,7 +26,7 @@ from scipy import stats
 
 import ximpol.__utils__
 from ximpol import XIMPOL_DETECTOR, XIMPOL_IRF
-from ximpol.__logging__ import logger
+from ximpol.logging_ import logger
 from ximpol.utils.xFunction1dTxtFile import xFunction1dTxtFile
 from ximpol.utils.xFunction1d import xFunction1d
 from ximpol.fileio.xFitsDataFormatRmf import xFitsDataFormatRmf

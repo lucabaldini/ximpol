@@ -17,14 +17,20 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
+"""Logging utilities, building on top of the python logging module.
+"""
+
 import logging
 import sys
 import time
 
+
 logger = logging.getLogger('ximpol')
 logger.setLevel(logging.DEBUG)
 
-# Terminal setting.
+
+""" Configure the main terminal logger.
+"""
 consoleHandler = logging.StreamHandler()
 consoleHandler.setLevel(logging.DEBUG)
 consoleFormatter = logging.Formatter(">>> %(message)s")
@@ -34,28 +40,23 @@ logger.addHandler(consoleHandler)
 
 def suppress_logging():
     """Set the logging level to critical.
+
+    This can be imported, e.g., in the unit tests are running in background and
+    don't need logging.
     """
     logger.setLevel(logging.CRITICAL)
 
 
 class xFileFormatter(logging.Formatter):
 
-    """ Logging file formatter class.
+    """Logging file formatter class.
     """
 
     def format(self, record):
-        """ Overloaded format method.
+        """Overloaded format method.
         """
-        #timestamp = time.strftime('%d %b %Y @ %H:%M:%S',
-        #                          time.localtime(record.created))
-        #ms = 1000*(record.created - int(record.created))
-        #timestamp = '%s.%d' % (timestamp, ms)
-        #text = '---%s (from %s.%s)\n[%s] %s\n' %\
-        #    (timestamp, record.module, record.funcName, record.levelname,
-        #     record.msg)
         text = '[%s] %s' % (record.levelname, record.msg)
         return text
-
 
 
 class xFileHandler(logging.FileHandler):
@@ -81,10 +82,10 @@ class xFileHandler(logging.FileHandler):
             logger.info('Output log file %s closed.' % self.baseFilename)
 
 
-
-
 def abort(message = ''):
-    """Abort the execution.
+    """Abort the execution (via a sys.exit) with a message.
+
+    Use this with care, and opt for custom exceptions whenever possible.
     """
     if message != '':
         message = '%s. Abort.' % message

@@ -3,6 +3,9 @@ Release notes
 
 * setup.py file added (issue #11).
 * release folder renamed as tools.
+* ximpol.__logging__ module moved to ximpol.utils.logging_ (issue #8).
+  Note we use the trailing undescore to avoid name conflicts with the
+  correponding module from the standard library.)
 
 
 *ximpol (0.0.16) - Sun, 03 Jan 2016 14:31:56 -0800*

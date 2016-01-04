@@ -35,7 +35,7 @@ from ximpol.irf.xModulation import xModulation
 from ximpol.event.xEvent import xEvent
 from ximpol.event.xEventList import xEventList
 from ximpol.utils.profile import xChrono
-from ximpol.__logging__ import logger, startmsg
+from ximpol.utils.logging_ import logger, startmsg
 
 
 def xpobssim(output_file_path, duration, start_time=0., time_steps=100,
