@@ -69,7 +69,7 @@ class xInterpolatedUnivariateSpline(InterpolatedUnivariateSpline):
 
     Examples
     --------
-    >>> from ximpol.core.xInterpolatedUnivariateSpline import xInterpolatedUnivariateSpline
+    >>> from ximpol.core.spline import xInterpolatedUnivariateSpline
     >>> x = numpy.linspace(0, 2*numpy.pi, 20)
     >>> y = numpy.sin(x)
     >>> f = xInterpolatedUnivariateSpline(x, y)
