@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.1.0) - Mon, 04 Jan 2016 16:15:30 -0800*
+
 * setup.py file added (issue #11).
 * release folder renamed as tools.
 * ximpol.__logging__ module moved to ximpol.utils.logging_ (issue #8).
