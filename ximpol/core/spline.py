@@ -85,7 +85,7 @@ class xInterpolatedUnivariateSpline(InterpolatedUnivariateSpline):
     We currently do not use either one.
     """
 
-    def __init__(self, x, y = None, w=None, bbox=[None, None], k=3,
+    def __init__(self, x, y, w=None, bbox=[None, None], k=3,
                  xmin=numpy.NINF, xmax=numpy.PINF):
         """Constructor.
 
@@ -97,18 +97,23 @@ class xInterpolatedUnivariateSpline(InterpolatedUnivariateSpline):
         """
         assert(len(x) == len(y))
         _mask = (x >= xmin)*(x <= xmax)
-        self.x, self.y = x[_mask], y[_mask]
-        InterpolatedUnivariateSpline.__init__(self, x, y, w, bbox, k)
+        self.x = x[_mask]
+        self.y = y[_mask]
+        InterpolatedUnivariateSpline.__init__(self, self.x, self.y, w, bbox, k)
 
     def xmerge(self, other):
-        """
+        """Merge the x-arrays for two class instances.
+
+        This is used to precalculate the x-array when adding or multiplying
+        splines. Note that the arrays is sorted in place and duplicates that
+        would cause nan in the interpolation are removed.
         """
         _xmin = max(self.xmin(), other.xmin())
         _xmax = min(self.xmax(), other.xmax())
         assert(_xmax > _xmin)
         _x = numpy.concatenate((self.x, other.x))
         _x.sort()
-        return _x
+        return numpy.unique(_x)
 
     def __mul__(self, other):
         """Overloaded multiplication operator.
@@ -178,7 +183,7 @@ class xInterpolatedUnivariateSplineLinear(xInterpolatedUnivariateSpline):
         The maximum x-value to be used in the input x-array.
     """
 
-    def __init__(self, x, y = None, xmin=numpy.NINF, xmax=numpy.PINF):
+    def __init__(self, x, y, xmin=numpy.NINF, xmax=numpy.PINF):
         """ Constructor.
         """
         xInterpolatedUnivariateSpline.__init__(self, x, y, None, [None, None],
