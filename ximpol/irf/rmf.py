@@ -17,63 +17,59 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-from ximpol.irf.base import xColDefsBase
+from ximpol.irf.base import xColDefsBase, OGIP_HEADER_SPECS
 
+
+"""Header specifications for the MATRIX extension of .rmf FITS files.
+"""
 
 MATRIX_HEADER_SPECS = [
-    ('TUNIT1'  , 'keV     ', 'physical unit of field'),
-    ('TUNIT2'  , 'keV     ', 'physical unit of field'),
-    ('EXTNAME' , 'MATRIX'  , 'name of this binary table extension'),
-    ('HDUCLASS', 'OGIP    ', 'format conforms to OGIP standard'),
-    ('HDUCLAS1', 'RESPONSE', 'dataset relates to spectral response'),
+    ('EXTNAME' , 'MATRIX'    , 'name of this binary table extension'),
+    ('HDUCLAS1', 'RESPONSE'  , 'dataset relates to spectral response'),
     ('HDUCLAS2', 'RSP_MATRIX', 'dataset is a spectral response matrix'),
-    ('HDUVERS' , '1.1.0   ', 'Version of format (OGIP memo CAL/GEN/92-002a)'),
-    ('HDUDOC'  , 'OGIP memos CAL/GEN/92-002 & 92-002a', 'Documents describing the form'),
-    ('DETCHANS', '1024'    , 'total number of detector channels'),
-    ('HDUVERS1', '1.0.0   ', 'Obsolete - included for backwards compatibility'),
-    ('HDUVERS2', '1.1.0   ', 'Obsolete - included for backwards compatibility'),
-    ('CHANTYPE' , 'PI '    , 'Detector Channel Type in use (PHA or PI)'),
-    ('CREATOR' , None      , 's/w task which wrote this dataset'),
-    ('RESPFILE', None      , None)
-]
+    ('DETCHANS', '1024'      , 'total number of detector channels'),
+    ('CHANTYPE', 'PI '       , 'Detector Channel Type in use (PHA or PI)')
+] + OGIP_HEADER_SPECS
 
+
+"""Header specifications for the EBOUNDS extension of .rmf FITS files.
+"""
 
 EBOUNDS_HEADER_SPECS = [
-    ('TUNIT2'  , 'keV ', 'physical unit of field'),
-    ('TUNIT3'  , 'keV ',  'physical unit of field'),
-    ('EXTNAME' , 'EBOUNDS ',' Name of this binary table extension'),
-    ('CHANTYPE', 'PI  ',' Channel type'),
+    ('EXTNAME' , 'EBOUNDS '  ,' Name of this binary table extension'),
+    ('CHANTYPE', 'PI'        ,' Channel type'),
     ('CONTENT' , 'Response Matrix' ,' File content'),
-    ('HDUCLASS', 'OGIP    ' ,' Format conforms to OGIP/GSFC conventions'),
-    ('HDUCLAS1', 'RESPONSE', 'Extension contains response data  '),
-    ('HDUCLAS2', 'EBOUNDS ',' Extension contains EBOUNDS'),
-    ('DETCHANS', 1024     , 'Total number of detector channels')
-    ]
+    ('HDUCLAS1', 'RESPONSE'  , 'Extension contains response data  '),
+    ('HDUCLAS2', 'EBOUNDS '  ,' Extension contains EBOUNDS'),
+    ('DETCHANS', 1024        , 'Total number of detector channels')
+] + OGIP_HEADER_SPECS
 
 
 
 class xColDefsMATRIX(xColDefsBase):
 
-    """
+    """ximpol.irf.base.xColDefsBase subclass for the MATRIX extension
+    of .rmf FITS files.
     """
 
     COLUMN_SPECS = [
-        ('ENERG_LO', 'E'),
-        ('ENERG_HI', 'E'),
-        ('N_GRP'   , 'I'),
-        ('F_CHAN'  , 'I'),
-        ('N_CHAN'  , 'I'),
-        ('MATRIX'  , '1024E')
+        ('ENERG_LO', 'E', 'keV'),
+        ('ENERG_HI', 'E', 'keV'),
+        ('N_GRP'   , 'I', None),
+        ('F_CHAN'  , 'I', None),
+        ('N_CHAN'  , 'I', None),
+        ('MATRIX'  , '1024E', None)
     ]
 
 
 class xColDefsEBOUNDS(xColDefsBase):
 
-    """
+    """ximpol.irf.base.xColDefsBase subclass for the EBOUNDS extension
+    of .rmf FITS files.
     """
 
     COLUMN_SPECS = [
-        ('CHANNEL', 'I'),
-        ('E_MIN'  , 'E'),
-        ('E_MAX'  , 'E')
+        ('CHANNEL', 'I', None),
+        ('E_MIN'  , 'E', 'keV'),
+        ('E_MAX'  , 'E', 'keV')
     ]
