@@ -8,6 +8,11 @@ Release notes
   correponding module from the standard library.)
 * ximpol.__utils__ module splitted into ximpol.utils.os_ and
   ximpol.utils.system_ (issue #8).
+* Code to create the instrument response functions moved to detector.xipe.
+* New spline code used when generating the response functions and old
+  xFunction1d classes removed (issue #3).
+* fileio folder removed.
+* Using the astropy facilities to generate the fits headers (issue #4).
 
 
 *ximpol (0.0.16) - Sun, 03 Jan 2016 14:31:56 -0800*
