@@ -40,7 +40,7 @@ from ximpol.irf.rmf import EBOUNDS_HEADER_SPECS, MATRIX_HEADER_SPECS,\
 proposal to ESA.
 """
 
-IRF_LABEL = 'baseline'
+IRF_NAME = 'xipe_baseline'
 
 """Paths to the relevant IRF text files.
 """
@@ -116,7 +116,7 @@ def make_arf():
     """Write the XIPE effective area response function.
     """
     logger.info('Creating XIPE effective area fits file...')
-    output_file_name = 'xipe_%s.arf' % IRF_LABEL
+    output_file_name = '%s.arf' % IRF_NAME
     output_file_path = os.path.join(XIMPOL_IRF, 'fits', output_file_name)
     if os.path.exists(output_file_path):
         rm(output_file_path)
@@ -147,7 +147,7 @@ def make_mrf():
     """Write the XIPE modulation factor response function.
     """
     logger.info('Creating XIPE effective area fits file...')
-    output_file_name = 'xipe_%s.mrf' % IRF_LABEL
+    output_file_name = '%s.mrf' % IRF_NAME
     output_file_path = os.path.join(XIMPOL_IRF, 'fits', output_file_name)
     if os.path.exists(output_file_path):
         rm(output_file_path)
@@ -177,7 +177,7 @@ def make_rmf():
     The specifications are describes at page ~15 of the following document:
     ftp://legacy.gsfc.nasa.gov/caldb/docs/memos/cal_gen_92_002/cal_gen_92_002.ps
     """
-    output_file_name = 'xipe_%s.rmf' % IRF_LABEL
+    output_file_name = '%s.rmf' % IRF_NAME
     output_file_path = os.path.join(XIMPOL_IRF, 'fits', output_file_name)
     if os.path.exists(output_file_path):
         rm(output_file_path)

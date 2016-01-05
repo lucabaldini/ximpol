@@ -34,11 +34,11 @@ MATRIX_HEADER_SPECS = [
 """Header specifications for the EBOUNDS extension of .rmf FITS files.
 """
 EBOUNDS_HEADER_SPECS = [
-    ('EXTNAME' , 'EBOUNDS '  ,' Name of this binary table extension'),
-    ('CHANTYPE', 'PI'        ,' Channel type'),
-    ('CONTENT' , 'Response Matrix' ,' File content'),
+    ('EXTNAME' , 'EBOUNDS '  , 'Name of this binary table extension'),
+    ('CHANTYPE', 'PI'        , 'Channel type'),
+    ('CONTENT' , 'Response Matrix', 'File content'),
     ('HDUCLAS1', 'RESPONSE'  , 'Extension contains response data  '),
-    ('HDUCLAS2', 'EBOUNDS '  ,' Extension contains EBOUNDS'),
+    ('HDUCLAS2', 'EBOUNDS '  , 'Extension contains EBOUNDS'),
     ('DETCHANS', 1024        , 'Total number of detector channels')
 ] + OGIP_HEADER_SPECS
 
