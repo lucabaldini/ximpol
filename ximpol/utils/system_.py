@@ -46,7 +46,7 @@ def cmd(cmd, verbose=False, log_file_path=None, log_file_mode='w',
     redirected to file instead.
     The rules are:
 
-    * if verbose is True the command output is logged onto the terminal one
+    * if verbose is True the command output is logged onto the terminal one \
     line at a time;
     * if the status code is zero we just aknowledge that before returning it;
     * upon error we try and log out both the error code and the error message.
