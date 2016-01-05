@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.1.1) - Tue, 05 Jan 2016 07:05:43 -0800*
+
 * Minor refactoring of the irf specifications, with the OGIP part now included
   in ximpol.irf.base
 * Some documentation added to the irf classes.
