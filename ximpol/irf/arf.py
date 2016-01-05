@@ -22,7 +22,6 @@ from ximpol.irf.base import xColDefsBase, OGIP_HEADER_SPECS
 
 """Header specifications for the SPECRESP extension of .arf FITS files.
 """
-
 SPECRESP_HEADER_SPECS = [
     ('EXTNAME' , 'SPECRESP', 'name of this binary table extension'),
     ('HDUCLAS1', 'RESPONSE', 'dataset relates to spectral response'),

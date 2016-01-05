@@ -22,7 +22,6 @@ from ximpol.irf.base import xColDefsBase, OGIP_HEADER_SPECS
 
 """Header specifications for the MATRIX extension of .rmf FITS files.
 """
-
 MATRIX_HEADER_SPECS = [
     ('EXTNAME' , 'MATRIX'    , 'name of this binary table extension'),
     ('HDUCLAS1', 'RESPONSE'  , 'dataset relates to spectral response'),
@@ -34,7 +33,6 @@ MATRIX_HEADER_SPECS = [
 
 """Header specifications for the EBOUNDS extension of .rmf FITS files.
 """
-
 EBOUNDS_HEADER_SPECS = [
     ('EXTNAME' , 'EBOUNDS '  ,' Name of this binary table extension'),
     ('CHANTYPE', 'PI'        ,' Channel type'),

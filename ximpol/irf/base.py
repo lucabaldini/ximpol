@@ -31,7 +31,6 @@ from ximpol.__version__ import TAG
 """Specifications for the FITS headers related to the OGIP standards.
 (These are in common to all the fits files.)
 """
-
 OGIP_HEADER_SPECS = [
     ('HDUCLASS', 'OGIP    ', 'format conforms to OGIP standard'),
     ('HDUVERS' , '1.1.0   ', 'Version of format (OGIP memo CAL/GEN/92-002a)'),
