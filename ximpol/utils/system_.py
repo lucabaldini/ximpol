@@ -76,3 +76,9 @@ def cmd(cmd, verbose=False, log_file_path=None, log_file_mode='w',
         logger.error('Full error message following...\n%s' %\
                          process.stderr.read().strip('\n'))
     return errorCode
+
+def cleanup(dir_path):
+    """ Remove all the files in a given folder.
+    """
+    file_path = os.path.join(dir_path, '*')
+    cmd('rm -rf %s' % file_path)

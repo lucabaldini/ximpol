@@ -113,9 +113,3 @@ def rmdir(dir_path):
         logger.error('Could not remove folder (%s)' %  e)
         status = 1
     return status
-
-def cleanup(dir_path):
-    """ Remove all the files in a given folder.
-    """
-    file_path = os.path.join(dir_path, '*')
-    cmd('rm -rf %s' % file_path)
