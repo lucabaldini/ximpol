@@ -157,7 +157,7 @@ class xSplineBase:
         overlay : bool, optional
             If True, the original arrays passed to the spline are overlaid.
         """
-        import matplotlib.pyplot as plt
+        from ximpol.utils.matplotlib_ import pyplot as plt
         _x = numpy.linspace(self.xmin, self.xmax, num_points)
         _y = self(_x)
         if overlay:
