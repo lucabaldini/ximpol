@@ -3,6 +3,8 @@ Release notes
 
 * Refactoring of the core.spline module, and plotting functionalities added.
 * Unit tests for the utils.os_ module added.
+* Initial import of the utils.matplotlib_ configuration module.
+* Added xEffectiveArea class to irf.arf.
 
 
 *ximpol (0.1.2) - Tue, 05 Jan 2016 08:34:30 -0800*
