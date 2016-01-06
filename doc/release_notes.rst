@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.2.0) - Wed, 06 Jan 2016 15:56:38 -0800*
+
 * Refactoring of the core.spline module, and plotting functionalities added.
 * Unit tests for the utils.os_ module added.
 * Initial import of the utils.matplotlib_ configuration module.
