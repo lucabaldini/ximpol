@@ -5,6 +5,8 @@ Release notes
 * Unit tests for the utils.os_ module added.
 * Initial import of the utils.matplotlib_ configuration module.
 * Added xEffectiveArea class to irf.arf.
+* Added xModulation factor class to mrf.arf.
+* bin/xpirfview.py application created (issue #7).
 
 
 *ximpol (0.1.2) - Tue, 05 Jan 2016 08:34:30 -0800*
