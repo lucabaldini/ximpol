@@ -57,7 +57,7 @@ class xEffectiveArea(xInterpolatedUnivariateSplineLinear):
     Arguments
     ---------
     arf_file_path : str
-        The path to the arf FITS file containing the effective area table.
+        The path to the .arf FITS file containing the effective area table.
 
     Example
     -------
@@ -95,7 +95,7 @@ def main():
     aeff = xEffectiveArea(file_path)
     x = numpy.arange(1, 10, 1)
     print(aeff(x))
-    aeff.plot()
+    aeff.plot(overlay=False)
 
 
 

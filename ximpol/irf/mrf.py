@@ -17,7 +17,12 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
+from astropy.io import fits
+
+from ximpol import XIMPOL_IRF
+from ximpol.utils.logging_ import logger
 from ximpol.irf.base import xColDefsBase, OGIP_HEADER_SPECS
+from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
 
 
 """Header specifications for the MODFRESP extension of .mrf FITS files.
@@ -40,3 +45,50 @@ class xColDefsMODFRESP(xColDefsBase):
         ('ENERG_HI', 'E', 'keV'),
         ('MODFRESP', 'E', None)
     ]
+
+
+class xModulationFactor(xInterpolatedUnivariateSplineLinear):
+
+    """Class describing the modulation factor.
+
+    The effective area is essentially a linear spline, with built-in facilities
+    for evaluation and plotting.
+
+    Arguments
+    ---------
+    mrf_file_path : str
+        The path to the .mrf FITS file containing the effective area table.
+
+    Example
+    -------
+    """
+
+    def __init__(self, mrf_file_path):
+        """Constructor.
+        """
+        logger.info('Reading modulation factor data from %s...' % mrf_file_path)
+        hdu_list = fits.open(mrf_file_path)
+        _data = hdu_list['MODFRESP'].data
+        _x = 0.5*(_data.field('ENERG_LO') + _data.field('ENERG_HI'))
+        _y = _data.field('MODFRESP')
+        hdu_list.close()
+        fmt = dict(xname='Energy', xunits='keV', yname='Modulation factor')
+        xInterpolatedUnivariateSplineLinear.__init__(self, _x, _y, **fmt)
+
+
+def main():
+    """
+    """
+    import os
+    import numpy
+
+    file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.mrf')
+    modf = xModulationFactor(file_path)
+    x = numpy.arange(1, 10, 1)
+    print(modf(x))
+    modf.plot(overlay=False)
+
+
+
+if __name__ == '__main__':
+    main()
