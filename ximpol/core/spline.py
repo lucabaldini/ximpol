@@ -22,59 +22,161 @@
 
 
 import numpy
-from scipy.interpolate import InterpolatedUnivariateSpline
+from scipy.interpolate import UnivariateSpline, InterpolatedUnivariateSpline
 
 from ximpol.utils.logging_ import logger
 
 
-class xInterpolatedUnivariateSpline(InterpolatedUnivariateSpline):
+class xSplineBase:
 
-    """Light-weight wrapper over the standard
-    `scipy.interpolate.InterpolatedUnivariateSpline
-    <http://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.InterpolatedUnivariateSpline.html>`_.
+    """Base class for all the spline classes.
 
-    The basic additional features we are implementing here are:
-
-    1. we do keep track of the original arrays passed to the interpolator;
-    2. optional xmin and xmax parameters can be passed to the constructor\
-    to limit the range over which the interpolator is defined (this is\
-    particularly useful when reading data from file);
-    3. sum and multiplication are supported;
-    4. initialization from a text file is supported.
+    The basic idea is to keep track of the original arrays passed to the
+    interpolator and to support arithmetic operations. We also allow the user
+    to supply optional arguments to control the ranges and specify names and
+    units for the quantities involved.
 
     Args
     ----
     x : array
-        Input x values (mind they are supposed to be sorted).
+        Input x values (assume to be sorted).
 
     y : array
         Input y values.
 
-    w : array, optional
-        Weights for spline fitting (must be positive). If None (default),
-        weights are all equal.
-
-    bbox : array, optional
-        2-sequence specifying the boundary of the approximation interval. If
-        None (default), ``bbox=[x[0], x[-1]]``.
-
-    k : int, optional
-        Degree of the smoothing spline. Must be 1 <= `k` <= 5.
-
     xmin : float, optional
-        The minimum x-value to be used in the input x-array.
+        The minimum x-value in the input x-array to be used.
 
     xmax : float, optional
-        The maximum x-value to be used in the input x-array.
+        The maximum x-value in the input x-array to be used.
 
-    Examples
-    --------
-    >>> from ximpol.core.spline import xInterpolatedUnivariateSpline
-    >>> x = numpy.linspace(0, 2*numpy.pi, 20)
-    >>> y = numpy.sin(x)
-    >>> f = xInterpolatedUnivariateSpline(x, y)
-    >>> a = f(1.0)
-    >>> f.plot()
+    xname: str, optional
+        The name of the quantity on the x-axis.
+
+    xunits: str, optional
+        The units for the x-axis.
+
+    yname: str, optional
+        The name of the quantity on the x-axis.
+
+    yunits: str, optional
+        The units for the y-axis.
+
+    Note
+    ----
+    This is a do-nothing class to be subclassed and not instantiated
+    directly.
+    """
+
+    def __init__(self, x, y, xmin=None, xmax=None, xname=None, xunits=None,
+                 yname=None, yunits=None):
+        """Constructor.
+        """
+        assert(len(x) == len(y))
+        # If either xmin or xmax are None, take the first/last value in the
+        # input x-array.
+        if xmin is None:
+            xmin = x[0]
+        if xmax is None:
+            xmax = x[-1]
+        # Trim the input arrays, if necessary.
+        _mask = (x >= xmin)*(x <= xmax)
+        self.x = x[_mask]
+        self.y = y[_mask]
+        # And, finally, some bookkeping.
+        self.xmin = xmin
+        self.xmax = xmax
+        self.xname = xname
+        self.xunits = xunits
+        self.yname = yname
+        self.yunits = yunits
+
+    @classmethod
+    def xmerge(self, x1, x2):
+        """Merge two arrays for the purpose of arithmetic operations with
+        class instances.
+
+        Note
+        ----
+        The resulting array is sorted in place and duplicates (that would cause
+        nan during interpolations) are removed.
+        """
+        _x = numpy.concatenate((x1, x2))
+        _x.sort()
+        _x = numpy.unique(_x)
+        return _x
+
+    def __mul__(self, other):
+        """Overloaded multiplication operator.
+        """
+        assert(self.__class__.__name__ == other.__class__.__name__)
+        _x = self.xmerge(self.x, other.x)
+        _y = self(_x)*other(_x)
+        return self.__class__(_x, _y)
+
+    def __add__(self, other):
+        """Overloaded sum operator.
+        """
+        assert(self.__class__.__name__ == other.__class__.__name__)
+        _x = self.xmerge(self.x, other.x)
+        _y = self(_x) + other(_x)
+        return self.__class__(_x, _y)
+
+    def __len__(self):
+        """Return the lenght of the arrays used to construct the spline.
+        """
+        return len(self.x)
+
+    @classmethod
+    def label(self, name, units=None):
+        """Compose an axis label given a name and some units.
+        """
+        if units is None:
+            return name
+        else:
+            return '%s [%s]' % (name, units)
+
+    def xlabel(self):
+        """Return the x-label for a plot.
+        """
+        return self.label(self.xname, self.xunits)
+
+    def ylabel(self):
+        """Return the y-label for a plot
+        """
+        return self.label(self.yname, self.yunits)
+
+    def plot(self, num_points=1000, overlay=True):
+        """Plot the spline.
+
+        Args
+        ----
+        num_points : int, optional
+            The number of sampling points to be used to draw the spline.
+
+        overlay : bool, optional
+            If True, the original arrays passed to the spline are overlaid.
+        """
+        import matplotlib.pyplot as plt
+        _x = numpy.linspace(self.xmin, self.xmax, num_points)
+        _y = self(_x)
+        if overlay:
+            plt.plot(_x, _y, '-', self.x, self.y, 'o')
+        else:
+            plt.plot(_x, _y, '-')
+        if self.xname is not None:
+            plt.xlabel(self.xlabel())
+        if self.yname is not None:
+            plt.ylabel(self.ylabel())
+        plt.show()
+
+
+class xUnivariateSpline(xSplineBase, UnivariateSpline):
+
+    """Light-weight wrapper over the scipy `UnivariateSpline
+    <http://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.UnivariateSpline.html>`_
+    class (see the corresponding documentation for the meaning of the
+    parameters passed to the constructor).
 
     Note
     ----
@@ -85,116 +187,69 @@ class xInterpolatedUnivariateSpline(InterpolatedUnivariateSpline):
     We currently do not use either one.
     """
 
-    def __init__(self, x, y, w=None, bbox=[None, None], k=3,
-                 xmin=numpy.NINF, xmax=numpy.PINF):
+    def __init__(self, x, y, w=None, bbox=[None, None], k=3, s=None, xmin=None,
+                 xmax=None, xname=None, xunits=None, yname=None, yunits=None):
         """Constructor.
-
-        The arguments are the same of those taken by the native scipy class,
-        except for xmin and xmax.
-
-        If x is a string, it is interpreted as a path to a txt file name
-        from which the data points are loaded.
         """
-        assert(len(x) == len(y))
-        _mask = (x >= xmin)*(x <= xmax)
-        self.x = x[_mask]
-        self.y = y[_mask]
+        xSplineBase.__init__(self, x, y, xmin, xmax, xname, xunits, yname,
+                             yunits)
+        UnivariateSpline.__init__(self, self.x, self.y, w, bbox, k, s)
+
+
+class xInterpolatedUnivariateSpline(xSplineBase, InterpolatedUnivariateSpline):
+
+    """Light-weight wrapper over the scipy `InterpolatedUnivariateSpline
+    <http://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.InterpolatedUnivariateSpline.html>`_
+    class (see the corresponding documentation for the meaning of the
+    parameters passed to the constructor).
+
+    Note
+    ----
+    Note that the interface to the base class has changed from numpy 0.14.
+    An `ext` argument can be passed to the constructor starting with scipy
+    0.15 to control the extrapolation behavior and a `check_finite` argument is
+    available in 0.16 to avoid `nans` in the input data.
+    We currently do not use either one.
+    """
+
+    def __init__(self, x, y, w=None, bbox=[None, None], k=3, xmin=None,
+                 xmax=None, xname=None, xunits=None, yname=None, yunits=None):
+        """Constructor.
+        """
+        xSplineBase.__init__(self, x, y, xmin, xmax, xname, xunits, yname,
+                             yunits)
         InterpolatedUnivariateSpline.__init__(self, self.x, self.y, w, bbox, k)
-
-    def xmerge(self, other):
-        """Merge the x-arrays for two class instances.
-
-        This is used to precalculate the x-array when adding or multiplying
-        splines. Note that the arrays is sorted in place and duplicates that
-        would cause nan in the interpolation are removed.
-        """
-        _xmin = max(self.xmin(), other.xmin())
-        _xmax = min(self.xmax(), other.xmax())
-        assert(_xmax > _xmin)
-        _x = numpy.concatenate((self.x, other.x))
-        _x.sort()
-        return numpy.unique(_x)
-
-    def __mul__(self, other):
-        """Overloaded multiplication operator.
-        """
-        assert(self.__class__.__name__ == other.__class__.__name__)
-        _x = self.xmerge(other)
-        _y = self(_x)*other(_x)
-        return self.__class__(_x, _y)
-
-    def __add__(self, other):
-        """Overloaded sum operator.
-        """
-        assert(self.__class__.__name__ == other.__class__.__name__)
-        _x = self.xmerge(other)
-        _y = self(_x) + other(_x)
-        return self.__class__(_x, _y)
-
-    def __len__(self):
-        """Return the lenght of the underlying arrays used to construct the
-        interpolator.
-        """
-        return len(self.x)
-
-    def xmin(self):
-        """Return the minimun of the x array used to construct the
-        interpolator.
-        """
-        return self.x[0]
-
-    def xmax(self):
-        """Return the maximum of the x array used to construct the
-        interpolator..
-        """
-        return self.x[-1]
-
-    def plot(self, npts=1000):
-        """Plot the function.
-        """
-        import matplotlib.pyplot as plt
-        _x = numpy.linspace(self.xmin(), self.xmax(), npts)
-        _y = self(_x)
-        plt.plot(_x, _y, '-', self.x, self.y, 'o')
-        plt.show()
-
 
 
 class xInterpolatedUnivariateSplineLinear(xInterpolatedUnivariateSpline):
 
-    """ximpol.core.xInterpolatedUnivariateSpline subclass implementing the
-    simplest possible linear interpolator.
+    """xInterpolatedUnivariateSplineLinear subclass implementing the simplest
+    possible linear interpolator.
 
-    Note that none of the fancy interpolation parameters supported by the
-    base class is used here.
-
-    Args
-    ----
-    x : array
-        Input x values (mind they are supposed to be sorted).
-
-    y : array
-        Input y values.
-
-    xmin : float, optional
-        The minimum x-value to be used in the input x-array.
-
-    xmax : float, optional
-        The maximum x-value to be used in the input x-array.
+    Example
+    -------
+    >>> from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
+    >>>
+    >>> x = numpy.linspace(0, 2*numpy.pi, 100)
+    >>> y = numpy.sin(x)
+    >>> s = xInterpolatedUnivariateSplineLinear(x, y, 0., numpy.pi, 'x', 'au', 'y')
+    >>> s.plot()
     """
 
-    def __init__(self, x, y, xmin=numpy.NINF, xmax=numpy.PINF):
+    def __init__(self, x, y, xmin=None, xmax=None, xname=None, xunits=None,
+                 yname=None, yunits=None):
         """ Constructor.
         """
         xInterpolatedUnivariateSpline.__init__(self, x, y, None, [None, None],
-                                               1, xmin, xmax)
+                                               1, xmin, xmax, xname, xunits,
+                                               yname, yunits)
 
 
 def main():
-    x = numpy.linspace(0, 2*numpy.pi, 20)
+    x = numpy.linspace(0, 2*numpy.pi, 100)
     y = numpy.sin(x)
-    f1 = xInterpolatedUnivariateSplineLinear(x, y)
-    f1.plot()
+    s = xInterpolatedUnivariateSplineLinear(x, y, 0., numpy.pi, 'x', 'au', 'y')
+    s.plot()
 
 
 if __name__ == '__main__':
