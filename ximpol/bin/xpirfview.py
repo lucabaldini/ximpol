@@ -27,12 +27,15 @@ import aplpy
 from ximpol.utils.logging_ import startmsg, abort
 from ximpol.irf.arf import xEffectiveArea
 from ximpol.irf.mrf import xModulationFactor
+from ximpol.irf.rmf import xEnergyDispersion
 
 
 CLASS_DICT = {
     'arf': xEffectiveArea,
-    'mrf': xModulationFactor
+    'mrf': xModulationFactor,
+    'rmf': xEnergyDispersion
 }
+
 
 def xpirfview(file_path):
     """Quick FITS image viewer.

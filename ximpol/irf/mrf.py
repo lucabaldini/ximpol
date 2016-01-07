@@ -76,6 +76,7 @@ class xModulationFactor(xInterpolatedUnivariateSplineLinear):
         """
         logger.info('Reading modulation factor data from %s...' % mrf_file_path)
         hdu_list = fits.open(mrf_file_path)
+        hdu_list.info()
         _data = hdu_list['MODFRESP'].data
         _x = 0.5*(_data.field('ENERG_LO') + _data.field('ENERG_HI'))
         _y = _data.field('MODFRESP')

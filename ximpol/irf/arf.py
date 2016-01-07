@@ -76,6 +76,7 @@ class xEffectiveArea(xInterpolatedUnivariateSplineLinear):
         """
         logger.info('Reading effective area data from %s...' % arf_file_path)
         hdu_list = fits.open(arf_file_path)
+        hdu_list.info()
         _data = hdu_list['SPECRESP'].data
         _x = 0.5*(_data.field('ENERG_LO') + _data.field('ENERG_HI'))
         _y = _data.field('SPECRESP')

@@ -24,28 +24,38 @@
 from matplotlib import pyplot
 
 import matplotlib
+import numpy
 
-def test():
-    """
-    """
-    matplotlib.rc('lines', linewidth=2, color='r')
-    matplotlib.rc('axes', linewidth=1.5, grid=True, labelsize='large')
-    matplotlib.rc('grid', color='gray', linestyle=':', linewidth=0.5, alpha=1.0)
-    matplotlib.rc('figure', facecolor='white')
-    matplotlib.rc('text', usetex=False)
 
-def bmh():
+DEFAULT_FIG_WIDTH = 8.
+DEFAULT_FIG_HEIGHT = 6.
+DEFAULT_FIG_SIZE = (DEFAULT_FIG_WIDTH, DEFAULT_FIG_HEIGHT)
+
+
+def property(key):
+    """Return a given matplotlib configuration property.
     """
+    return matplotlib.rcParams[key]
+
+def context_two_by_two(scale=1.9):
+    """Setup the current figure for a 2x2 panel.
     """
-    matplotlib.rc('figure', facecolor='white')
+    _size = (scale*DEFAULT_FIG_WIDTH, scale*DEFAULT_FIG_HEIGHT)
+    _rc = {'figure.figsize': _size}
+    return matplotlib.rc_context(rc = _rc)
+
+def setup():
+    """Basic setup.
+    """
+    matplotlib.rc('figure', facecolor='white', figsize=DEFAULT_FIG_SIZE)
     matplotlib.rc('lines', linewidth=2.0)
     matplotlib.rc('patch', linewidth=0.5, facecolor='blue', edgecolor='eeeeee',
                   antialiased=True)
     matplotlib.rc('text', hinting_factor=8)
     matplotlib.rc('mathtext', fontset='cm')
-    matplotlib.rc('axes',facecolor='eeeeee', edgecolor='bcbcbc', grid=True,
+    matplotlib.rc('axes',facecolor='white', edgecolor='bcbcbc', grid=True,
                   titlesize='x-large', labelsize='large')
     matplotlib.rc('legend', fancybox=True)
 
 
-bmh()
+setup()
