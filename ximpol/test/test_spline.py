@@ -118,11 +118,28 @@ class TestSplineLinear(unittest.TestCase):
         _delta = abs(self.s3.norm() - 100.*3./2)
         self.assertTrue(_delta < 1e6, 'norm. diff. %.9f' % _delta)
 
-    def test_ppf(self):
+    def test_cdf(self):
+        """ The cdf must be 0 at xmin and 1 at xmax.
         """
-        """
-        pass
+        cdf = self.s3.build_cdf()
+        _delta = abs(cdf(self.s3.xmin()))
+        self.assertTrue(_delta < 1e-3, 'ppf(xmin) %.9f' % _delta)
+        _delta = abs(cdf(self.s3.xmax()) - 1.)
+        self.assertTrue(_delta < 1e-3, 'ppf(xmax) - 1 %.9f' % _delta)
 
+    def test_ppf(self):
+        """ The ppf must be defined between 0 and 1 (where is equal to the
+        xmin and xmax values of the original spline).
+        """
+        ppf = self.s3.build_ppf()
+        _delta = abs(ppf.xmin())
+        self.assertTrue(_delta < 1e-3, 'ppf xmin %.9f' % _delta)
+        _delta = abs(ppf.xmax() - 1.)
+        self.assertTrue(_delta < 1e-3, 'ppf (xmax - 1) %.9f' % _delta)
+        _delta = abs(ppf(0) - self.s3.xmin())
+        self.assertTrue(_delta < 1e-3, 'ppf(0) - xmin %.9f' % _delta)
+        _delta = abs(ppf(1) - self.s3.xmax())
+        self.assertTrue(_delta < 1e-3, 'ppf(1) - xmax %.9f' % _delta)
 
 
 if __name__ == '__main__':

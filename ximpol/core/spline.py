@@ -152,18 +152,16 @@ class xUnivariateSplineBase:
         """Create the cumulative distribution function.
         """
         _x = self.x.copy()
-        #_y =
+        _y = numpy.array([self.integral(0, _xp) for _xp in _x])/self.norm()
+        return self.__class__(_x, _y)
 
     def build_ppf(self):
         """Create the percent point function (or inverse of cdf).
-
-        Warning
-        -------
-        This must be generalized to include xmin, xmax and the normalization.
         """
         _y = self.x.copy()
-        _x = numpy.array([self.integral(0, limit) for limit in _y])
+        _x = numpy.array([self.integral(0, _xp) for _xp in _y])
         _x, _mask = numpy.unique(_x, return_index=True)
+        _x/= self.norm()
         _y = _y[_mask]
         return self.__class__(_x, _y)
 

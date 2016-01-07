@@ -8,6 +8,8 @@ Release notes
   classes, since the integral() method does not understand extrapolations and
   having spurious values outside the array ranges was causing troubles.
   (Note the splines can still be extrapolates in the evaluation.)
+* Added facilities for normalization, cdf and ppf in the univariate spline
+  base class.
 
 
 *ximpol (0.2.1) - Thu, 07 Jan 2016 06:57:12 -0800*
