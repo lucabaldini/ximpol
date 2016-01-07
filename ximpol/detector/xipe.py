@@ -26,8 +26,7 @@ from astropy.io import fits
 from ximpol import XIMPOL_DETECTOR, XIMPOL_IRF
 from ximpol.utils.logging_ import logger
 from ximpol.utils.os_ import rm
-from ximpol.core.spline import xInterpolatedUnivariateSplineLinear as \
-    xSplineLinear
+from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
 from ximpol.irf.base import xPrimaryHDU
 from ximpol.irf.arf import SPECRESP_HEADER_SPECS, xColDefsSPECRESP
 from ximpol.irf.mrf import MODFRESP_HEADER_SPECS, xColDefsMODFRESP
@@ -122,10 +121,10 @@ def make_arf():
         rm(output_file_path)
     logger.info('Loading mirror effective area from %s...' % OPT_AEFF_FILE_PATH)
     _x, _y = numpy.loadtxt(OPT_AEFF_FILE_PATH, unpack=True)
-    opt_aeff = xSplineLinear(_x, _y, ENERGY_MIN, ENERGY_MAX)
+    opt_aeff = xInterpolatedUnivariateSplineLinear(_x, _y)
     logger.info('Loading quantum efficiency from %s...' % GPD_QEFF_FILE_PATH)
     _x, _y = numpy.loadtxt(GPD_QEFF_FILE_PATH, unpack=True)
-    gpd_eff = xSplineLinear(_x, _y, ENERGY_MIN, ENERGY_MAX)
+    gpd_eff = xInterpolatedUnivariateSplineLinear(_x, _y)
     aeff = opt_aeff*gpd_eff
     specresp = aeff(ENERGY_CENTER)
     logger.info('Creating PRIMARY HDU...')
@@ -153,7 +152,7 @@ def make_mrf():
         rm(output_file_path)
     logger.info('Loading modulation factor from %s...' % GPD_MODF_FILE_PATH)
     _x, _y = numpy.loadtxt(GPD_MODF_FILE_PATH, unpack=True)
-    modf = xSplineLinear(_x, _y, ENERGY_MIN, ENERGY_MAX)
+    modf = xInterpolatedUnivariateSplineLinear(_x, _y)
     logger.info('Filling in arrays...')
     modfresp = modf(ENERGY_CENTER)
     logger.info('Creating PRIMARY HDU...')
@@ -183,7 +182,7 @@ def make_rmf():
         rm(output_file_path)
     logger.info('Loading energy dispersion from %s...' % GPD_ERES_FILE_PATH)
     _x, _y = numpy.loadtxt(GPD_ERES_FILE_PATH, unpack=True)
-    edisp_fwhm = xSplineLinear(_x, _y, ENERGY_MIN, ENERGY_MAX)
+    edisp_fwhm = xInterpolatedUnivariateSplineLinear(_x, _y)
     logger.info('Creating PRIMARY HDU...')
     primary_hdu = xPrimaryHDU()
     print(repr(primary_hdu.header))

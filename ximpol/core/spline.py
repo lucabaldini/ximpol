@@ -45,12 +45,6 @@ class xUnivariateSplineBase:
     y : array
         Input y values.
 
-    xmin : float, optional
-        The minimum x-value in the input x-array to be used.
-
-    xmax : float, optional
-        The maximum x-value in the input x-array to be used.
-
     xname: str, optional
         The name of the quantity on the x-axis.
 
@@ -69,28 +63,26 @@ class xUnivariateSplineBase:
     directly.
     """
 
-    def __init__(self, x, y, xmin=None, xmax=None, xname=None, xunits=None,
-                 yname=None, yunits=None):
+    def __init__(self, x, y, xname=None, xunits=None, yname=None, yunits=None):
         """Constructor.
         """
         assert(len(x) == len(y))
-        # If either xmin or xmax are None, take the first/last value in the
-        # input x-array.
-        if xmin is None:
-            xmin = x[0]
-        if xmax is None:
-            xmax = x[-1]
-        # Trim the input arrays, if necessary.
-        _mask = (x >= xmin)*(x <= xmax)
-        self.x = x[_mask]
-        self.y = y[_mask]
-        # And, finally, some bookkeping.
-        self.xmin = xmin
-        self.xmax = xmax
+        self.x = x.copy()
+        self.y = y.copy()
         self.xname = xname
         self.xunits = xunits
         self.yname = yname
         self.yunits = yunits
+
+    def xmin(self):
+        """Return the minimum of the underlying x-array.
+        """
+        return self.x[0]
+
+    def xmax(self):
+        """Return the maximum of the underlying x-array.
+        """
+        return self.x[-1]
 
     @classmethod
     def xmerge(self, x1, x2):
@@ -154,7 +146,13 @@ class xUnivariateSplineBase:
     def norm(self):
         """Return the integral over the entire spline domain.
         """
-        return self.integral(self.xmin, self.xmax)
+        return self.integral(self.xmin(), self.xmax())
+
+    def build_cdf(self):
+        """Create the cumulative distribution function.
+        """
+        _x = self.x.copy()
+        #_y =
 
     def build_ppf(self):
         """Create the percent point function (or inverse of cdf).
@@ -184,7 +182,7 @@ class xUnivariateSplineBase:
             If True, `plt.show()` is called at the end, interrupting the flow.
         """
         from ximpol.utils.matplotlib_ import pyplot as plt
-        _x = numpy.linspace(self.xmin, self.xmax, num_points)
+        _x = numpy.linspace(self.xmin(), self.xmax(), num_points)
         _y = self(_x)
         if overlay:
             plt.plot(_x, _y, '-', self.x, self.y, 'o')
@@ -214,12 +212,11 @@ class xUnivariateSpline(xUnivariateSplineBase, UnivariateSpline):
     We currently do not use either one.
     """
 
-    def __init__(self, x, y, w=None, bbox=[None, None], k=3, s=None, xmin=None,
-                 xmax=None, xname=None, xunits=None, yname=None, yunits=None):
+    def __init__(self, x, y, w=None, bbox=[None, None], k=3, s=None,
+                 xname=None, xunits=None, yname=None, yunits=None):
         """Constructor.
         """
-        xUnivariateSplineBase.__init__(self, x, y, xmin, xmax, xname, xunits,
-                                       yname, yunits)
+        xUnivariateSplineBase.__init__(self, x, y, xname, xunits, yname, yunits)
         UnivariateSpline.__init__(self, self.x, self.y, w, bbox, k, s)
 
 
@@ -240,12 +237,11 @@ class xInterpolatedUnivariateSpline(xUnivariateSplineBase,
     We currently do not use either one.
     """
 
-    def __init__(self, x, y, w=None, bbox=[None, None], k=3, xmin=None,
-                 xmax=None, xname=None, xunits=None, yname=None, yunits=None):
+    def __init__(self, x, y, w=None, bbox=[None, None], k=3,
+                 xname=None, xunits=None, yname=None, yunits=None):
         """Constructor.
         """
-        xUnivariateSplineBase.__init__(self, x, y, xmin, xmax, xname, xunits,
-                                       yname, yunits)
+        xUnivariateSplineBase.__init__(self, x, y, xname, xunits, yname, yunits)
         InterpolatedUnivariateSpline.__init__(self, self.x, self.y, w, bbox, k)
 
 
@@ -264,13 +260,11 @@ class xInterpolatedUnivariateSplineLinear(xInterpolatedUnivariateSpline):
     >>> s.plot()
     """
 
-    def __init__(self, x, y, xmin=None, xmax=None, xname=None, xunits=None,
-                 yname=None, yunits=None):
+    def __init__(self, x, y, xname=None, xunits=None, yname=None, yunits=None):
         """ Constructor.
         """
         xInterpolatedUnivariateSpline.__init__(self, x, y, None, [None, None],
-                                               1, xmin, xmax, xname, xunits,
-                                               yname, yunits)
+                                               1, xname, xunits, yname, yunits)
 
 
 class xBivariateSplineBase:

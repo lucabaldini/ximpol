@@ -4,7 +4,11 @@ Release notes
 * Added make_ppf to the spline base class.
 * Some improvement in the plotting facility for the energy dispersion.
 * Added unit tests for the irf classes.
-  
+* Removed the xmin and xmax arguments from the constructor of all the spline
+  classes, since the integral() method does not understand extrapolations and
+  having spurious values outside the array ranges was causing troubles.
+  (Note the splines can still be extrapolates in the evaluation.)
+
 
 *ximpol (0.2.1) - Thu, 07 Jan 2016 06:57:12 -0800*
 

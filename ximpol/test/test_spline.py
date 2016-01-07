@@ -44,8 +44,11 @@ class TestSplineLinear(unittest.TestCase):
         self.y1 = numpy.sin(self.x1)
         self.x2 = numpy.linspace(0, numpy.pi, self.num_points)
         self.y2 = numpy.sin(self.x2)
+        self.x3 = numpy.linspace(0, 10, 100)
+        self.y3 = 3*self.x3
         self.s1 = xInterpolatedUnivariateSplineLinear(self.x1, self.y1)
         self.s2 = xInterpolatedUnivariateSplineLinear(self.x2, self.y2)
+        self.s3 = xInterpolatedUnivariateSplineLinear(self.x3, self.y3, 0., 10.)
 
     def test_len(self):
         """Test the basic object instantiation.
@@ -108,6 +111,17 @@ class TestSplineLinear(unittest.TestCase):
         _y = _ya + (_yb - _ya)/(_xb - _xa)*(_x - _xa)
         _delta = abs(self.s1(_x) - _y)
         self.assertTrue(_delta < 1e-9, 'max. diff. %.9f' % _delta)
+
+    def test_norm(self):
+        """Test the normalization calculation.
+        """
+        _delta = abs(self.s3.norm() - 100.*3./2)
+        self.assertTrue(_delta < 1e6, 'norm. diff. %.9f' % _delta)
+
+    def test_ppf(self):
+        """
+        """
+        pass
 
 
 
