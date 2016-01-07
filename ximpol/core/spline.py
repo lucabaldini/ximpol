@@ -256,7 +256,7 @@ class xInterpolatedUnivariateSplineLinear(xInterpolatedUnivariateSpline):
     >>>
     >>> x = numpy.linspace(0, 2*numpy.pi, 100)
     >>> y = numpy.sin(x)
-    >>> s = xInterpolatedUnivariateSplineLinear(x, y, 0., numpy.pi, 'x', 'au')
+    >>> s = xInterpolatedUnivariateSplineLinear(x, y, xname='x', xunits='au')
     >>> s.plot()
     """
 
@@ -457,7 +457,7 @@ class xInterpolatedBivariateSplineLinear(xBivariateSplineBase,
 def main():
     x = numpy.linspace(0, 2*numpy.pi, 100)
     y = numpy.sin(x)
-    s = xInterpolatedUnivariateSplineLinear(x, y, 0., numpy.pi, 'x', 'au', 'y')
+    s = xInterpolatedUnivariateSplineLinear(x, y, 'x', 'au', 'y')
     s.plot()
 
 

@@ -48,7 +48,7 @@ class TestSplineLinear(unittest.TestCase):
         self.y3 = 3*self.x3
         self.s1 = xInterpolatedUnivariateSplineLinear(self.x1, self.y1)
         self.s2 = xInterpolatedUnivariateSplineLinear(self.x2, self.y2)
-        self.s3 = xInterpolatedUnivariateSplineLinear(self.x3, self.y3, 0., 10.)
+        self.s3 = xInterpolatedUnivariateSplineLinear(self.x3, self.y3)
 
     def test_len(self):
         """Test the basic object instantiation.
