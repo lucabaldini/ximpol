@@ -146,7 +146,8 @@ class xUnivariateSplineBase:
         _y = _y[_mask]
         return self.__class__(_x, _y)
 
-    def plot(self, num_points=1000, overlay=False, show=True):
+    def plot(self, num_points=1000, overlay=False, logx=False, logy=False,
+             show=True):
         """Plot the spline.
 
         Args
@@ -171,6 +172,10 @@ class xUnivariateSplineBase:
             plt.xlabel(self.xlabel())
         if self.yname is not None:
             plt.ylabel(self.ylabel())
+        if logx:
+            plt.gca().set_xscale('log')
+        if logy:
+            plt.gca().set_yscale('log')
         if show:
             plt.show()
 

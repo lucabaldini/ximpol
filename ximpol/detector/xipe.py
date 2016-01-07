@@ -30,6 +30,7 @@ from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
 from ximpol.irf.base import xPrimaryHDU
 from ximpol.irf.arf import SPECRESP_HEADER_SPECS, xColDefsSPECRESP
 from ximpol.irf.mrf import MODFRESP_HEADER_SPECS, xColDefsMODFRESP
+from ximpol.irf.psf import PSF_HEADER_SPECS, xColDefsPSF
 from ximpol.irf.rmf import EBOUNDS_HEADER_SPECS, MATRIX_HEADER_SPECS,\
     xColDefsMATRIX, xColDefsEBOUNDS
 
@@ -66,6 +67,12 @@ NUM_CHANNELS = 1024         #
 E_CHAN_OFFSET = 0.          # keV
 E_CHAN_SLOPE = 0.01         # keV/channel
 
+"""PSF parameters.
+
+Taken directly from http://arxiv.org/abs/1403.7200, table 2, @4.51 keV.
+"""
+PSF_PARAMETERS = [numpy.array([_x]) for _x in \
+                  [2.79e-4, 10.61, 3.289e-3, 6.06, 1.481]]
 
 """Energy bounds and sampling for the actual IRFs.
 """
@@ -170,6 +177,29 @@ def make_mrf():
     logger.info('Done.')
 
 
+def make_psf():
+    """Write the XIPE PSF parameters.
+    """
+    logger.info('Creating XIPE effective area fits file...')
+    output_file_name = '%s.psf' % IRF_NAME
+    output_file_path = os.path.join(XIMPOL_IRF, 'fits', output_file_name)
+    if os.path.exists(output_file_path):
+        rm(output_file_path)
+    logger.info('Creating PRIMARY HDU...')
+    primary_hdu = xPrimaryHDU()
+    print(repr(primary_hdu.header))
+    logger.info('Creating PSF HDU...')
+    cols = xColDefsPSF(PSF_PARAMETERS)
+    psf_hdu = fits.BinTableHDU.from_columns(cols)
+    _update_header(psf_hdu, PSF_HEADER_SPECS, RESP_HEADER_COMMENTS)
+    print(repr(psf_hdu.header))
+    logger.info('Writing output file %s...' % output_file_path)
+    hdulist = fits.HDUList([primary_hdu, psf_hdu])
+    hdulist.info()
+    hdulist.writeto(output_file_path)
+    logger.info('Done.')
+
+
 def make_rmf():
     """Write the XIPE edisp response function.
 
@@ -222,6 +252,7 @@ def make_all():
     """
     make_arf()
     make_mrf()
+    make_psf()
     make_rmf()
 
 

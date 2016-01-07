@@ -96,7 +96,7 @@ def main():
     modf = xModulationFactor(file_path)
     x = numpy.arange(1, 10, 1)
     print(modf(x))
-    modf.plot(overlay=False)
+    modf.plot()
 
 
 if __name__ == '__main__':

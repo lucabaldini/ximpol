@@ -97,7 +97,7 @@ def main():
     aeff = xEffectiveArea(file_path)
     x = numpy.arange(1, 10, 1)
     print(aeff(x))
-    aeff.plot(overlay=False)
+    aeff.plot()
 
 
 if __name__ == '__main__':
