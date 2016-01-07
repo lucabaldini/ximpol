@@ -10,6 +10,8 @@ Release notes
   (Note the splines can still be extrapolates in the evaluation.)
 * Added facilities for normalization, cdf and ppf in the univariate spline
   base class.
+* xmerge() method of the base univariate spline class removed in favor of
+  numpy.union1d()
 
 
 *ximpol (0.2.1) - Thu, 07 Jan 2016 06:57:12 -0800*

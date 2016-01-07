@@ -84,30 +84,11 @@ class xUnivariateSplineBase:
         """
         return self.x[-1]
 
-    @classmethod
-    def xmerge(self, x1, x2):
-        """Merge two arrays for the purpose of arithmetic operations with
-        class instances.
-
-        Note
-        ----
-        The resulting array is sorted in place and duplicates (that would cause
-        nan during interpolations) are removed.
-
-        Warning
-        -------
-        Use numpy.union1d instead?
-        """
-        _x = numpy.concatenate((x1, x2))
-        _x.sort()
-        _x = numpy.unique(_x)
-        return _x
-
     def __mul__(self, other):
         """Overloaded multiplication operator.
         """
         assert(self.__class__.__name__ == other.__class__.__name__)
-        _x = self.xmerge(self.x, other.x)
+        _x = numpy.union1d(self.x, other.x)
         _y = self(_x)*other(_x)
         return self.__class__(_x, _y)
 
@@ -115,7 +96,7 @@ class xUnivariateSplineBase:
         """Overloaded sum operator.
         """
         assert(self.__class__.__name__ == other.__class__.__name__)
-        _x = self.xmerge(self.x, other.x)
+        _x = numpy.union1d(self.x, other.x)
         _y = self(_x) + other(_x)
         return self.__class__(_x, _y)
 
