@@ -115,7 +115,7 @@ class xEnergyDispersionBounds(xInterpolatedUnivariateSplineLinear):
         xInterpolatedUnivariateSplineLinear.__init__(self, _x, _y, **fmt)
 
 
-class xEnergyDispersion(xInterpolatedBivariateSplineLinear):
+class xEnergyDispersion():
 
     """Class representing the energy dispersion.
 

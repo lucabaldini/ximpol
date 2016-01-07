@@ -151,8 +151,17 @@ class xUnivariateSplineBase:
         """
         return self.label(self.yname, self.yunits)
 
+    def norm(self):
+        """Return the integral over the entire spline domain.
+        """
+        return self.integral(self.xmin, self.xmax)
+
     def build_ppf(self):
         """Create the percent point function (or inverse of cdf).
+
+        Warning
+        -------
+        This must be generalized to include xmin, xmax and the normalization.
         """
         _y = self.x.copy()
         _x = numpy.array([self.integral(0, limit) for limit in _y])
