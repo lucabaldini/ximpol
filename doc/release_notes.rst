@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* First full implementation of the energy dispersion.
+
 
 *ximpol (0.2.0) - Wed, 06 Jan 2016 15:56:38 -0800*
 
