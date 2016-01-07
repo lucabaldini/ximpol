@@ -148,8 +148,13 @@ class xEnergyDispersion(xInterpolatedBivariateSplineLinear):
             energy dispersion.
             """
             ax = plt.subplot(2, 2, position)
-            self.matrix.vslice(energy).plot(overlay=False, show=False)
-            plt.text(0.1, 0.9, 'Energy = %.2f keV' % energy,
+            vslice = self.matrix.vslice(energy)
+            vslice.plot(overlay=False, show=False)
+            plt.text(0.1, 0.9, '$E = %.2f\\ \\rm{keV}$' % energy,
+                     transform=ax.transAxes)
+            ppf = vslice.build_ppf()
+            eres = 0.5*(ppf(0.8413) - ppf(0.1586))/ppf(0.5)
+            plt.text(0.1, 0.85, '$\sigma_E/E = %.3f$' % eres,
                      transform=ax.transAxes)
 
         with context_two_by_two():

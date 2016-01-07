@@ -1,6 +1,9 @@
 Release notes
 =============
 
+* Added make_ppf to the spline base class.
+* Some improvement in the plotting facility for the energy dispersion.
+
 
 *ximpol (0.2.1) - Thu, 07 Jan 2016 06:57:12 -0800*
 

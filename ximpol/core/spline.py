@@ -101,6 +101,10 @@ class xUnivariateSplineBase:
         ----
         The resulting array is sorted in place and duplicates (that would cause
         nan during interpolations) are removed.
+
+        Warning
+        -------
+        Use numpy.union1d instead?
         """
         _x = numpy.concatenate((x1, x2))
         _x.sort()
@@ -146,6 +150,15 @@ class xUnivariateSplineBase:
         """Return the y-label for a plot.
         """
         return self.label(self.yname, self.yunits)
+
+    def build_ppf(self):
+        """Create the percent point function (or inverse of cdf).
+        """
+        _y = self.x.copy()
+        _x = numpy.array([self.integral(0, limit) for limit in _y])
+        _x, _mask = numpy.unique(_x, return_index=True)
+        _y = _y[_mask]
+        return self.__class__(_x, _y)
 
     def plot(self, num_points=1000, overlay=False, show=True):
         """Plot the spline.
