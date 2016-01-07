@@ -19,7 +19,6 @@
 
 from astropy.io import fits
 
-from ximpol import XIMPOL_IRF
 from ximpol.utils.logging_ import logger
 from ximpol.irf.base import xColDefsBase, OGIP_HEADER_SPECS
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
@@ -61,6 +60,15 @@ class xModulationFactor(xInterpolatedUnivariateSplineLinear):
 
     Example
     -------
+    >>> import os
+    >>> import numpy
+    >>> from ximpol import XIMPOL_IRF
+    >>>
+    >>> file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.mrf')
+    >>> modf = xModulationFactor(file_path)
+    >>> x = numpy.arange(1, 10, 1)
+    >>> print(modf(x))
+    >>> modf.plot(overlay=False)
     """
 
     def __init__(self, mrf_file_path):
@@ -81,6 +89,7 @@ def main():
     """
     import os
     import numpy
+    from ximpol import XIMPOL_IRF
 
     file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.mrf')
     modf = xModulationFactor(file_path)

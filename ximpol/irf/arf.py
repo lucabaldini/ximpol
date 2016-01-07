@@ -19,7 +19,6 @@
 
 from astropy.io import fits
 
-from ximpol import XIMPOL_IRF
 from ximpol.utils.logging_ import logger
 from ximpol.irf.base import xColDefsBase, OGIP_HEADER_SPECS
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
@@ -63,6 +62,7 @@ class xEffectiveArea(xInterpolatedUnivariateSplineLinear):
     -------
     >>> import os
     >>> import numpy
+    >>> from ximpol import XIMPOL_IRF
     >>>
     >>> file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.arf')
     >>> aeff = xEffectiveArea(file_path)
@@ -90,6 +90,7 @@ def main():
     """
     import os
     import numpy
+    from ximpol import XIMPOL_IRF
 
     file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.arf')
     aeff = xEffectiveArea(file_path)
