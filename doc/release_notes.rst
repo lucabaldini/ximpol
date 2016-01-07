@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.3.0) - Thu, 07 Jan 2016 13:53:07 -0800*
+
 * Added make_ppf to the spline base class.
 * Some improvement in the plotting facility for the energy dispersion.
 * Added unit tests for the irf classes.
