@@ -26,7 +26,7 @@ import unittest
 from ximpol.utils.profile import *
 
 
-class testChrono(unittest.TestCase):
+class TestChrono(unittest.TestCase):
 
     """Unit test for the profile.xChrono class.
     """
