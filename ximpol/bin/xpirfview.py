@@ -22,7 +22,6 @@ __description__ = 'Quick IRF viewer'
 
 from ximpol.utils.matplotlib_ import pyplot as plt
 from astropy.io import fits
-import aplpy
 
 from ximpol.utils.logging_ import startmsg, abort
 from ximpol.irf.arf import xEffectiveArea
