@@ -1,7 +1,7 @@
 Release notes
 =============
 
-* Added PSF classes.
+* Added PSF classes, with facility to draw random numbers.
 
 
 *ximpol (0.3.0) - Thu, 07 Jan 2016 13:53:07 -0800*
