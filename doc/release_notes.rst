@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* Added PSF classes.
+
 
 *ximpol (0.3.0) - Thu, 07 Jan 2016 13:53:07 -0800*
 
