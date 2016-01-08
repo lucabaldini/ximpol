@@ -120,7 +120,7 @@ class xPointSpreadFunction(xInterpolatedUnivariateSplineLinear):
         """
         rho = self.rvs(size)/3600.
         phi = numpy.random.uniform(0, 2*numpy.pi, size)
-        return  rho*numpy.cos(phi), rho*numpy.sin(phi)
+        return rho*numpy.cos(phi), rho*numpy.sin(phi)
 
     def smear_single(self, ra, dec, num_times=1):
         """Smear a pair of coordinates.
