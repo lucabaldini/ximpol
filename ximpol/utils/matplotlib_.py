@@ -44,6 +44,12 @@ def context_two_by_two(scale=1.9):
     _rc = {'figure.figsize': _size}
     return matplotlib.rc_context(rc = _rc)
 
+def context_no_grids():
+    """Setup the current figure with no grids.
+    """
+    _rc = {'axes.grid': False}
+    return matplotlib.rc_context(rc = _rc)
+
 def setup():
     """Basic setup.
     """

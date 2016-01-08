@@ -20,10 +20,11 @@
 __description__ = 'Quick FITS image viewer'
 
 
-import matplotlib.pyplot as plt
 from astropy.io import fits
 import aplpy
 
+from ximpol.utils.matplotlib_ import pyplot as plt
+from ximpol.utils.matplotlib_ import context_no_grids
 from ximpol.utils.logging_ import startmsg
 
 
@@ -33,7 +34,8 @@ def xpimgview(file_path):
     hdu_list = fits.open(file_path)
     hdu_list.info()
     data = hdu_list[0].data
-    fig = aplpy.FITSFigure(hdu_list[0], figure = plt.figure(0))
+    with context_no_grids():
+        fig = aplpy.FITSFigure(hdu_list[0], figure = plt.figure(0))
     fig.add_grid()
     fig.show_colorscale(cmap = 'afmhot')
     plt.show()
