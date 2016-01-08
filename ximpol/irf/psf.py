@@ -77,6 +77,7 @@ class xPointSpreadFunction(xInterpolatedUnivariateSplineLinear):
         _y = W*numpy.exp(-(_x**2/(2*sigma**2))) + N*(1 + (_x/r_c)**2)**(-eta)
         fmt = dict(xname='r', xunits='arcsec', yname='PSF', yunits='sr$^-1$')
         xInterpolatedUnivariateSplineLinear.__init__(self, _x, _y, **fmt)
+        self.ppf = self.build_ppf()
 
     def plot(self, num_points=1000, overlay=False, logx=False, logy=True,
              show=True):
@@ -85,16 +86,30 @@ class xPointSpreadFunction(xInterpolatedUnivariateSplineLinear):
         xInterpolatedUnivariateSplineLinear.plot(self, num_points, overlay,
                                                  logx, logy, show)
 
+    def rvs(self, size=1):
+        """Random variates.
+        """
+        return self.ppf(numpy.random.sample(size))
+
+
 
 def main():
     """
     """
     import os
     from ximpol import XIMPOL_IRF
+    from ximpol.utils.matplotlib_ import pyplot as plt
 
     file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.psf')
     psf = xPointSpreadFunction(file_path)
-    psf.plot()
+    print(psf.rvs(10))
+    xmax = 50
+    plt.hist(psf.rvs(100000), xmax, (0, xmax), rwidth=1, histtype='step',
+             lw=2, normed=True)
+    _x = numpy.linspace(0, xmax, xmax)
+    _y = psf(_x)/psf.norm()
+    plt.plot(_x, _y)
+    plt.show()
 
 
 if __name__ == '__main__':
