@@ -59,6 +59,24 @@ class xPointSpreadFunction(xInterpolatedUnivariateSplineLinear):
 
     rmax : float
         The maximum radial distance (in arcsec) for the PSF.
+
+    Example
+    -------
+    >>> from ximpol import XIMPOL_IRF
+    >>> from ximpol.utils.matplotlib_ import pyplot as plt
+    >>>
+    >>> file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.psf')
+    >>> psf = xPointSpreadFunction(file_path)
+    >>> print(psf.rvs(10))
+    >>> ra, dec = 5.0, 12.3
+    >>> print(psf.smear_single(ra, dec, 10))
+
+    Note
+    ----
+    The parametrization is taken from `Fabiani et al., 2014
+    <http://arxiv.org/abs/1403.7200>`_, table 2. The PSF is technically
+    energy dependent, but the dependence is not wild and for the moment
+    we stick with the values at 4.51 keV in the table.
     """
 
     def __init__(self, psf_file_path, rmax=150.):
@@ -91,6 +109,31 @@ class xPointSpreadFunction(xInterpolatedUnivariateSplineLinear):
         """
         return self.ppf(numpy.random.sample(size))
 
+    def delta(self, size=1):
+        """Return an array of random offset (in ra, dec or L, B) due to the PSF.
+
+        The output is converted in degrees.
+
+        Warning
+        -------
+        Is this formula correct?
+        """
+        rho = self.rvs(size)/3600.
+        phi = numpy.random.uniform(0, 2*numpy.pi, size)
+        return  rho*numpy.cos(phi), rho*numpy.sin(phi)
+
+    def smear_single(self, ra, dec, num_times=1):
+        """Smear a pair of coordinates.
+        """
+        delta_ra, delta_dec = self.delta(size=num_times)
+        return ra + delta_ra, dec + delta_dec
+
+    def smear_array(self, ra, dec):
+        """Smear a pair of arrays of coordinates.
+        """
+        assert(ra.size == dec.size)
+        delta_ra, delta_dec = self.delta(ra.size())
+        return ra + delta_ra, dec + delta_dec
 
 
 def main():
@@ -103,6 +146,8 @@ def main():
     file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.psf')
     psf = xPointSpreadFunction(file_path)
     print(psf.rvs(10))
+    ra, dec = 5.0, 12.3
+    print(psf.smear_single(ra, dec, 10))
     xmax = 50
     plt.hist(psf.rvs(100000), xmax, (0, xmax), rwidth=1, histtype='step',
              lw=2, normed=True)
