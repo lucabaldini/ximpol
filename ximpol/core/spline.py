@@ -28,6 +28,44 @@ from scipy.interpolate import RectBivariateSpline
 from ximpol.utils.logging_ import logger
 
 
+def interpolate(xa, ya, xb, yb, x):
+    """Simple two-point linear extrapolation.
+    """
+    return ya + (yb - ya)/(xb - xa)*(x - xa)
+
+def optimize_grid_linear(x, y, tolerance=1e-4):
+    """
+    """
+    assert(len(x) == len(y))
+    logger.info('Optimizing grid with %d starting points...' % len(x))
+    # Start a new series with the first two points of the input arrays.
+    _x = [x[0], x[1]]
+    _y = [y[0], y[1]]
+    # Loop over the points 3 ... (N - 1).
+    for i, (_xi, _yi) in enumerate(zip(x, y)[2:-1]):
+        # Extrapolate the last two points of the new series to xi and
+        # see how far we are from the actual yi.
+        delta = interpolate(_x[-2], _y[-2], _x[-1], _y[-1], _xi) - _yi
+        if abs(delta/_yi) > tolerance:
+            # If the difference is larger than the tolerance, add a point.
+            # (This has the drawback that we tend to add pairs of point at
+            # each change of slope.)
+            _x.append(_xi)
+            _y.append(_yi)
+            # Interpolate the points last and (last - 2) to (last - 1).
+            delta = interpolate(_x[-3], _y[-3], _x[-1], _y[-1], _x[-2]) - _y[-2]
+            if abs(delta/_y[-2]) < tolerance:
+                # If the penultimate point was not necessary, remove it.
+                _x.remove(_x[-2])
+                _y.remove(_y[-2])
+    # Append the last point of the original array to the list.
+    _x.append(x[-1])
+    _y.append(y[-1])
+    _x, _y = numpy.array(_x), numpy.array(_y)
+    logger.info('Done, %d points remaining.' % len(_x))
+    return _x, _y
+
+
 class xUnivariateSplineBase:
 
     """Base class for all the univariate spline classes.
@@ -77,6 +115,11 @@ class xUnivariateSplineBase:
         self.xunits = xunits
         self.yname = yname
         self.yunits = yunits
+
+    def dist(self, x, y):
+        """
+        """
+        return abs((self(x) - y)/y)
 
     def xmin(self):
         """Return the minimum of the underlying x-array.
@@ -254,11 +297,19 @@ class xInterpolatedUnivariateSplineLinear(xInterpolatedUnivariateSpline):
     >>> s.plot()
     """
 
-    def __init__(self, x, y, xname=None, xunits=None, yname=None, yunits=None):
+    def __init__(self, x, y, xname=None, xunits=None, yname=None, yunits=None,
+                 optimize=False, tolerance=1e-4):
         """ Constructor.
         """
+        if optimize:
+            oldx, oldy = x, y
+            x, y = optimize_grid_linear(x, y, tolerance)
         xInterpolatedUnivariateSpline.__init__(self, x, y, None, [None, None],
                                                1, xname, xunits, yname, yunits)
+        if optimize:
+            dist = self.dist(oldx, oldy)
+            logger.info('Relative (max/ave) dist. to original array: %e/%e' %\
+                        (dist.max(), dist.sum()/len(dist)))
 
 
 class xBivariateSplineBase:

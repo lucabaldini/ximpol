@@ -22,6 +22,7 @@ from astropy.io import fits
 from ximpol.utils.logging_ import logger
 from ximpol.irf.base import xColDefsBase, OGIP_HEADER_SPECS
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
+from ximpol.core.spline import optimize_grid_linear
 
 
 """Header specifications for the MODFRESP extension of .mrf FITS files.
@@ -81,7 +82,8 @@ class xModulationFactor(xInterpolatedUnivariateSplineLinear):
         _x = 0.5*(_data.field('ENERG_LO') + _data.field('ENERG_HI'))
         _y = _data.field('MODFRESP')
         hdu_list.close()
-        fmt = dict(xname='Energy', xunits='keV', yname='Modulation factor')
+        fmt = dict(xname='Energy', xunits='keV', yname='Modulation factor',
+                   optimize=True, tolerance=1e-4)
         xInterpolatedUnivariateSplineLinear.__init__(self, _x, _y, **fmt)
 
 
@@ -96,7 +98,7 @@ def main():
     modf = xModulationFactor(file_path)
     x = numpy.arange(1, 10, 1)
     print(modf(x))
-    modf.plot()
+    modf.plot(overlay=True)
 
 
 if __name__ == '__main__':
