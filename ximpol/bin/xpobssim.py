@@ -19,6 +19,7 @@
 
 __description__ = 'Run the ximpol fast simulator'
 
+
 import os
 import numpy
 from scipy import interpolate
@@ -30,7 +31,7 @@ from ximpol.srcmodel.xSpectralComponent import xSpectralComponent
 from ximpol.irf.xAeff import xAeff
 from ximpol.irf.psf import xPointSpreadFunction
 from ximpol.irf.mrf import xModulationFactor
-from ximpol.event.xEventList import xEventList
+from ximpol.event import xMonteCarloEventList
 from ximpol.utils.profile import xChrono
 from ximpol.utils.logging_ import logger, startmsg
 from ximpol import XIMPOL_IRF
@@ -104,11 +105,12 @@ def xpobssim(output_file_path, duration, start_time=0., time_steps=100,
     events_times = S.generate()
     logger.info('Done %s, %d events generated.' % (chrono, len(events_times)))
 
-    event_list = xEventList()
-    event_list.time_array = events_times
-    event_list.energy_array = spec_gen.rvs(events_times)
-    event_list.ra_array, event_list.dec_array = \
-                        psf.smear_single(ra0, dec0, len(events_times))
+    event_list = xMonteCarloEventList()
+    event_list.set_column('TIME', events_times)
+    event_list.set_column('ENERGY', spec_gen.rvs(events_times))
+    ra, dec = psf.smear_single(ra0, dec0, len(event_list))
+    event_list.set_column('RA', ra)
+    event_list.set_column('DEC', dec)
 
     # Horrible hack for reducing the number of points, need to do this
     # properly.
@@ -130,44 +132,40 @@ def xpobssim(output_file_path, duration, start_time=0., time_steps=100,
 
     modf_spline = xInterpolatedBivariateSplineLinear(_x, _y, _z)
     modf_ppf = modf_spline.build_vppf()
-    event_list.angle_array = modf_ppf(event_list.energy_array, numpy.random.sample(len(event_list.energy_array)))
+
+    pe_angles = modf_ppf(event_list['ENERGY'],\
+                         numpy.random.sample(len(event_list)))
+    event_list.set_column('PE_ANGLE', pe_angles)
     logger.info('Done %s.' % chrono)
     logger.info('Writing output file %s...' % output_file_path)
     event_list.write_fits(output_file_path)
 
     logger.info('Plotting stuff...')
-    fig=plt.figure(figsize=(10,10),facecolor='w')
-    #plt.subplots_adjust(hspace=0.001)
+    fig=plt.figure(figsize=(10,10), facecolor='w')
     ax = plt.subplot(221)
-    plt.plot(times,flux)
+    plt.plot(times, flux)
     plt.xlabel('Time [s]')
 
     ax = plt.subplot(222)
     fov = 50./3600
-    plt.hist2d(event_list.ra_array,event_list.dec_array,100,range=[[ra0-fov,ra0+fov],[dec0-fov,dec0+fov]])
+    plt.hist2d(event_list['RA'], event_list['DEC'],100,
+               range=[[ra0-fov,ra0+fov],[dec0-fov,dec0+fov]])
     plt.xlabel('RA.')
     plt.ylabel('Dec.')
 
     ax = plt.subplot(223)
-    plt.plot(event_list.time_array,event_list.energy_array,'o')
+    plt.plot(event_list['TIME'], event_list['ENERGY'], 'o')
     plt.yscale('log')
     plt.xlabel('Time [s]')
     plt.ylabel('Energy [keV]')
 
     ax = plt.subplot(224)
-    plt.hist(event_list.energy_array,bins=numpy.logspace(0,1,50),histtype='step')
+    plt.hist(event_list['ENERGY'], bins=numpy.logspace(0,1,50),histtype='step')
     plt.xscale('log')
     plt.yscale('log')
     plt.xlabel('Energy [keV]')
     logger.info('All done %s!' % chrono)
     plt.show()
-
-    #spectrum.plot(numpy.linspace(1,10,100))
-    #plt.xscale('log')
-    #plt.yscale('log')
-    #spectrum.polarization(0.1,89)
-    #mySource.addComponent(spectrum)
-
 
 
 if __name__=='__main__':

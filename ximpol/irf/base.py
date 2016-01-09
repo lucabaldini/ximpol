@@ -105,3 +105,12 @@ class xColDefsBase(fits.ColDefs):
             col = fits.Column(name, fmt, units, array = data[i])
             cols.append(col)
         fits.ColDefs.__init__(self, cols)
+
+
+def update_header(hdu, specs, comments = []):
+    """ Add more keyword and/or comments to an existing HDU header.
+    """
+    for keyword, value, comment in specs:
+        hdu.header.set(keyword, value, comment)
+    for comment in comments:
+        hdu.header['COMMENT'] = comment

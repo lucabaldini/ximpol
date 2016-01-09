@@ -27,7 +27,7 @@ from ximpol import XIMPOL_DETECTOR, XIMPOL_IRF
 from ximpol.utils.logging_ import logger
 from ximpol.utils.os_ import rm
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
-from ximpol.irf.base import xPrimaryHDU
+from ximpol.irf.base import xPrimaryHDU, update_header
 from ximpol.irf.arf import SPECRESP_HEADER_SPECS, xColDefsSPECRESP
 from ximpol.irf.mrf import MODFRESP_HEADER_SPECS, xColDefsMODFRESP
 from ximpol.irf.psf import PSF_HEADER_SPECS, xColDefsPSF
@@ -109,15 +109,6 @@ RESP_HEADER_COMMENTS = [
 ]
 
 
-def _update_header(hdu, specs, comments):
-    """ Add more keyword and/or comments to an existing HDU header.
-    """
-    for keyword, value, comment in specs:
-        hdu.header.set(keyword, value, comment)
-    for comment in comments:
-        hdu.header['COMMENT'] = comment
-
-
 def make_arf():
     """Write the XIPE effective area response function.
     """
@@ -140,7 +131,7 @@ def make_arf():
     logger.info('Creating SPECRESP HDU...')
     cols = xColDefsSPECRESP([ENERGY_LO, ENERGY_HI, specresp])
     specresp_hdu = fits.BinTableHDU.from_columns(cols)
-    _update_header(specresp_hdu, SPECRESP_HEADER_SPECS, RESP_HEADER_COMMENTS)
+    update_header(specresp_hdu, SPECRESP_HEADER_SPECS, RESP_HEADER_COMMENTS)
     print(repr(specresp_hdu.header))
     logger.info('Writing output file %s...' % output_file_path)
     hdulist = fits.HDUList([primary_hdu, specresp_hdu])
@@ -168,7 +159,7 @@ def make_mrf():
     logger.info('Creating MODFRESP HDU...')
     cols = xColDefsMODFRESP([ENERGY_LO, ENERGY_HI, modfresp])
     modfresp_hdu = fits.BinTableHDU.from_columns(cols)
-    _update_header(modfresp_hdu, MODFRESP_HEADER_SPECS, RESP_HEADER_COMMENTS)
+    update_header(modfresp_hdu, MODFRESP_HEADER_SPECS, RESP_HEADER_COMMENTS)
     print(repr(modfresp_hdu.header))
     logger.info('Writing output file %s...' % output_file_path)
     hdulist = fits.HDUList([primary_hdu, modfresp_hdu])
@@ -191,7 +182,7 @@ def make_psf():
     logger.info('Creating PSF HDU...')
     cols = xColDefsPSF(PSF_PARAMETERS)
     psf_hdu = fits.BinTableHDU.from_columns(cols)
-    _update_header(psf_hdu, PSF_HEADER_SPECS, RESP_HEADER_COMMENTS)
+    update_header(psf_hdu, PSF_HEADER_SPECS, RESP_HEADER_COMMENTS)
     print(repr(psf_hdu.header))
     logger.info('Writing output file %s...' % output_file_path)
     hdulist = fits.HDUList([primary_hdu, psf_hdu])
@@ -230,7 +221,7 @@ def make_rmf():
         matrix = numpy.vstack([matrix, rv.pdf(ch)])
     cols = xColDefsMATRIX([ENERGY_LO, ENERGY_HI, ngrp, fchan, nchan, matrix])
     matrix_hdu = fits.BinTableHDU.from_columns(cols)
-    _update_header(matrix_hdu, MATRIX_HEADER_SPECS, RESP_HEADER_COMMENTS)
+    update_header(matrix_hdu, MATRIX_HEADER_SPECS, RESP_HEADER_COMMENTS)
     print(repr(matrix_hdu.header))
     logger.info('Creating EBOUNDS HDU...')
     ch = numpy.arange(NUM_CHANNELS)
@@ -238,7 +229,7 @@ def make_rmf():
     emax = (ch + 1)*E_CHAN_SLOPE + E_CHAN_OFFSET
     cols = xColDefsEBOUNDS([ch, emin, emax])
     ebounds_hdu = fits.BinTableHDU.from_columns(cols)
-    _update_header(ebounds_hdu, EBOUNDS_HEADER_SPECS, RESP_HEADER_COMMENTS)
+    update_header(ebounds_hdu, EBOUNDS_HEADER_SPECS, RESP_HEADER_COMMENTS)
     print(repr(ebounds_hdu.header))
     logger.info('Writing output file %s...' % output_file_path)
     hdulist = fits.HDUList([primary_hdu, matrix_hdu, ebounds_hdu])
