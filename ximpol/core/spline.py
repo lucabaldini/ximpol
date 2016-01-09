@@ -61,6 +61,10 @@ class xUnivariateSplineBase:
     ----
     This is a do-nothing class to be subclassed and not instantiated
     directly.
+
+    Warn
+    ----
+    Can we avoid copying the vectors in the constructor?
     """
 
     def __init__(self, x, y, xname=None, xunits=None, yname=None, yunits=None):
@@ -131,15 +135,21 @@ class xUnivariateSplineBase:
 
     def build_cdf(self):
         """Create the cumulative distribution function.
+
+        Note that the cdf is built using a linear interpolated spline, no matter
+        what the class of the original spline is.
         """
-        _x = self.x.copy()
+        _x = self.x
         _y = numpy.array([self.integral(0, _xp) for _xp in _x])/self.norm()
         return xInterpolatedUnivariateSplineLinear(_x, _y)
 
     def build_ppf(self):
-        """Create the percent point function (or inverse of cdf).
+        """Create the percent point function (or inverse of the cdf).
+
+        Note that the cdf is built using a linear interpolated spline, no matter
+        what the class of the original spline is.
         """
-        _y = self.x.copy()
+        _y = self.x
         _x = numpy.array([self.integral(0, _xp) for _xp in _y])
         _x, _mask = numpy.unique(_x, return_index=True)
         _x/= self.norm()
@@ -369,39 +379,45 @@ class xInterpolatedBivariateSplineLinear(xBivariateSplineBase,
         """
         return RectBivariateSpline.__call__(self, x, y, None, dx, dy, grid)
 
-    def vslice(self, x, num_points=1000):
+    def vslice(self, x):
         """Return a vertical slice at a given x of the bivariate spline.
 
         Args
         ----
         x : float
             The x value at which the vertical slice should be calculated.
-
-        num_points : int, optional
-            The number of sampling points for the output univariate spline.
         """
-        _x = numpy.linspace(self.ymin(), self.ymax(), num_points)
+        _x = self.y
         _y = self(x, _x)
         fmt = dict(xname=self.yname, xunits=self.yunits, yname=self.zname,
                    yunits=self.zunits)
         return xInterpolatedUnivariateSplineLinear(_x, _y, **fmt)
 
-    def hslice(self, y, num_points=1000):
+    def hslice(self, y):
         """Return an horizontal slice at a given y of the bivariate spline.
 
         Args
         ----
         y : float
             The y value at which the horizontal slice should be calculated.
-
-        num_points : int, optional
-            The number of sampling points for the output univariate spline.
         """
-        _x = numpy.linspace(self.xmin(), self.xmax(), num_points)
+        _x = self.x
         _y = self(_x, y)
         fmt = dict(xname=self.xname, xunits=self.xunits, yname=self.zname,
                    yunits=self.zunits)
         return xInterpolatedUnivariateSplineLinear(_x, _y, **fmt)
+
+    def build_vppf(self, num_points=100):
+        """Create the vertical percent point function (or inverse of cdf).
+        """
+        _x = self.x.copy()
+        _y = numpy.linspace(0, 1, num_points)
+        _z = numpy.zeros(shape = (_x.size, _y.size))
+        for i, _xp in enumerate(_x):
+            _ppf = self.vslice(_xp).build_ppf()
+            for j, _yp in enumerate(_y):
+                _z[i, j] = _ppf(_yp)
+        return xInterpolatedBivariateSplineLinear(_x, _y, _z)
 
     def plot(self, num_pointsx=100, num_pointsy=100, num_contours=75,
              show=True):
