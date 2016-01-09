@@ -2,8 +2,9 @@ Release notes
 =============
 
 * New module ximpol.core.rand created (issue #16).
-* Major rework and speed up of the provisional observation simulator
-  (event loop removed).
+* Major rework and speed up of the provisional observation simulator (event
+  loop removed).
+* New event list classe in.
 * Some cleanup.
 
 
