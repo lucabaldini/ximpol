@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.4.0) - Sat, 09 Jan 2016 10:17:52 -0800*
+
 * New module ximpol.core.rand created (issue #16).
 * Major rework and speed up of the provisional observation simulator (event
   loop removed).
