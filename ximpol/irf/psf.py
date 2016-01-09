@@ -22,7 +22,7 @@ from astropy.io import fits
 
 from ximpol.utils.logging_ import logger
 from ximpol.irf.base import xColDefsBase, OGIP_HEADER_SPECS
-from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
+from ximpol.core.rand import xUnivariateGenerator
 
 
 PSF_HEADER_SPECS = [
@@ -45,7 +45,7 @@ class xColDefsPSF(xColDefsBase):
     ]
 
 
-class xPointSpreadFunction(xInterpolatedUnivariateSplineLinear):
+class xPointSpreadFunction(xUnivariateGenerator):
 
     """Class describing a (simplified, energy independent) PSF.
 
@@ -91,39 +91,29 @@ class xPointSpreadFunction(xInterpolatedUnivariateSplineLinear):
         N = _data['N']
         r_c = _data['R_C']
         eta = _data['ETA']
-        _x = numpy.linspace(0, rmax, 100)
-        _y = W*numpy.exp(-(_x**2/(2*sigma**2))) + N*(1 + (_x/r_c)**2)**(-eta)
-        fmt = dict(xname='r', xunits='arcsec', yname='PSF', yunits='sr$^-1$')
-        xInterpolatedUnivariateSplineLinear.__init__(self, _x, _y, **fmt)
-        self.ppf = self.build_ppf()
+        _r = numpy.linspace(0, rmax, 100)
+        _psf = W*numpy.exp(-(_r**2/(2*sigma**2))) + N*(1 + (_r/r_c)**2)**(-eta)
+        fmt = dict(rvname='r', rvunits='arcsec', pdfname='PSF',
+                   pdfunits='sr$^-1$')
+        xUnivariateGenerator.__init__(self, _r, _psf, **fmt)
 
     def plot(self, num_points=1000, overlay=False, logx=False, logy=True,
              show=True):
         """Overloaded plot method (with default log scale on the y-axis).
         """
-        xInterpolatedUnivariateSplineLinear.plot(self, num_points, overlay,
-                                                 logx, logy, show)
-
-    def rvs(self, size=1):
-        """Random variates.
-        """
-        return self.ppf(numpy.random.sample(size))
+        xUnivariateGenerator.plot(self, num_points, overlay, logx, logy, show)
 
     def delta(self, size=1):
         """Return an array of random offset (in ra, dec or L, B) due to the PSF.
 
-        The output is converted in degrees.
-
-        Warning
-        -------
-        Is this formula correct?
+        Note the output is converted in degrees.
         """
         rho = self.rvs(size)/3600.
         phi = numpy.random.uniform(0, 2*numpy.pi, size)
         return rho*numpy.cos(phi), rho*numpy.sin(phi)
 
     def smear_single(self, ra, dec, num_times=1):
-        """Smear a pair of coordinates.
+        """Smear a pair of coordinates for an arbitrary number of times.
         """
         delta_ra, delta_dec = self.delta(size=num_times)
         return ra + delta_ra, dec + delta_dec
@@ -148,12 +138,12 @@ def main():
     print(psf.rvs(10))
     ra, dec = 5.0, 12.3
     print(psf.smear_single(ra, dec, 10))
-    xmax = 50
-    plt.hist(psf.rvs(100000), xmax, (0, xmax), rwidth=1, histtype='step',
+    rmax = 50
+    plt.hist(psf.rvs(100000), rmax, (0, rmax), rwidth=1, histtype='step',
              lw=2, normed=True)
-    _x = numpy.linspace(0, xmax, xmax)
-    _y = psf(_x)/psf.norm()
-    plt.plot(_x, _y)
+    _r = numpy.linspace(0, rmax, rmax)
+    _psf = psf(_r)/psf.norm()
+    plt.plot(_r, _psf)
     plt.show()
 
 
