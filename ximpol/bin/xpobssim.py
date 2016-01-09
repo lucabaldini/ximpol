@@ -19,9 +19,7 @@
 
 __description__ = 'Run the ximpol fast simulator'
 
-
-import time
-import scipy
+import os
 import numpy
 from scipy import interpolate
 from matplotlib import pyplot as plt
@@ -30,12 +28,16 @@ from ximpol.srcmodel.xSource import xSource
 from ximpol.srcmodel.xGenerator import xGenerator
 from ximpol.srcmodel.xSpectralComponent import xSpectralComponent
 from ximpol.irf.xAeff import xAeff
-from ximpol.irf.xPsf import xPsf
-from ximpol.irf.xModulation import xModulation
-from ximpol.event.xEvent import xEvent
+from ximpol.irf.psf import xPointSpreadFunction
+from ximpol.irf.mrf import xModulationFactor
 from ximpol.event.xEventList import xEventList
 from ximpol.utils.profile import xChrono
 from ximpol.utils.logging_ import logger, startmsg
+from ximpol import XIMPOL_IRF
+from ximpol.utils.matplotlib_ import pyplot as plt
+from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
+from ximpol.core.spline import xInterpolatedBivariateSplineLinear
+from ximpol.core.rand import xUnivariateAuxGenerator
 
 
 def xpobssim(output_file_path, duration, start_time=0., time_steps=100,
@@ -46,34 +48,55 @@ def xpobssim(output_file_path, duration, start_time=0., time_steps=100,
     logger.info('Setting the random seed to %d...' % random_seed)
     numpy.random.seed(random_seed)
     logger.info('Loading the instrument response functions...')
-    aeff       = xAeff()
-    psf        = xPsf()
-    modulation = xModulation()
+    aeff = xAeff()
+    file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.psf')
+    psf = xPointSpreadFunction(file_path)
+    file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.mrf')
+    modf = xModulationFactor(file_path)
     logger.info('Done %s.' % chrono)
     logger.info('Setting up the source model...')
+
     stop_time = start_time + duration
     emin=1
     emax=10
     phi0= 44.
 
-    C=lambda t: 10.0*(1.0+scipy.cos(t))
-    gamma=lambda t: -2.1
+    # This is still needed for the spectrum.powerlaw(C(t),gamma(t))
+    # but eventually should be removed.
+    C = lambda t: 10.0*(1.0 + numpy.cos(t))
+    gamma = lambda t: -2.0 + 0.01*t
 
-    mySource=xSource('Crab')
-    ra0,dec0=mySource.getRADec()
-    spectrum=xSpectralComponent('spectrum')
+    mySource = xSource('Crab', resolve_name=False)
+    ra0, dec0 = mySource.getRADec()
+    spectrum = xSpectralComponent('spectrum')
 
-    times  = scipy.linspace(start_time, stop_time, time_steps)
+
+    # Set up the generator for the spectrum.
+    # Note we accidentally left out the convolution with the effective
+    # area, need to put that back in!!!!
+
+    def dNdE(E, t):
+        """Function defining a time-dependent energy spectrum.
+        """
+        return 10.0*(1.0 + numpy.cos(t))*numpy.power(E, (-2.0 + 0.01*t))
+
+    E = numpy.linspace(1, 10, 100)
+    t = numpy.linspace(0, 100, 100)
+    fmt = dict(auxname='Time', auxunits='s', rvname='Energy', rvunits='keV',
+               pdfname='dN/dE')
+    spec_gen = xUnivariateAuxGenerator(t, E, dNdE, **fmt)
+
+    times  = numpy.linspace(start_time, stop_time, time_steps)
     flux   = []
     events = []
     for t in times:
         spectrum.powerlaw(C(t),gamma(t))
-        x,y = aeff.convolve(spectrum)
-        f   = interpolate.UnivariateSpline(x,y,k=1,s=0)
+        x, y = aeff.convolve(spectrum)
+        f = interpolate.UnivariateSpline(x,y,k=1,s=0)
         flux.append(f.integral(emin,emax))
         pass
 
-    lc   = interpolate.UnivariateSpline(times,flux,k=1,s=0)
+    lc = interpolate.UnivariateSpline(times,flux,k=1,s=0)
     logger.info('Done %s.' % chrono)
     logger.info('Extracting the event times...')
     S = xGenerator(lc,lc.integral)
@@ -81,24 +104,33 @@ def xpobssim(output_file_path, duration, start_time=0., time_steps=100,
     events_times = S.generate()
     logger.info('Done %s, %d events generated.' % (chrono, len(events_times)))
 
-    event_list   = xEventList()
-    logger.info('Entering the event loop...')
-    for i,event_time in enumerate(events_times):
-        _event      = xEvent()
-        _event.time = event_time
+    event_list = xEventList()
+    event_list.time_array = events_times
+    event_list.energy_array = spec_gen.rvs(events_times)
+    event_list.ra_array, event_list.dec_array = \
+                        psf.smear_single(ra0, dec0, len(events_times))
 
-        spectrum.powerlaw(C(event_time),gamma(event_time))
-        energy_array,count_spectrum_array =  aeff.convolve(spectrum)
+    # Horrible hack for reducing the number of points, need to do this
+    # properly.
+    _x = numpy.linspace(0, 10, 20)
+    _y = modf(_x)
+    modf = xInterpolatedUnivariateSplineLinear(_x, _y)
 
-        f   = interpolate.UnivariateSpline(energy_array,count_spectrum_array,k=1,s=0)
-        S   = xGenerator(f,f.integral)
-        S.setMinMax(emin,emax)
-        _event.energy=S.generate(1)[0]
-        _ra,_dec=psf.smear(ra0,dec0)
-        _event.setRADec(_ra,_dec)
-        _event.angle= modulation.extract(_event.energy, phi0)
-        event_list.fill(_event)
-        pass
+    # And this seems to be fundamentally different from the
+    # xUnivariateAuxGenerator case, so an intermediate layer might be
+    # necessary.
+    _x = modf.x.copy()
+    _y = numpy.linspace(0, 2*numpy.pi, 100)
+    _z = numpy.zeros(shape = (_x.size, _y.size))
+    for i, _xp in enumerate(_x):
+        mu = modf(_xp)
+        for j, _yp in enumerate(_y):
+            _z[i, j] = (1.0 - mu)/2*numpy.pi +\
+                       mu/numpy.pi*numpy.power(numpy.cos(_yp - phi0), 2.)
+
+    modf_spline = xInterpolatedBivariateSplineLinear(_x, _y, _z)
+    modf_ppf = modf_spline.build_vppf()
+    event_list.angle_array = modf_ppf(event_list.energy_array, numpy.random.sample(len(event_list.energy_array)))
     logger.info('Done %s.' % chrono)
     logger.info('Writing output file %s...' % output_file_path)
     event_list.write_fits(output_file_path)
@@ -111,7 +143,8 @@ def xpobssim(output_file_path, duration, start_time=0., time_steps=100,
     plt.xlabel('Time [s]')
 
     ax = plt.subplot(222)
-    plt.hist2d(event_list.ra_array,event_list.dec_array,100,range=[[ra0-0.05,ra0+0.05],[dec0-0.05,dec0+0.05]])
+    fov = 50./3600
+    plt.hist2d(event_list.ra_array,event_list.dec_array,100,range=[[ra0-fov,ra0+fov],[dec0-fov,dec0+fov]])
     plt.xlabel('RA.')
     plt.ylabel('Dec.')
 
@@ -122,14 +155,14 @@ def xpobssim(output_file_path, duration, start_time=0., time_steps=100,
     plt.ylabel('Energy [keV]')
 
     ax = plt.subplot(224)
-    plt.hist(event_list.energy_array,bins=scipy.logspace(0,1,50),histtype='step')
+    plt.hist(event_list.energy_array,bins=numpy.logspace(0,1,50),histtype='step')
     plt.xscale('log')
     plt.yscale('log')
     plt.xlabel('Energy [keV]')
     logger.info('All done %s!' % chrono)
     plt.show()
 
-    #spectrum.plot(scipy.linspace(1,10,100))
+    #spectrum.plot(numpy.linspace(1,10,100))
     #plt.xscale('log')
     #plt.yscale('log')
     #spectrum.polarization(0.1,89)

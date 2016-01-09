@@ -14,20 +14,20 @@ class xEventList():
         self.b_array      = sp.array([],dtype='double')
         self.angle_array  = sp.array([],dtype='double')
         pass
-    
+
     def fill(self,event):
         self.energy_array=sp.append(self.energy_array,event.energy)
-        self.time_array=sp.append(self.time_array,event.time)
-        self.ra_array=sp.append(self.ra_array,event.ra)
-        self.dec_array=sp.append(self.dec_array,event.dec)
+        #self.time_array=sp.append(self.time_array,event.time)
+        #self.ra_array=sp.append(self.ra_array,event.ra)
+        #self.dec_array=sp.append(self.dec_array,event.dec)
         self.x_array=sp.append(self.x_array,event.x)
         self.y_array=sp.append(self.y_array,event.y)
         self.l_array=sp.append(self.l_array,event.l)
         self.b_array=sp.append(self.b_array,event.b)
         self.angle_array=sp.append(self.angle_array,event.angle)
         pass
-    
-    def write_fits(self,file_path):       
+
+    def write_fits(self,file_path):
         col_time = fits.Column(name='time', format='E', array=self.time_array)
         col_energy = fits.Column(name='energy', format='E', array=self.energy_array)
         col_ra = fits.Column(name='ra', format='E', array=self.ra_array)
@@ -39,4 +39,4 @@ class xEventList():
         col_angle = fits.Column(name='angle', format='E', array=self.angle_array)
         cols = fits.ColDefs([col_time,col_energy,col_ra,col_dec,col_l,col_b,col_x,col_y,col_angle])
         tbhdu = fits.BinTableHDU.from_columns(cols)
-        tbhdu.writeto(file_path,clobber=True)    
+        tbhdu.writeto(file_path,clobber=True)
