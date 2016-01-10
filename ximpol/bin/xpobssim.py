@@ -112,12 +112,6 @@ def xpobssim(output_file_path, duration, start_time=0., time_steps=100,
     event_list.set_column('RA', ra)
     event_list.set_column('DEC', dec)
 
-    # Horrible hack for reducing the number of points, need to do this
-    # properly.
-    _x = numpy.linspace(0, 10, 20)
-    _y = modf(_x)
-    modf = xInterpolatedUnivariateSplineLinear(_x, _y)
-
     # And this seems to be fundamentally different from the
     # xUnivariateAuxGenerator case, so an intermediate layer might be
     # necessary.
