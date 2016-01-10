@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.4.1) - Sun, 10 Jan 2016 08:01:03 -0800*
+
 * Grid optimization for the spline definition implemented (issue #15).
 * Small application for visualizing an event file (xpevtview.py) created,
   and plotting stuff moved out of xpobbsim.
