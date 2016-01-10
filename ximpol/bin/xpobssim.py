@@ -41,9 +41,8 @@ from ximpol.core.spline import xInterpolatedBivariateSplineLinear
 from ximpol.core.rand import xUnivariateAuxGenerator
 
 
-def xpobssim(output_file_path, duration, start_time=0., time_steps=100,
-            random_seed=0):
-    """ximpol fast simulator.
+def xpobssim(output_file_path, duration, start_time, time_steps, random_seed):
+    """Run the ximpol fast simulator.
     """
     chrono = xChrono()
     logger.info('Setting the random seed to %d...' % random_seed)
@@ -168,8 +167,7 @@ if __name__=='__main__':
     parser.add_argument('-o', '--output-file', type=str, default=None,
                         required=True,
                         help='the output FITS event file')
-    parser.add_argument('-d', '--duration', type=float, default=None,
-                        required=True,
+    parser.add_argument('-d', '--duration', type=float, default=10,
                         help='the duration (in s) of the simulation')
     parser.add_argument('-t', '--start-time', type=float, default=0.,
                         help='the start time (MET in s) of the simulation')
