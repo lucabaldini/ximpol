@@ -23,7 +23,6 @@ __description__ = 'Run the ximpol fast simulator'
 import os
 import numpy
 from scipy import interpolate
-from matplotlib import pyplot as plt
 
 from ximpol.srcmodel.xSource import xSource
 from ximpol.srcmodel.xGenerator import xGenerator
@@ -104,6 +103,7 @@ def xpobssim(output_file_path, duration, start_time, time_steps, random_seed):
     events_times = S.generate()
     logger.info('Done %s, %d events generated.' % (chrono, len(events_times)))
 
+    logger.info('Filling columns')
     event_list = xMonteCarloEventList()
     event_list.set_column('TIME', events_times)
     event_list.set_column('ENERGY', spec_gen.rvs(events_times))
@@ -130,35 +130,8 @@ def xpobssim(output_file_path, duration, start_time, time_steps, random_seed):
                          numpy.random.sample(len(event_list)))
     event_list.set_column('PE_ANGLE', pe_angles)
     logger.info('Done %s.' % chrono)
-    logger.info('Writing output file %s...' % output_file_path)
     event_list.write_fits(output_file_path)
-
-    logger.info('Plotting stuff...')
-    fig=plt.figure(figsize=(10,10), facecolor='w')
-    ax = plt.subplot(221)
-    plt.plot(times, flux)
-    plt.xlabel('Time [s]')
-
-    ax = plt.subplot(222)
-    fov = 50./3600
-    plt.hist2d(event_list['RA'], event_list['DEC'],100,
-               range=[[ra0-fov,ra0+fov],[dec0-fov,dec0+fov]])
-    plt.xlabel('RA.')
-    plt.ylabel('Dec.')
-
-    ax = plt.subplot(223)
-    plt.plot(event_list['TIME'], event_list['ENERGY'], 'o')
-    plt.yscale('log')
-    plt.xlabel('Time [s]')
-    plt.ylabel('Energy [keV]')
-
-    ax = plt.subplot(224)
-    plt.hist(event_list['ENERGY'], bins=numpy.logspace(0,1,50),histtype='step')
-    plt.xscale('log')
-    plt.yscale('log')
-    plt.xlabel('Energy [keV]')
     logger.info('All done %s!' % chrono)
-    plt.show()
 
 
 if __name__=='__main__':

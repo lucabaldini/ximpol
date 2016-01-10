@@ -103,7 +103,7 @@ class xMonteCarloEventList(dict):
             self.length = len(data)
         self[name] = data
 
-    def write_fits(self,file_path):
+    def write_fits(self, file_path):
         """Write the event list to file.
         """
         primary_hdu = xPrimaryHDU()
@@ -116,7 +116,7 @@ class xMonteCarloEventList(dict):
         hdulist = fits.HDUList([primary_hdu, event_hdu])
         hdulist.info()
         hdulist.writeto(file_path, clobber=True)
-
+        logger.info('Event list written to %s...' % file_path)
 
 
 def main():
