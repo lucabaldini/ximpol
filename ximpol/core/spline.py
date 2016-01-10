@@ -29,12 +29,29 @@ from ximpol.utils.logging_ import logger
 
 
 def interpolate(xa, ya, xb, yb, x):
-    """Simple two-point linear extrapolation.
+    """Simple two-point linear interpolation/extrapolation.
     """
     return ya + (yb - ya)/(xb - xa)*(x - xa)
 
 def optimize_grid_linear(x, y, tolerance=1e-4):
-    """
+    """Optimize a pair of (x, y) arrays for the corresponding spline
+    definition.
+
+    This loops over the input arrays and removes unnecessary data points
+    to minimize the length of the arrays necessary to the spline definition.
+
+    Args
+    ----
+    x : array
+        The input x-array.
+
+    y : array
+        The input y-array.
+
+    tolerance : float
+        The maximum relative difference between the generic yi value and the\
+        estrapolation of the two previous optimized data points for the point\
+        i to be removed.
     """
     assert(len(x) == len(y))
     logger.info('Optimizing grid with %d starting points...' % len(x))
@@ -286,6 +303,37 @@ class xInterpolatedUnivariateSplineLinear(xInterpolatedUnivariateSpline):
 
     """xInterpolatedUnivariateSplineLinear subclass implementing the simplest
     possible linear interpolator.
+
+    This particular class is offering the facility to optimize the input
+    arrays via the `optimize` argument.
+
+    Args
+    ----
+    x : array
+        Input x values (assumed to be sorted).
+
+    y : array
+        Input y values.
+
+    xname: str, optional
+        The name of the quantity on the x-axis.
+
+    xunits: str, optional
+        The units for the x-axis.
+
+    yname: str, optional
+        The name of the quantity on the y-axis.
+
+    yunits: str, optional
+        The units for the y-axis.
+
+    optimize : bool
+        If `True`, the input arrays are optimized via the\
+        `optimize_grid_linear()` function.
+
+    tolerance : float
+        The tolerance for the input array optimization. (If `optimize` is\
+        `False`, this has no effect.)
 
     Example
     -------
