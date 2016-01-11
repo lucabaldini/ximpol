@@ -92,15 +92,15 @@ class xModulationFactor(xInterpolatedUnivariateSplineLinear):
         """Construct the underlying generator to throw random numbers
         according to the proper distribution.
 
-        Warn
-        ----
+        Warning
+        -------
         This seems to be fundamentally different from the
         xUnivariateAuxGenerator case, so an intermediate layer might be
         necessary, but we should try and use xUnivariateAuxGenerator
         instead.
 
-        Warn
-        ----
+        Warning
+        -------
         Polarization degree is not used, yet.
         """
         _x = self.x.copy()

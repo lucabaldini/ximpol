@@ -117,8 +117,8 @@ class xUnivariateSplineBase:
     This is a do-nothing class to be subclassed and not instantiated
     directly.
 
-    Warn
-    ----
+    Warning
+    -------
     Can we avoid copying the vectors in the constructor?
     """
 
