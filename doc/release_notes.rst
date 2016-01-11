@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.4.2) - Mon, 11 Jan 2016 07:08:21 -0800*
+
 * Minor refactoring.
 
 
