@@ -88,6 +88,36 @@ class xModulationFactor(xInterpolatedUnivariateSplineLinear):
                    optimize=True, tolerance=1e-4)
         xInterpolatedUnivariateSplineLinear.__init__(self, _x, _y, **fmt)
 
+    @classmethod
+    def mu(self, A, B):
+        """Return the modulation factor for an azimuthal distribution like
+
+        >>> N(phi) = A + B*(cos(phi - phi0))**2
+
+        with `A` and `B` passed as arguments.
+        """
+        return B/(2*A + B)
+
+    @classmethod
+    def A(self, mu):
+        """Return the `A` parameter for the azimuthal cos-square distribution
+        given the modulation factor `mu`.
+
+        (This is calculated in a such a way the overall distribution is
+        normalized to 1.)
+        """
+        return (1 - mu)/(2*numpy.pi)
+
+    @classmethod
+    def B(self, mu):
+        """Return the `B` parameter for the azimuthal cos-square distribution
+        given the modulation factor `mu`.
+
+        (This is calculated in a such a way the overall distribution is
+        normalized to 1.)
+        """
+        return mu/numpy.pi
+
     def build_generator(self, polarization_angle=0, polarization_degree=1):
         """Construct the underlying generator to throw random numbers
         according to the proper distribution.
@@ -109,7 +139,7 @@ class xModulationFactor(xInterpolatedUnivariateSplineLinear):
         for i, _xp in enumerate(_x):
             mu = self(_xp)
             for j, _yp in enumerate(_y):
-                _z[i, j] = (1.0 - mu)/2*numpy.pi + mu/numpy.pi*numpy.power(
+                _z[i, j] = self.A(mu) + self.B(mu)*numpy.power(
                     numpy.cos(_yp - polarization_angle), 2.)
         self.generator = xInterpolatedBivariateSplineLinear(_x, _y, _z)
         self.vppf = self.generator.build_vppf()

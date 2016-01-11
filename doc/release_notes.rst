@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* Bug fix in the modulation factor. 
+
 
 *ximpol (0.4.2) - Mon, 11 Jan 2016 07:08:21 -0800*
 
