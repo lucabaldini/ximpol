@@ -17,11 +17,13 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
+import numpy
 from astropy.io import fits
 
 from ximpol.utils.logging_ import logger
 from ximpol.irf.base import xColDefsBase, OGIP_HEADER_SPECS
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
+from ximpol.core.spline import xInterpolatedBivariateSplineLinear
 from ximpol.core.spline import optimize_grid_linear
 
 
@@ -85,6 +87,37 @@ class xModulationFactor(xInterpolatedUnivariateSplineLinear):
         fmt = dict(xname='Energy', xunits='keV', yname='Modulation factor',
                    optimize=True, tolerance=1e-4)
         xInterpolatedUnivariateSplineLinear.__init__(self, _x, _y, **fmt)
+
+    def build_generator(self, polarization_angle=0, polarization_degree=1):
+        """Construct the underlying generator to throw random numbers
+        according to the proper distribution.
+
+        Warn
+        ----
+        This seems to be fundamentally different from the
+        xUnivariateAuxGenerator case, so an intermediate layer might be
+        necessary, but we should try and use xUnivariateAuxGenerator
+        instead.
+
+        Warn
+        ----
+        Polarization degree is not used, yet.
+        """
+        _x = self.x.copy()
+        _y = numpy.linspace(0, 2*numpy.pi, 100)
+        _z = numpy.zeros(shape = (_x.size, _y.size))
+        for i, _xp in enumerate(_x):
+            mu = self(_xp)
+            for j, _yp in enumerate(_y):
+                _z[i, j] = (1.0 - mu)/2*numpy.pi + mu/numpy.pi*numpy.power(
+                    numpy.cos(_yp - polarization_angle), 2.)
+        self.generator = xInterpolatedBivariateSplineLinear(_x, _y, _z)
+        self.vppf = self.generator.build_vppf()
+
+    def rvs(self, E):
+        """Return random variates for a given array of values of energies.
+        """
+        return self.vppf(E, numpy.random.sample(len(E)))
 
 
 def main():

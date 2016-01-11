@@ -43,6 +43,11 @@ from ximpol.core.rand import xUnivariateAuxGenerator
 def xpobssim(output_file_path, duration, start_time, time_steps, random_seed):
     """Run the ximpol fast simulator.
     """
+    stop_time = start_time + duration
+    min_energy = 1
+    max_energy = 10
+    phi0 = 44.
+
     chrono = xChrono()
     logger.info('Setting the random seed to %d...' % random_seed)
     numpy.random.seed(random_seed)
@@ -52,13 +57,9 @@ def xpobssim(output_file_path, duration, start_time, time_steps, random_seed):
     psf = xPointSpreadFunction(file_path)
     file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.mrf')
     modf = xModulationFactor(file_path)
+    modf.build_generator(phi0)
     logger.info('Done %s.' % chrono)
     logger.info('Setting up the source model...')
-
-    stop_time = start_time + duration
-    emin=1
-    emax=10
-    phi0= 44.
 
     # This is still needed for the spectrum.powerlaw(C(t),gamma(t))
     # but eventually should be removed.
@@ -91,15 +92,15 @@ def xpobssim(output_file_path, duration, start_time, time_steps, random_seed):
     for t in times:
         spectrum.powerlaw(C(t),gamma(t))
         x, y = aeff.convolve(spectrum)
-        f = interpolate.UnivariateSpline(x,y,k=1,s=0)
-        flux.append(f.integral(emin,emax))
+        f = interpolate.UnivariateSpline(x, y, k=1, s=0)
+        flux.append(f.integral(min_energy, max_energy))
         pass
 
     lc = interpolate.UnivariateSpline(times,flux,k=1,s=0)
     logger.info('Done %s.' % chrono)
     logger.info('Extracting the event times...')
-    S = xGenerator(lc,lc.integral)
-    S.setMinMax(start_time,stop_time)
+    S = xGenerator(lc, lc.integral)
+    S.setMinMax(start_time, stop_time)
     events_times = S.generate()
     logger.info('Done %s, %d events generated.' % (chrono, len(events_times)))
 
@@ -110,25 +111,7 @@ def xpobssim(output_file_path, duration, start_time, time_steps, random_seed):
     ra, dec = psf.smear_single(ra0, dec0, len(event_list))
     event_list.set_column('RA', ra)
     event_list.set_column('DEC', dec)
-
-    # And this seems to be fundamentally different from the
-    # xUnivariateAuxGenerator case, so an intermediate layer might be
-    # necessary.
-    _x = modf.x.copy()
-    _y = numpy.linspace(0, 2*numpy.pi, 100)
-    _z = numpy.zeros(shape = (_x.size, _y.size))
-    for i, _xp in enumerate(_x):
-        mu = modf(_xp)
-        for j, _yp in enumerate(_y):
-            _z[i, j] = (1.0 - mu)/2*numpy.pi +\
-                       mu/numpy.pi*numpy.power(numpy.cos(_yp - phi0), 2.)
-
-    modf_spline = xInterpolatedBivariateSplineLinear(_x, _y, _z)
-    modf_ppf = modf_spline.build_vppf()
-
-    pe_angles = modf_ppf(event_list['ENERGY'],\
-                         numpy.random.sample(len(event_list)))
-    event_list.set_column('PE_ANGLE', pe_angles)
+    event_list.set_column('PE_ANGLE', modf.rvs(event_list['ENERGY']))
     logger.info('Done %s.' % chrono)
     event_list.write_fits(output_file_path)
     logger.info('All done %s!' % chrono)
