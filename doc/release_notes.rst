@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.5.0) - Tue, 12 Jan 2016 15:24:17 -0800*
+
 * A couple of bug fixes in the irf.mrf module.
 * Major xpobbsim refactoring using all the new classes.
 
