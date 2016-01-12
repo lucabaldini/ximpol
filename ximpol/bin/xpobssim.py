@@ -28,6 +28,7 @@ from ximpol.srcmodel.xSource import xSource
 from ximpol.srcmodel.xGenerator import xGenerator
 from ximpol.srcmodel.xSpectralComponent import xSpectralComponent
 from ximpol.irf.xAeff import xAeff
+from ximpol.irf.arf import xEffectiveArea
 from ximpol.irf.psf import xPointSpreadFunction
 from ximpol.irf.mrf import xModulationFactor
 from ximpol.event import xMonteCarloEventList
@@ -38,81 +39,60 @@ from ximpol.utils.matplotlib_ import pyplot as plt
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
 from ximpol.core.spline import xInterpolatedBivariateSplineLinear
 from ximpol.core.rand import xUnivariateAuxGenerator
+from ximpol.srcmodel.spectrum import xCountSpectrum
 
 
 def xpobssim(output_file_path, duration, start_time, time_steps, random_seed):
     """Run the ximpol fast simulator.
     """
-    stop_time = start_time + duration
-    min_energy = 1
-    max_energy = 10
-    phi0 = 44.
-
     chrono = xChrono()
     logger.info('Setting the random seed to %d...' % random_seed)
     numpy.random.seed(random_seed)
+
     logger.info('Loading the instrument response functions...')
-    aeff = xAeff()
+    file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.arf')
+    aeff = xEffectiveArea(file_path)
     file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.psf')
     psf = xPointSpreadFunction(file_path)
     file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.mrf')
     modf = xModulationFactor(file_path)
-    modf.build_generator(phi0)
     logger.info('Done %s.' % chrono)
-    logger.info('Setting up the source model...')
 
-    # This is still needed for the spectrum.powerlaw(C(t),gamma(t))
-    # but eventually should be removed.
-    C = lambda t: 10.0*(1.0 + numpy.cos(t))
-    gamma = lambda t: -2.0 + 0.01*t
+    logger.info('Setting up the source model...')
+    stop_time = start_time + duration
+    min_energy = 1
+    max_energy = 10
+    polarization_angle = 44.
+    polarization_degree = 1.
 
     mySource = xSource('Crab', resolve_name=False)
-    ra0, dec0 = mySource.getRADec()
-    spectrum = xSpectralComponent('spectrum')
-
-
-    # Set up the generator for the spectrum.
-    # Note we accidentally left out the convolution with the effective
-    # area, need to put that back in!!!!
+    source_ra, source_dec = mySource.getRADec()
 
     def dNdE(E, t):
         """Function defining a time-dependent energy spectrum.
         """
         return 10.0*(1.0 + numpy.cos(t))*numpy.power(E, (-2.0 + 0.01*t))
 
-    E = numpy.linspace(1, 10, 100)
-    t = numpy.linspace(0, 100, 100)
-    fmt = dict(auxname='Time', auxunits='s', rvname='Energy', rvunits='keV',
-               pdfname='dN/dE')
-    spec_gen = xUnivariateAuxGenerator(t, E, dNdE, **fmt)
-
-    times  = numpy.linspace(start_time, stop_time, time_steps)
-    flux   = []
-    events = []
-    for t in times:
-        spectrum.powerlaw(C(t),gamma(t))
-        x, y = aeff.convolve(spectrum)
-        f = interpolate.UnivariateSpline(x, y, k=1, s=0)
-        flux.append(f.integral(min_energy, max_energy))
-        pass
-
-    lc = interpolate.UnivariateSpline(times,flux,k=1,s=0)
+    t = numpy.linspace(start_time, stop_time, time_steps)
+    count_spectrum = xCountSpectrum(dNdE, aeff, t)
+    modf.build_generator(polarization_angle, polarization_degree)
     logger.info('Done %s.' % chrono)
-    logger.info('Extracting the event times...')
-    S = xGenerator(lc, lc.integral)
-    S.setMinMax(start_time, stop_time)
-    events_times = S.generate()
-    logger.info('Done %s, %d events generated.' % (chrono, len(events_times)))
 
-    logger.info('Filling columns')
+    logger.info('Extracting the event times...')
+    num_events = numpy.random.poisson(count_spectrum.light_curve.norm())
+    event_times = count_spectrum.light_curve.rvs(num_events)
+    logger.info('Done %s, %d events generated.' % (chrono, num_events))
+
+    logger.info('Filling output columns...')
     event_list = xMonteCarloEventList()
-    event_list.set_column('TIME', events_times)
-    event_list.set_column('ENERGY', spec_gen.rvs(events_times))
-    ra, dec = psf.smear_single(ra0, dec0, len(event_list))
+    event_list.set_column('TIME', event_times)
+    event_list.set_column('ENERGY', count_spectrum.rvs(event_times))
+    ra, dec = psf.smear_single(source_ra, source_dec, num_events)
     event_list.set_column('RA', ra)
     event_list.set_column('DEC', dec)
     event_list.set_column('PE_ANGLE', modf.rvs(event_list['ENERGY']))
     logger.info('Done %s.' % chrono)
+
     event_list.write_fits(output_file_path)
     logger.info('All done %s!' % chrono)
 
