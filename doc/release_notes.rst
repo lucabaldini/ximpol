@@ -1,7 +1,7 @@
 Release notes
 =============
 
-* Bug fix in the modulation factor. 
+* A couple of bug fixes in the irf.mrf module.
 
 
 *ximpol (0.4.2) - Mon, 11 Jan 2016 07:08:21 -0800*

@@ -122,6 +122,14 @@ class xModulationFactor(xInterpolatedUnivariateSplineLinear):
         """Construct the underlying generator to throw random numbers
         according to the proper distribution.
 
+        Arguments
+        ---------
+        polarization_angle : float
+            The polarization angle in degrees [0--360].
+
+        polarization_degree : float
+            The polarization degree [0--1].
+
         Warning
         -------
         This seems to be fundamentally different from the
@@ -140,7 +148,7 @@ class xModulationFactor(xInterpolatedUnivariateSplineLinear):
             mu = self(_xp)
             for j, _yp in enumerate(_y):
                 _z[i, j] = self.A(mu) + self.B(mu)*numpy.power(
-                    numpy.cos(_yp - polarization_angle), 2.)
+                    numpy.cos(_yp - numpy.radians(polarization_angle)), 2.)
         self.generator = xInterpolatedBivariateSplineLinear(_x, _y, _z)
         self.generator_vppf = self.generator.build_vppf()
 
