@@ -22,12 +22,7 @@ __description__ = 'Run the ximpol fast simulator'
 
 import os
 import numpy
-from scipy import interpolate
 
-from ximpol.srcmodel.xSource import xSource
-from ximpol.srcmodel.xGenerator import xGenerator
-from ximpol.srcmodel.xSpectralComponent import xSpectralComponent
-from ximpol.irf.xAeff import xAeff
 from ximpol.irf.arf import xEffectiveArea
 from ximpol.irf.psf import xPointSpreadFunction
 from ximpol.irf.mrf import xModulationFactor
@@ -35,11 +30,8 @@ from ximpol.event import xMonteCarloEventList
 from ximpol.utils.profile import xChrono
 from ximpol.utils.logging_ import logger, startmsg
 from ximpol import XIMPOL_IRF
-from ximpol.utils.matplotlib_ import pyplot as plt
-from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
-from ximpol.core.spline import xInterpolatedBivariateSplineLinear
-from ximpol.core.rand import xUnivariateAuxGenerator
 from ximpol.srcmodel.spectrum import xCountSpectrum
+from ximpol.srcmodel.xSource import xSource
 
 
 def xpobssim(output_file_path, duration, start_time, time_steps, random_seed):
