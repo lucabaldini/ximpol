@@ -118,7 +118,7 @@ class xModulationFactor(xInterpolatedUnivariateSplineLinear):
         """
         return mu/numpy.pi
 
-    def build_generator(self, polarization_angle=0, polarization_degree=1):
+    def build_generator(self, polarization_angle=0., polarization_degree=1.):
         """Construct the underlying generator to throw random numbers
         according to the proper distribution.
 
@@ -142,12 +142,12 @@ class xModulationFactor(xInterpolatedUnivariateSplineLinear):
                 _z[i, j] = self.A(mu) + self.B(mu)*numpy.power(
                     numpy.cos(_yp - polarization_angle), 2.)
         self.generator = xInterpolatedBivariateSplineLinear(_x, _y, _z)
-        self.vppf = self.generator.build_vppf()
+        self.generator_vppf = self.generator.build_vppf()
 
     def rvs(self, E):
         """Return random variates for a given array of values of energies.
         """
-        return self.vppf(E, numpy.random.sample(len(E)))
+        return self.generator_vppf(E, numpy.random.sample(len(E)))
 
 
 def main():
