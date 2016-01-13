@@ -103,7 +103,7 @@ class xEnergyDispersionMatrix(xUnivariateAuxGenerator):
     We should keep an eye on it.
     """
 
-    def __init__(self, hdu, num_aux_points=100):
+    def __init__(self, hdu, num_aux_points=200):
         """Constructor.
         """
         # First build a bivariate spline with the full data grid.
