@@ -42,7 +42,7 @@ _CLASSIFIERS = [
     'Topic :: Scientific/Engineering :: Astronomy',
     'Development Status :: 2 - Pre-Alpha'
 ]
-_SCRIPTS = [glob.glob('./ximpol/bin/*.py')]
+_SCRIPTS = []#glob.glob('./ximpol/bin/*.py')
 _DEPENDENCIES =[
     'numpy',
     'matplotlib',
@@ -51,10 +51,6 @@ _DEPENDENCIES =[
     'scipy'
 ]
 
-# Note: I removed "include_package_data=True" below following this thread
-# https://github.com/django-salesforce/django-salesforce/issues/19
-# in an attempt to get read of the error
-# error: Error: setup script specifies an absolute path:
 
 _KWARGS = dict(name=PACKAGE_NAME,
                version=TAG,
@@ -62,6 +58,7 @@ _KWARGS = dict(name=PACKAGE_NAME,
                description=_DESCRIPTION,
                license=_LICENSE,
                packages=_PACKAGES,
+               include_package_data=True,
                url=_URL,
                classifiers=_CLASSIFIERS,
                scripts=_SCRIPTS,
