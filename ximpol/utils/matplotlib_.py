@@ -20,11 +20,12 @@
 """matplotlib configuration module.
 """
 
-
-from matplotlib import pyplot
-
 import matplotlib
 import numpy
+import time
+from matplotlib import pyplot
+
+from ximpol.__version__ import TAG
 
 
 DEFAULT_FIG_WIDTH = 8.
@@ -49,6 +50,13 @@ def context_no_grids():
     """
     _rc = {'axes.grid': False}
     return matplotlib.rc_context(rc = _rc)
+
+def overlay_tag(x=0.95, y=0.95, color='black'):
+    """Overlay the ximpol tag on the current figure.
+    """
+    text = 'Created by ximpol %s on %s' % (TAG, time.asctime())
+    pyplot.text(x, y, text, color=color, size=10, horizontalalignment='right',
+                transform=pyplot.gca().transAxes)
 
 def setup():
     """Basic setup.

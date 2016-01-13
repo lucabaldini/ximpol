@@ -30,6 +30,7 @@ from ximpol.irf.arf import xEffectiveArea
 from ximpol.srcmodel.spectrum import xCountSpectrum
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
 from ximpol.utils.matplotlib_ import pyplot as plt
+from ximpol.utils.matplotlib_ import overlay_tag
 
 
 class TestCountSpectrum(unittest.TestCase):
@@ -47,10 +48,17 @@ class TestCountSpectrum(unittest.TestCase):
     def test_power_law_stationary(self, interactive=False):
         """Test a time-independent power law.
 
-        This creates a count spectrum witn no time dependence, i.e., with
+        This creates a count spectrum with no time dependence, i.e., with
         only two (identical) interpolating time points on the auxiliary
-        (time) axis. The power-law parameters (C and gamma) are constant and the
-        underlying xUnivariateAuxGenerator looks like.
+        (time) axis. The power-law parameters (C and gamma) are constant
+
+        >>> C = 1.
+        >>> Gamma = 2.
+        >>>
+        >>> def powerlaw(E, t):
+        >>>     return C*numpy.power(E, -Gamma)
+
+        and the underlying xUnivariateAuxGenerator looks like.
 
         .. image:: ../../ximpol/test/figures/test_power_law_stationary_2d.png
 
@@ -78,22 +86,60 @@ class TestCountSpectrum(unittest.TestCase):
         _t = numpy.linspace(tmin, tmax, 2)
         count_spectrum = xCountSpectrum(powerlaw, self.aeff, _t)
         count_spectrum.plot(show=interactive)
+        overlay_tag(color='white')
         save_current_figure('test_power_law_stationary_2d.png')
 
         ref_slice = count_spectrum.slice(tref)
         _x = self.aeff.x
-        _y = self.aeff.y.max()*C*numpy.power(_x, -Gamma)
-        plt.plot(_x, _y, '-')
+        _y = C*numpy.power(_x, -Gamma)*self.aeff.y.max()
+        plt.plot(_x, _y, '-', label='Original power-law spectrum')
         _y = C*numpy.power(_x, -Gamma)*self.aeff.y
-        plt.plot(_x, _y, 'o')
-        ref_slice.plot(logx=True, logy=True, show=interactive)
-        save_current_figure('test_power_law_stationary_slice.png')
-
         delta = abs((_y - ref_slice(_x))/_y).max()
         self.assertTrue(delta < 1e-3, 'max deviation %.9f' % delta)
+        plt.plot(_x, _y, 'o', label='Direct convolution with aeff')
+        ref_slice.plot(logx=True, logy=True, show=interactive,
+                       label='xCountSpectrum output')
+        overlay_tag()
+        plt.text(0.1, 0.1, 'Max. difference = %.3e' % delta,
+                 transform=plt.gca().transAxes)
+        plt.legend(bbox_to_anchor=(0.65, 0.5))
+        save_current_figure('test_power_law_stationary_slice.png')
+
+
 
     def test_power_law_variable(self, interactive=False):
         """Test a time-dependent power law.
+
+        This creates a time-dependent count spectrum, where the two parameters
+        of the underlying power law (C and Gamma) vary linearly with time, in
+        opposite direction, between 1 and 2.
+
+        >>> def C(t):
+        >>>     return 1. + (t - tmin)/(tmax - tmin)
+        >>>
+        >>> def Gamma(t):
+        >>>    return 2. - (t - tmin)/(tmax - tmin)
+        >>>
+        >>> def powerlaw(E, t):
+        >>>    return C(t)*numpy.power(E, -Gamma(t))
+
+        (Beware: this does not mean that you can interpolate linearly between
+        the two time extremes, as both parameters vary at the same time and
+        the spectral shape does not evolve linearly with time---we're sampling
+        the time axis with 100 points).
+        The underlying xUnivariateAuxGenerator looks like.
+
+        .. image:: ../../ximpol/test/figures/test_power_law_variable_2d.png
+
+        Then a vertical slice (i.e., an interpolated linear spline) is taken
+        in the middle of the auxiliary axis and the y-values of the spline
+        are compared with the direct product of the effective area and the
+        count spectrum (evaluated at the same time). If everything goes well,
+        they should be on top of each other. The figure below is also showing
+        the orignal power-law spectrum multiplied by the peak effective area.
+
+        .. image:: ../../ximpol/test/figures/test_power_law_variable_slice.png
+
         """
         tmin = 0.
         tmax = 100.
@@ -118,19 +164,25 @@ class TestCountSpectrum(unittest.TestCase):
         _t = numpy.linspace(tmin, tmax, 100)
         count_spectrum = xCountSpectrum(powerlaw, self.aeff, _t)
         count_spectrum.plot(show=interactive)
+        overlay_tag(color='white')
         save_current_figure('test_power_law_variable_2d.png')
 
         ref_slice = count_spectrum.slice(tref)
         _x = self.aeff.x
         _y = self.aeff.y.max()*C(tref)*numpy.power(_x, -Gamma(tref))
-        plt.plot(_x, _y, '-')
+        plt.plot(_x, _y, '-', label='Original power-law spectrum')
         _y = C(tref)*numpy.power(_x, -Gamma(tref))*self.aeff.y
-        plt.plot(_x, _y, 'o')
-        ref_slice.plot(logx=True, logy=True, show=interactive)
-        save_current_figure('test_power_law_variable_slice.png')
-
         delta = abs((_y - ref_slice(_x))/_y).max()
         self.assertTrue(delta < 1e-3, 'max deviation %.9f' % delta)
+        plt.plot(_x, _y, 'o', label='Direct convolution with aeff')
+        ref_slice.plot(logx=True, logy=True, show=interactive,
+                       label='xCountSpectrum output')
+        overlay_tag()
+        plt.text(0.1, 0.1, 'Max. difference = %.3e' % delta,
+                 transform=plt.gca().transAxes)
+        plt.legend(bbox_to_anchor=(0.65, 0.5))
+        save_current_figure('test_power_law_variable_slice.png')
+
 
 
 
