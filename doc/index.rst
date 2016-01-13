@@ -14,6 +14,7 @@ Contents:
    installation
    quick_start
    code_development
+   system_tests
    release_notes
    about
 

@@ -2,7 +2,7 @@ Release notes
 =============
 
 * Parameter tweak in the xEnergyDispersionMatric class.
-* Added unit test for the xCountSpectrum class.
+* Added unit test for the xCountSpectrum class, with inline images.
 * One unit test relaxed.
 
 

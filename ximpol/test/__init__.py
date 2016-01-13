@@ -19,7 +19,7 @@
 
 import os
 
-from ximpol import XIMPOL_DOC_FIGURES
+from ximpol import XIMPOL_TEST_FIGURES
 from ximpol.utils.matplotlib_ import pyplot as plt
 
 
@@ -34,7 +34,7 @@ def save_current_figure(file_name, clear=True):
     clear : bool
         If `True`, the current image is cleared after the fact.
     """
-    file_path = os.path.join(XIMPOL_DOC_FIGURES, file_name)
+    file_path = os.path.join(XIMPOL_TEST_FIGURES, file_name)
     plt.savefig(file_path)
     if clear:
         plt.clf()

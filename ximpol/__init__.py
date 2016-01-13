@@ -41,6 +41,7 @@ XIMPOL_IRF = os.path.join(XIMPOL_ROOT, 'irf')
 XIMPOL_NOTEBOOKS = os.path.join(XIMPOL_BASE, 'notebooks')
 XIMPOL_SRCMODEL = os.path.join(XIMPOL_ROOT, 'srcmodel')
 XIMPOL_TEST = os.path.join(XIMPOL_ROOT, 'test')
+XIMPOL_TEST_FIGURES = os.path.join(XIMPOL_ROOT, 'test', 'figures')
 XIMPOL_TOOLS = os.path.join(XIMPOL_BASE, 'tools')
 XIMPOL_UTILS = os.path.join(XIMPOL_ROOT, 'utils')
 

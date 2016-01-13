@@ -40,14 +40,29 @@ class TestCountSpectrum(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         """Setup.
-
-        Create a few objects to be used for testing.
         """
         file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.arf')
         self.aeff = xEffectiveArea(file_path)
 
     def test_power_law_stationary(self, interactive=False):
         """Test a time-independent power law.
+
+        This creates a count spectrum witn no time dependence, i.e., with
+        only two (identical) interpolating time points on the auxiliary
+        (time) axis. The power-law parameters (C and gamma) are constant and the
+        underlying xUnivariateAuxGenerator looks like.
+
+        .. image:: ../../ximpol/test/figures/test_power_law_stationary_2d.png
+
+        Then a vertical slice (i.e., an interpolated linear spline) is taken
+        in the middle of the auxiliary axis and the y-values of the spline
+        are compared with the direct product of the effective area and the
+        count spectrum. If everything goes well, they should be on top
+        of each other. The figure below is also showing the orignal power-law
+        spectrum multiplied by the peak effective area.
+
+        .. image:: ../../ximpol/test/figures/test_power_law_stationary_slice.png
+
         """
         tmin = 0.
         tmax = 100.
@@ -78,7 +93,7 @@ class TestCountSpectrum(unittest.TestCase):
         self.assertTrue(delta < 1e-3, 'max deviation %.9f' % delta)
 
     def test_power_law_variable(self, interactive=False):
-        """Test a time-independent power law.
+        """Test a time-dependent power law.
         """
         tmin = 0.
         tmax = 100.
