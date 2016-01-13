@@ -54,6 +54,14 @@ GPD_QEFF_FILE_PATH = _full_path('eff_hedme8020_1atm_1cm_cuts80p_be50um_p_x.asc')
 GPD_ERES_FILE_PATH = _full_path('eres_fwhm_hedme8020_1atm_1cm.asc')
 GPD_MODF_FILE_PATH = _full_path('modfact_hedme8020_1atm_1cm_mng.asc')
 
+"""Energy bounds and sampling for the actual IRFs.
+"""
+ENERGY_MIN = 1.0            # keV
+ENERGY_MAX = 10.0           # keV
+ENERGY_STEP = 0.01          # keV
+ENERGY_LO = numpy.arange(ENERGY_MIN, ENERGY_MAX, ENERGY_STEP)
+ENERGY_HI = numpy.append(ENERGY_LO[1:], ENERGY_MAX)
+ENERGY_CENTER = 0.5*(ENERGY_LO + ENERGY_HI)
 
 """Detector characteristics for the XIPE baseline configuration.
 """
@@ -63,9 +71,9 @@ ABS_GAP_THICKNESS = 1.      # cm
 QUAL_CUT_EFFICIENCY = 0.8   #
 WINDOW_MATERIAL = 'Be'      #
 WINDOW_THICKNESS = 50.      # um
-NUM_CHANNELS = 1024         #
+NUM_CHANNELS = 256          #
 E_CHAN_OFFSET = 0.          # keV
-E_CHAN_SLOPE = 0.01         # keV/channel
+E_CHAN_SLOPE = ENERGY_MAX/float(NUM_CHANNELS) # keV/channel
 
 """PSF parameters.
 
@@ -74,14 +82,7 @@ Taken directly from http://arxiv.org/abs/1403.7200, table 2, @4.51 keV.
 PSF_PARAMETERS = [numpy.array([_x]) for _x in \
                   [2.79e-4, 10.61, 3.289e-3, 6.06, 1.481]]
 
-"""Energy bounds and sampling for the actual IRFs.
-"""
-ENERGY_MIN = 1.0            # keV
-ENERGY_MAX = 10.0           # keV
-ENERGY_STEP = 0.01          # keV
-ENERGY_LO = numpy.arange(ENERGY_MIN, ENERGY_MAX, ENERGY_STEP)
-ENERGY_HI = numpy.append(ENERGY_LO[1:], ENERGY_MAX)
-ENERGY_CENTER = 0.5*(ENERGY_LO + ENERGY_HI)
+
 
 
 """XIPE-specific fields for the FITS headers. (These will be added to the
@@ -93,9 +94,15 @@ XIPE_HEADER_SPEC = [
     ('DETNAM'  , 'ALL'  , 'specific detector name in use')
 ]
 
+NUM_CHANS_HEADER_SPECS = [
+    ('DETCHANS', NUM_CHANNELS, 'Total number of detector channels')
+]
+
 SPECRESP_HEADER_SPECS += XIPE_HEADER_SPEC
 MODFRESP_HEADER_SPECS += XIPE_HEADER_SPEC
-EBOUNDS_HEADER_SPECS += XIPE_HEADER_SPEC
+EBOUNDS_HEADER_SPECS += XIPE_HEADER_SPEC + NUM_CHANS_HEADER_SPECS
+MATRIX_HEADER_SPECS += XIPE_HEADER_SPEC + NUM_CHANS_HEADER_SPECS
+xColDefsMATRIX.COLUMN_SPECS.append(('MATRIX', '%dE' % NUM_CHANNELS, None))
 
 
 """Comments fields for the FITS headers.

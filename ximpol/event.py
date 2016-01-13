@@ -22,6 +22,7 @@
 
 
 import numpy
+import numbers
 from astropy.io import fits
 
 from ximpol.utils.logging_ import logger
@@ -57,9 +58,10 @@ class xColDefsEvent(xColDefsBase):
         #('X'       , 'E', 'arcsecs'),
         #('Y'       , 'E', 'arcsecs'),
         ('PE_ANGLE', 'E', 'degrees'),
-        ('ENERGY'  , 'E', 'KeV'), # To be removed?
-        ('RA'      , 'E', 'KeV'), # To be removed?
-        ('DEC'     , 'E', 'KeV')  # To be removed?
+        # And, for convenience, we add these three, too.
+        ('ENERGY'  , 'E', 'KeV'),
+        ('RA'      , 'E', 'degrees'),
+        ('DEC'     , 'E', 'degrees')
     ]
 
 
@@ -95,8 +97,22 @@ class xMonteCarloEventList(dict):
 
     def set_column(self, name, data):
         """Set a column array.
+
+        Arguments
+        ---------
+        name : string
+            The name of the column
+
+        data : array or number
+            The actual data to put in the column. (If `data` is a number,\
+            an array of the proper length is automatically created, assuming\
+            that the `lenght` class member is defined.)
         """
         assert self.has_key(name)
+        if isinstance(data, numbers.Number):
+            _col = numpy.empty(self.length)
+            _col.fill(data)
+            data = _col
         if self.length is not None:
             assert(len(data) == self.length)
         else:

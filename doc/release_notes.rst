@@ -1,6 +1,15 @@
 Release notes
 =============
 
+* Number of XIPE energy channels changed from 1024 to 256 and IRFs
+  regenerated.
+* Removed all the hard-coded values for the number of energy channels
+  (issue #13).
+* xEnergyDispersionMatrix now inheriting from xUnivariateAuxGenerator (i.e.,
+  it has facilities to throw random numbers.)
+* Down-sampling mechanism implemented for the xEnergyDispersionMatrix class
+  on the energy axis to streamline performance.
+
 
 *ximpol (0.5.0) - Tue, 12 Jan 2016 15:24:17 -0800*
 

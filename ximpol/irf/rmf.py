@@ -24,6 +24,7 @@ from ximpol.utils.logging_ import logger
 from ximpol.irf.base import xColDefsBase, OGIP_HEADER_SPECS
 from ximpol.core.spline import xInterpolatedBivariateSplineLinear
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
+from ximpol.core.rand import xUnivariateAuxGenerator
 
 
 """Header specifications for the MATRIX extension of .rmf FITS files.
@@ -32,7 +33,6 @@ MATRIX_HEADER_SPECS = [
     ('EXTNAME' , 'MATRIX'    , 'name of this binary table extension'),
     ('HDUCLAS1', 'RESPONSE'  , 'dataset relates to spectral response'),
     ('HDUCLAS2', 'RSP_MATRIX', 'dataset is a spectral response matrix'),
-    ('DETCHANS', '1024'      , 'total number of detector channels'),
     ('CHANTYPE', 'PI '       , 'Detector Channel Type in use (PHA or PI)')
 ] + OGIP_HEADER_SPECS
 
@@ -44,8 +44,7 @@ EBOUNDS_HEADER_SPECS = [
     ('CHANTYPE', 'PI'        , 'Channel type'),
     ('CONTENT' , 'Response Matrix', 'File content'),
     ('HDUCLAS1', 'RESPONSE'  , 'Extension contains response data  '),
-    ('HDUCLAS2', 'EBOUNDS '  , 'Extension contains EBOUNDS'),
-    ('DETCHANS', 1024        , 'Total number of detector channels')
+    ('HDUCLAS2', 'EBOUNDS '  , 'Extension contains EBOUNDS')
 ] + OGIP_HEADER_SPECS
 
 
@@ -61,8 +60,7 @@ class xColDefsMATRIX(xColDefsBase):
         ('ENERG_HI', 'E', 'keV'),
         ('N_GRP'   , 'I', None),
         ('F_CHAN'  , 'I', None),
-        ('N_CHAN'  , 'I', None),
-        ('MATRIX'  , '1024E', None)
+        ('N_CHAN'  , 'I', None)
     ]
 
 
@@ -79,24 +77,48 @@ class xColDefsEBOUNDS(xColDefsBase):
     ]
 
 
-class xEnergyDispersionMatrix(xInterpolatedBivariateSplineLinear):
+class xEnergyDispersionMatrix(xUnivariateAuxGenerator):
 
     """Class encapsulating the energy dispersion matrix, as stored in the
     MATRIX extension of a .rmf file.
 
-    This is essentially a bivariate linear spline on a rectangular mesh.
+    In order to streamline performance, the energy grid is down-sampled
+    to the value of the `num_aux_points` parameter, in such a way that
+    the xUnivariateAuxGenerator.build_vppf()` doesn't take forever.
+
+    Arguments
+    ---------
+    hdu : FITS hdu
+       The MATRIX hdu in the .mrf FITS file.
+
+    num_aux_point : int
+       The number of points that the energy dispersion matrix should be\
+       down-sampled to.
+
+    Warning
+    -------
+    If the value of `num_aux_points` is too small, then the two-dimensional
+    underlying spline tends to have blob-like features, and the vertical slices
+    are no longer necessarily accurate representations of the energy dispersion.
+    We should keep an eye on it.
     """
 
-    def __init__(self, hdu):
+    def __init__(self, hdu, num_aux_points=100):
         """Constructor.
         """
+        # First build a bivariate spline with the full data grid.
         _matrix = hdu.data
         _x = 0.5*(_matrix['ENERG_LO'] + _matrix['ENERG_HI'])
         _y = numpy.arange(0, len(_matrix['MATRIX'][0]), 1)
         _z = _matrix['MATRIX']
-        fmt = dict(xname='Energy', xunits='keV', yname='Channel',
-                   zname='Probability density')
-        xInterpolatedBivariateSplineLinear.__init__(self, _x, _y, _z, **fmt)
+        _pdf = xInterpolatedBivariateSplineLinear(_y, _x, _z.transpose())
+        # Then initialize the actual xUnivariateAuxGenerator object
+        # with a down-sampled aux axis.
+        _aux = numpy.linspace(_pdf.ymin(), _pdf.ymax(), num_aux_points)
+        _rv = _y
+        fmt = dict(auxname='Energy', auxunits='keV', rvname='Channel',
+                   pdfname='Probability density')
+        xUnivariateAuxGenerator.__init__(self, _aux, _rv, _pdf, **fmt)
 
 
 class xEnergyDispersionBounds(xInterpolatedUnivariateSplineLinear):

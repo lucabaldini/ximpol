@@ -94,7 +94,7 @@ class xUnivariateAuxGenerator(xInterpolatedBivariateSplineLinear):
     rv : array
         Array of points sampling the values of the random variable.
 
-    pdf : callable
+    pdf : callable or array
         A callable expressing the pdf as a function of a given pair of values\
         of rv and aux (in this order).
 
@@ -151,16 +151,23 @@ class xUnivariateAuxGenerator(xInterpolatedBivariateSplineLinear):
 
     >>> t = numpy.random.uniform(0, 100, 1000000)
     >>> E = gen.rvs(t)
+
+    Note
+    ----
+    `pdf` can be either a callable or an arraf shape (aux.size, rv.size).
+    If `pdf` is a callable, than a meshgrid is created and the callable is
+    evaluated on the meshgrid itself.
     """
     def __init__(self, aux, rv, pdf, auxname=None, auxunits=None, rvname=None,
                  rvunits=None, pdfname='pdf', pdfunits=None):
         """Constructor.
         """
-        _rv, _aux = numpy.meshgrid(rv, aux)
         if pdfunits is None and rvunits is not None:
             pdfunits = '1/%s' % rvunits
-        xInterpolatedBivariateSplineLinear.__init__(self, aux, rv,
-                                                    pdf(_rv, _aux),
+        if hasattr(pdf, '__call__'):
+            _rv, _aux = numpy.meshgrid(rv, aux)
+            pdf = pdf(_rv, _aux)
+        xInterpolatedBivariateSplineLinear.__init__(self, aux, rv, pdf,
                                                     auxname, auxunits,
                                                     rvname, rvunits,
                                                     pdfname, pdfunits)

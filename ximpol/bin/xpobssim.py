@@ -60,8 +60,9 @@ def xpobssim(output_file_path, duration, start_time, time_steps, random_seed):
     polarization_angle = 44.
     polarization_degree = 1.
 
-    mySource = xSource('Crab', resolve_name=False)
-    source_ra, source_dec = mySource.getRADec()
+    source = xSource('Crab', resolve_name=False)
+    source.ra, source.dec = source.getRADec()
+    source.identifier = 1
 
     def dNdE(E, t):
         """Function defining a time-dependent energy spectrum.
@@ -73,23 +74,28 @@ def xpobssim(output_file_path, duration, start_time, time_steps, random_seed):
     modf.build_generator(polarization_angle, polarization_degree)
     logger.info('Done %s.' % chrono)
 
+    event_list = xMonteCarloEventList()
+
     logger.info('Extracting the event times...')
     num_events = numpy.random.poisson(count_spectrum.light_curve.norm())
     _time = count_spectrum.light_curve.rvs(num_events)
     logger.info('Done %s, %d events generated.' % (chrono, num_events))
 
-    event_list = xMonteCarloEventList()
     logger.info('Filling output columns...')
     event_list.set_column('TIME', _time)
     _mc_energy = count_spectrum.rvs(_time)
     event_list.set_column('MC_ENERGY', _mc_energy)
-    #pha =
-    #event_list.set_column('PHA', )
-    _ra, _dec = psf.smear_single(source_ra, source_dec, num_events)
+    _pha = edisp.matrix.rvs(_mc_energy)
+    event_list.set_column('PHA', _pha)
+    event_list.set_column('ENERGY', edisp.ebounds(_pha))
+    _ra, _dec = psf.smear_single(source.ra, source.dec, num_events)
     event_list.set_column('RA', _ra)
     event_list.set_column('DEC', _dec)
     _pe_angle = modf.rvs(_mc_energy)
     event_list.set_column('PE_ANGLE', _pe_angle)
+    event_list.set_column('MC_RA', source.ra)
+    event_list.set_column('MC_RA', source.dec)
+    event_list.set_column('MC_SRC_ID', source.identifier)
     logger.info('Done %s.' % chrono)
 
     event_list.write_fits(output_file_path)
