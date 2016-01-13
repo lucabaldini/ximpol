@@ -26,6 +26,7 @@ import numpy
 from ximpol.irf.arf import xEffectiveArea
 from ximpol.irf.psf import xPointSpreadFunction
 from ximpol.irf.mrf import xModulationFactor
+from ximpol.irf.rmf import xEnergyDispersion
 from ximpol.event import xMonteCarloEventList
 from ximpol.utils.profile import xChrono
 from ximpol.utils.logging_ import logger, startmsg
@@ -48,6 +49,8 @@ def xpobssim(output_file_path, duration, start_time, time_steps, random_seed):
     psf = xPointSpreadFunction(file_path)
     file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.mrf')
     modf = xModulationFactor(file_path)
+    file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.rmf')
+    edisp = xEnergyDispersion(file_path)
     logger.info('Done %s.' % chrono)
 
     logger.info('Setting up the source model...')
@@ -72,17 +75,21 @@ def xpobssim(output_file_path, duration, start_time, time_steps, random_seed):
 
     logger.info('Extracting the event times...')
     num_events = numpy.random.poisson(count_spectrum.light_curve.norm())
-    event_times = count_spectrum.light_curve.rvs(num_events)
+    _time = count_spectrum.light_curve.rvs(num_events)
     logger.info('Done %s, %d events generated.' % (chrono, num_events))
 
-    logger.info('Filling output columns...')
     event_list = xMonteCarloEventList()
-    event_list.set_column('TIME', event_times)
-    event_list.set_column('ENERGY', count_spectrum.rvs(event_times))
-    ra, dec = psf.smear_single(source_ra, source_dec, num_events)
-    event_list.set_column('RA', ra)
-    event_list.set_column('DEC', dec)
-    event_list.set_column('PE_ANGLE', modf.rvs(event_list['ENERGY']))
+    logger.info('Filling output columns...')
+    event_list.set_column('TIME', _time)
+    _mc_energy = count_spectrum.rvs(_time)
+    event_list.set_column('MC_ENERGY', _mc_energy)
+    #pha =
+    #event_list.set_column('PHA', )
+    _ra, _dec = psf.smear_single(source_ra, source_dec, num_events)
+    event_list.set_column('RA', _ra)
+    event_list.set_column('DEC', _dec)
+    _pe_angle = modf.rvs(_mc_energy)
+    event_list.set_column('PE_ANGLE', _pe_angle)
     logger.info('Done %s.' % chrono)
 
     event_list.write_fits(output_file_path)

@@ -41,7 +41,7 @@ def xpevtview(file_path):
         fig = plt.figure()
 
     ax = plt.subplot(2, 2, 1)
-    plt.hist(evtdata['ENERGY'], bins=numpy.logspace(0,1,50), histtype='step')
+    plt.hist(evtdata['MC_ENERGY'], bins=numpy.logspace(0,1,50), histtype='step')
     plt.xscale('log')
     plt.yscale('log')
     plt.xlabel('Energy [keV]')
@@ -52,15 +52,15 @@ def xpevtview(file_path):
     plt.ylabel('Dec [deg]')
 
     ax = plt.subplot(2, 2, 3)
-    plt.plot(evtdata['TIME'], evtdata['ENERGY'], 'o')
+    plt.plot(evtdata['TIME'], evtdata['MC_ENERGY'], 'o')
     plt.yscale('log')
     plt.xlabel('Time [s]')
     plt.ylabel('Energy [keV]')
 
     ax = plt.subplot(2, 2, 4)
     pe_angle = evtdata['PE_ANGLE']*(180./numpy.pi)
-    le_mask = evtdata['ENERGY'] < 5
-    he_mask = evtdata['ENERGY'] > 5
+    le_mask = evtdata['MC_ENERGY'] < 5
+    he_mask = evtdata['MC_ENERGY'] > 5
     binning = numpy.linspace(0, 360, 50)
     plt.hist(pe_angle[le_mask], bins=binning, histtype='step')
     plt.hist(pe_angle[he_mask], bins=binning, histtype='step')

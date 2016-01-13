@@ -51,7 +51,7 @@ class xColDefsEvent(xColDefsBase):
 
     COLUMN_SPECS = [
         ('TIME'    , 'E', 's'),
-        #('PHA'     , 'I', None),
+        ('PHA'     , 'I', None),
         #('DETX'    , 'E', 'mm'),
         #('DETY'    , 'E', 'mm'),
         #('X'       , 'E', 'arcsecs'),
