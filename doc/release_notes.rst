@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.6.1) - Wed, 13 Jan 2016 15:38:20 -0800*
+
 * Parameter tweak in the xEnergyDispersionMatric class.
 * Added unit test for the xCountSpectrum class, with inline images.
 * One unit test relaxed.
