@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.6.0) - Wed, 13 Jan 2016 12:13:06 -0800*
+
 * Number of XIPE energy channels changed from 1024 to 256 and IRFs
   regenerated.
 * Removed all the hard-coded values for the number of energy channels
