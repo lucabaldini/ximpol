@@ -55,8 +55,8 @@ def square(x):
     >>> y = square(x)
     >>> print(y)
 
-    Notes
-    -----
+    Note
+    ----
     Yes, this is a pretty dumb function, but watch out for the use of doctrings.
     """
     return x**2.
