@@ -3,6 +3,10 @@ Release notes
 
 * Modulation factor generator returning angles in degrees.
 * Unit test for the modulation factor classes added.
+* Source configuration moved out of xpobsim.py
+* Folder srcmodel/config created.
+* Added optimization step for the x grid in
+  xInterpolatedBivariateSplineLinear.build_vppf() (issue #18).
 
 
 *ximpol (0.6.3) - Wed, 13 Jan 2016 16:16:38 -0800*

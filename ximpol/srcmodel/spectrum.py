@@ -44,8 +44,8 @@ class xCountSpectrum(xUnivariateAuxGenerator):
         """Constructor.
         """
         fmt = dict(auxname='Time', auxunits='s', rvname='Energy',
-                   rvunits='keV',  pdfname='dN/dE',
-                   pdfunits='cm$^{-2}$ s$^{-1}$ keV$^{-1}$')
+                   rvunits='keV',  pdfname='dN/dE $\\times$ aeff',
+                   pdfunits='s$^{-1}$ keV$^{-1}$')
 
         def _pdf(E, t):
             """Return the convolution between the effective area and

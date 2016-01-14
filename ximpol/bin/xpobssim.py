@@ -22,6 +22,7 @@ __description__ = 'Run the ximpol fast simulator'
 
 import os
 import numpy
+import imp
 
 from ximpol.irf.arf import xEffectiveArea
 from ximpol.irf.psf import xPointSpreadFunction
@@ -32,10 +33,10 @@ from ximpol.utils.profile import xChrono
 from ximpol.utils.logging_ import logger, startmsg
 from ximpol import XIMPOL_IRF
 from ximpol.srcmodel.spectrum import xCountSpectrum
-from ximpol.srcmodel.xSource import xSource
 
 
-def xpobssim(output_file_path, duration, start_time, time_steps, random_seed):
+def xpobssim(output_file_path, config_file_path, duration, start_time,
+             time_steps, random_seed):
     """Run the ximpol fast simulator.
     """
     chrono = xChrono()
@@ -54,33 +55,20 @@ def xpobssim(output_file_path, duration, start_time, time_steps, random_seed):
     logger.info('Done %s.' % chrono)
 
     logger.info('Setting up the source model...')
+    module_name = os.path.basename(config_file_path).replace('.py', '')
+    source = imp.load_source(module_name, config_file_path).source
     stop_time = start_time + duration
-    min_energy = 1
-    max_energy = 10
-    polarization_angle = 44.
-    polarization_degree = 1.
-
-    source = xSource('Crab', resolve_name=False)
-    source.ra, source.dec = source.getRADec()
-    source.identifier = 1
-
-    def dNdE(E, t):
-        """Function defining a time-dependent energy spectrum.
-        """
-        return 10.0*(1.0 + numpy.cos(t))*numpy.power(E, (-2.0 + 0.01*t))
-
     t = numpy.linspace(start_time, stop_time, time_steps)
-    count_spectrum = xCountSpectrum(dNdE, aeff, t)
-    modf.build_generator(polarization_angle, polarization_degree)
+    count_spectrum = xCountSpectrum(source.spectrum, aeff, t)
+
+    modf.build_generator(source.polarization_angle, source.polarization_degree)
     logger.info('Done %s.' % chrono)
 
-    event_list = xMonteCarloEventList()
-
     logger.info('Extracting the event times...')
+    event_list = xMonteCarloEventList()
     num_events = numpy.random.poisson(count_spectrum.light_curve.norm())
     _time = count_spectrum.light_curve.rvs(num_events)
     logger.info('Done %s, %d events generated.' % (chrono, num_events))
-
     logger.info('Filling output columns...')
     event_list.set_column('TIME', _time)
     _mc_energy = count_spectrum.rvs(_time)
@@ -97,7 +85,6 @@ def xpobssim(output_file_path, duration, start_time, time_steps, random_seed):
     event_list.set_column('MC_RA', source.dec)
     event_list.set_column('MC_SRC_ID', source.identifier)
     logger.info('Done %s.' % chrono)
-
     event_list.write_fits(output_file_path)
     logger.info('All done %s!' % chrono)
 
@@ -105,9 +92,10 @@ def xpobssim(output_file_path, duration, start_time, time_steps, random_seed):
 if __name__=='__main__':
     import argparse
     parser = argparse.ArgumentParser(description=__description__)
-    parser.add_argument('-o', '--output-file', type=str, default=None,
-                        required=True,
+    parser.add_argument('-o', '--output-file', type=str, required=True,
                         help='the output FITS event file')
+    parser.add_argument('-c', '--config-file', type=str, required=True,
+                        help='the input configuration file')
     parser.add_argument('-d', '--duration', type=float, default=10,
                         help='the duration (in s) of the simulation')
     parser.add_argument('-t', '--start-time', type=float, default=0.,
@@ -118,5 +106,5 @@ if __name__=='__main__':
                         help='the random seed for the simulation')
     args = parser.parse_args()
     startmsg()
-    xpobssim(args.output_file, args.duration, args.start_time,
+    xpobssim(args.output_file, args.config_file, args.duration, args.start_time,
             args.time_steps, args.random_seed)

@@ -41,10 +41,11 @@ def xpevtview(file_path):
         fig = plt.figure()
 
     ax = plt.subplot(2, 2, 1)
-    plt.hist(evtdata['MC_ENERGY'], bins=numpy.logspace(0,1,50), histtype='step')
+    plt.hist(evtdata['MC_ENERGY'], bins=numpy.logspace(0,1,100),
+             histtype='step')
     plt.xscale('log')
     plt.yscale('log')
-    plt.xlabel('Energy [keV]')
+    plt.xlabel('True energy [keV]')
 
     ax = plt.subplot(2, 2, 2)
     plt.hist2d(evtdata['RA'], evtdata['DEC'], 100)
@@ -59,12 +60,10 @@ def xpevtview(file_path):
 
     ax = plt.subplot(2, 2, 4)
     pe_angle = evtdata['PE_ANGLE']
-    le_mask = evtdata['MC_ENERGY'] < 5
-    he_mask = evtdata['MC_ENERGY'] > 5
-    binning = numpy.linspace(0, 360, 50)
-    plt.hist(pe_angle[le_mask], bins=binning, histtype='step')
-    plt.hist(pe_angle[he_mask], bins=binning, histtype='step')
+    binning = numpy.linspace(0, 360, 100)
+    plt.hist(pe_angle, bins=binning, histtype='step')
     plt.xlabel('PE emission angle [deg]')
+    plt.axis([0., 360., None, None])
 
     plt.show()
 

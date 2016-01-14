@@ -125,7 +125,20 @@ class TestCountSpectrum(unittest.TestCase):
         plt.legend(bbox_to_anchor=(0.65, 0.5))
         save_current_figure('test_power_law_stationary_slice.png')
 
-
+        #count_spectrum.vppf.vslice(tref).plot(overlay=True)
+        #ref_slice.plot()
+        #n = 100000
+        #evt_time = numpy.random.uniform(tmin, tmax, n)
+        #evt_time = numpy.zeros(n)
+        #evt_time.fill(tref)
+        #evt_energy = count_spectrum.rvs(evt_time)
+        #_hist = plt.hist(evt_energy, bins=numpy.linspace(1, 10, 100),
+        #         histtype='step')
+        #plt.yscale('log')
+        #_x = numpy.linspace(1, 10, 100)
+        #scale = 75.
+        #plt.plot(_x, scale*ref_slice(_x))
+        #plt.show()
 
     def test_power_law_variable(self, interactive=False):
         """Test a time-dependent power law.

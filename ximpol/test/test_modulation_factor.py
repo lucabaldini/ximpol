@@ -85,6 +85,7 @@ class TestModulationFactor(unittest.TestCase):
         plt.axis([emin, emax, polarization_angle-5, polarization_angle+5])
         plt.xlabel('Energy [keV]')
         plt.ylabel('Modulation angle [$^\circ$]')
+        #plt.show()
         plt.clf()
         _y = [_fr.vis for _fr in fit_results]
         _dy = [_fr.vis_err for _fr in fit_results]
@@ -93,7 +94,7 @@ class TestModulationFactor(unittest.TestCase):
         self.modf.plot(show=interactive)
         plt.xlabel('Energy [keV]')
         plt.ylabel('Modulation visibility')
-
+        #plt.show()
 
 if __name__ == '__main__':
     unittest.main()
