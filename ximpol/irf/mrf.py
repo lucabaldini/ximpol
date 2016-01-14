@@ -23,7 +23,7 @@ from astropy.io import fits
 from ximpol.utils.logging_ import logger
 from ximpol.irf.base import xColDefsBase, OGIP_HEADER_SPECS
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
-from ximpol.core.spline import xInterpolatedBivariateSplineLinear
+from ximpol.core.rand import xUnivariateAuxGenerator
 from ximpol.core.spline import optimize_grid_linear
 
 
@@ -47,6 +47,36 @@ class xColDefsMODFRESP(xColDefsBase):
         ('ENERG_HI', 'E', 'keV'),
         ('MODFRESP', 'E', None)
     ]
+
+
+
+class xModulationFitResults:
+
+    """Small convenience class encapsulating the result of a fit to an
+    azimuthal angle distribution.
+    """
+
+    def __init__(self, popt, pcov):
+        """Constructor.
+        """
+        self.popt = popt
+        self.pcov = pcov
+        self.vis, self.phi0, self.norm = popt
+        self.vis_err, self.phi0_err, self.norm_err = numpy.sqrt(pcov.diagonal())
+
+    def plot(self, *options):
+        """Plot the fit results.
+        """
+        from ximpol.utils.matplotlib_ import pyplot as plt
+        x = numpy.linspace(0., 360., 100)
+        y = xModulationFactor.modulation_function(x, *self.popt)
+        plt.plot(x, y, *options)
+
+    def __str__(self):
+        """String formatting.
+        """
+        return 'Visibility = %.3f +/- %.3f, angle = %.2f +/- %.2f' %\
+            (self.vis, self.vis_err, self.phi0, self.phi0_err)
 
 
 class xModulationFactor(xInterpolatedUnivariateSplineLinear):
@@ -118,6 +148,40 @@ class xModulationFactor(xInterpolatedUnivariateSplineLinear):
         """
         return mu/numpy.pi
 
+    @classmethod
+    def modulation_function(self, phi, visibility, phi0, norm=1):
+        """The internal representation of the azimuthal cos-square distribution.
+
+        This is used to construct the underlying generator, but can be used
+        to fit modulation histograms, as well.
+
+        Arguments
+        ---------
+        phi : float or array
+            The value(s) of the azimuthal angle where we want to evaluate the\
+            modulation function.
+
+        mu : float
+            The visibility of the modulation, i.e., (max - min)/(max + min).
+
+        angle : float
+            The modulation angle in degrees [0--360].
+        """
+        return norm*(self.A(visibility) + self.B(visibility)*numpy.power(
+            numpy.cos(numpy.radians(phi - phi0)), 2.))
+
+    @classmethod
+    def fit_histogram(self, histogram):
+        """Fit an azimuthal histogram.
+        """
+        from scipy.optimize import curve_fit
+        _y, binning, patches = histogram
+        _x = 0.5*(binning[1:] + binning[:-1])
+        pstart = (0.5, 0., _y.sum())
+        popt, pcov = curve_fit(self.modulation_function, _x, _y, pstart,
+                               numpy.sqrt(_y))
+        return xModulationFitResults(popt, pcov)
+
     def build_generator(self, polarization_angle=0., polarization_degree=1.):
         """Construct the underlying generator to throw random numbers
         according to the proper distribution.
@@ -132,31 +196,27 @@ class xModulationFactor(xInterpolatedUnivariateSplineLinear):
 
         Warning
         -------
-        This seems to be fundamentally different from the
-        xUnivariateAuxGenerator case, so an intermediate layer might be
-        necessary, but we should try and use xUnivariateAuxGenerator
-        instead.
-
-        Warning
-        -------
-        Polarization degree is not used, yet.
+        More work is needed to fully support energy- and time-dependent
+        polarization degree and agle. (We probably need some kind of
+        trivariate spline data sctructure.)
         """
         _x = self.x.copy()
-        _y = numpy.linspace(0, 2*numpy.pi, 100)
+        _y = numpy.linspace(0., 360., 100)
+        # Maybe the loop for _z could be done in a more numpy-like fashion?
         _z = numpy.zeros(shape = (_x.size, _y.size))
         for i, _xp in enumerate(_x):
             mu = self(_xp)
             for j, _yp in enumerate(_y):
-                _z[i, j] = self.A(mu) + self.B(mu)*numpy.power(
-                    numpy.cos(_yp - numpy.radians(polarization_angle)), 2.)
-        self.generator = xInterpolatedBivariateSplineLinear(_x, _y, _z)
-        self.generator_vppf = self.generator.build_vppf()
+                _z[i, j] = self.modulation_function(_yp, mu*polarization_degree,
+                                                    polarization_angle)
+        fmt = dict(auxname='Energy', auxunits='keV', rvname='Azimuthal angle',
+                   rvunits='$^\circ$')
+        self.generator = xUnivariateAuxGenerator(_x, _y, _z, **fmt)
 
     def rvs(self, E):
         """Return random variates for a given array of values of energies.
         """
-        _rvs = self.generator_vppf(E, numpy.random.sample(len(E)))
-        return numpy.degrees(_rvs)
+        return self.generator.rvs(E)
 
 
 def main():
@@ -168,9 +228,12 @@ def main():
 
     file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.mrf')
     modf = xModulationFactor(file_path)
-    x = numpy.arange(1, 10, 1)
+    x = numpy.linspace(1, 10, 10)
     print(modf(x))
     modf.plot(overlay=True)
+    modf.build_generator(polarization_angle=20.)
+    modf.generator.plot()
+    modf.generator.slice(5).plot()
 
 
 if __name__ == '__main__':
