@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.6.3) - Wed, 13 Jan 2016 16:16:38 -0800*
+
 * .travis.yml file tweaked to add display support for matplotlib.
 
 
