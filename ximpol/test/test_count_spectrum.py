@@ -40,7 +40,10 @@ class TestCountSpectrum(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        """Setup.
+        """Setup---here we essentially create the effective area.
+
+        >>> file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.arf')
+        >>> self.aeff = xEffectiveArea(file_path)
         """
         file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.arf')
         self.aeff = xEffectiveArea(file_path)
@@ -52,22 +55,39 @@ class TestCountSpectrum(unittest.TestCase):
         only two (identical) interpolating time points on the auxiliary
         (time) axis. The power-law parameters (C and gamma) are constant
 
+        >>> tmin = 0.
+        >>> tmax = 100.
         >>> C = 1.
         >>> Gamma = 2.
         >>>
         >>> def powerlaw(E, t):
         >>>     return C*numpy.power(E, -Gamma)
+        >>>
+        >>> _t = numpy.linspace(tmin, tmax, 2)
+        >>> count_spectrum = xCountSpectrum(powerlaw, self.aeff, _t)
 
         and the underlying xUnivariateAuxGenerator looks like.
 
         .. image:: ../../ximpol/test/figures/test_power_law_stationary_2d.png
 
         Then a vertical slice (i.e., an interpolated linear spline) is taken
-        in the middle of the auxiliary axis and the y-values of the spline
-        are compared with the direct product of the effective area and the
-        count spectrum. If everything goes well, they should be on top
-        of each other. The figure below is also showing the orignal power-law
-        spectrum multiplied by the peak effective area.
+        in the middle of the auxiliary axis
+
+        >>> tref = 0.5*(tmin + tmax)
+        >>> ref_slice = count_spectrum.slice(tref)
+
+        and the y-values of the spline are compared with the direct product of
+        the effective area and the input spectrum:
+
+        >>> _x = self.aeff.x
+        >>> _y = C*numpy.power(_x, -Gamma)*self.aeff.y
+
+        (Note that in general the two are technically not the same thing, as
+        going from the count spectrum to the slice we do interpolate in time,
+        although in this particular case the interpolation is trivial).
+        If everything goes well, they should be on top of each other.
+        The figure below is also showing the original power-law spectrum
+        multiplied by the peak effective area.
 
         .. image:: ../../ximpol/test/figures/test_power_law_stationary_slice.png
 
@@ -140,6 +160,14 @@ class TestCountSpectrum(unittest.TestCase):
 
         .. image:: ../../ximpol/test/figures/test_power_law_variable_slice.png
 
+        Finally, we do test the light-curve building by comparing it with the
+        values from a direct intergration of the vertical slices on a
+        fixed-spacing grid. Note that, since the normalization increases with
+        time and the spectral index becomes harder, the light-curve increases
+        more than linearly.
+
+        .. image:: ../../ximpol/test/figures/test_power_law_variable_lc.png
+
         """
         tmin = 0.
         tmax = 100.
@@ -183,8 +211,21 @@ class TestCountSpectrum(unittest.TestCase):
         plt.legend(bbox_to_anchor=(0.65, 0.5))
         save_current_figure('test_power_law_variable_slice.png')
 
-
-
+        _x = numpy.linspace(tmin, tmax, 33)
+        _y = []
+        for _xp in _x:
+            _y.append(count_spectrum.slice(_xp).norm())
+        _y = numpy.array(_y)
+        plt.plot(_x, _y, 'o', label='Direct integral flux values')
+        delta = abs((_y - count_spectrum.light_curve(_x))/_y).max()
+        self.assertTrue(delta < 1e-3, 'max deviation %.9f' % delta)
+        count_spectrum.light_curve.plot(show=interactive,
+                                        label='xCountSpectrum light-curve')
+        overlay_tag()
+        plt.legend(bbox_to_anchor=(0.65, 0.75))
+        plt.text(0.5, 0.1, 'Max. difference = %.3e' % delta,
+                 transform=plt.gca().transAxes)
+        save_current_figure('test_power_law_variable_lc.png')
 
 
 if __name__ == '__main__':
