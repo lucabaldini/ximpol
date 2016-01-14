@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.7.0) - Thu, 14 Jan 2016 15:15:44 -0800*
+
 * Modulation factor generator returning angles in degrees.
 * Unit test for the modulation factor classes added.
 * Source configuration moved out of xpobsim.py
