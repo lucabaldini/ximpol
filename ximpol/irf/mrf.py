@@ -155,7 +155,8 @@ class xModulationFactor(xInterpolatedUnivariateSplineLinear):
     def rvs(self, E):
         """Return random variates for a given array of values of energies.
         """
-        return self.generator_vppf(E, numpy.random.sample(len(E)))
+        _rvs = self.generator_vppf(E, numpy.random.sample(len(E)))
+        return numpy.degrees(_rvs)
 
 
 def main():
