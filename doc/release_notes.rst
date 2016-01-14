@@ -2,6 +2,7 @@ Release notes
 =============
 
 * Modulation factor generator returning angles in degrees.
+* Unit test for the modulation factor classes added.
 
 
 *ximpol (0.6.3) - Wed, 13 Jan 2016 16:16:38 -0800*
