@@ -58,7 +58,7 @@ def xpevtview(file_path):
     plt.ylabel('Energy [keV]')
 
     ax = plt.subplot(2, 2, 4)
-    pe_angle = evtdata['PE_ANGLE']*(180./numpy.pi)
+    pe_angle = evtdata['PE_ANGLE']
     le_mask = evtdata['MC_ENERGY'] < 5
     he_mask = evtdata['MC_ENERGY'] > 5
     binning = numpy.linspace(0, 360, 50)
