@@ -28,7 +28,7 @@ from ximpol.irf.arf import xEffectiveArea
 from ximpol.irf.psf import xPointSpreadFunction
 from ximpol.irf.mrf import xModulationFactor
 from ximpol.irf.rmf import xEnergyDispersion
-from ximpol.evtdata.event import xMonteCarloEventList
+from ximpol.evt.event import xMonteCarloEventList
 from ximpol.utils.profile import xChrono
 from ximpol.utils.logging_ import logger, startmsg
 from ximpol import XIMPOL_IRF
@@ -68,6 +68,8 @@ def xpobssim(output_file_path, config_file_path, duration, start_time,
     event_list = xMonteCarloEventList()
     num_events = numpy.random.poisson(count_spectrum.light_curve.norm())
     _time = count_spectrum.light_curve.rvs(num_events)
+    logger.info('Sorting event times...')
+    _time.sort()
     logger.info('Done %s, %d events generated.' % (chrono, num_events))
     logger.info('Filling output columns...')
     event_list.set_column('TIME', _time)

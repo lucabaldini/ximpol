@@ -27,7 +27,7 @@ from astropy.io import fits
 from ximpol.utils.matplotlib_ import pyplot as plt
 from ximpol.utils.logging_ import logger, startmsg
 from ximpol.irf.base import xPrimaryHDU, update_header
-from ximpol.evtdata.binning import xColDefsSpectrum, SPECTRUM_HEADER_SPECS
+from ximpol.evt.binning import xColDefsSpectrum, SPECTRUM_HEADER_SPECS
 
 
 def xpbin(file_path):
@@ -42,8 +42,7 @@ def xpbin(file_path):
     # Horrible---need to put the EBOUND information in the event file.
     _num_chans = 256
     # And also the GTI
-    # And, ouch! the events are not time-ordered!
-    _elapsed_time = evtdata['TIME'].max() - evtdata['TIME'].min()
+    _elapsed_time = evtdata['TIME'][-1] - evtdata['TIME'][0]
 
     _binning = numpy.linspace(-0.5, _num_chans - 0.5, 256)
     n, bins, patches = plt.hist(evtdata['PHA'], bins=_binning)
