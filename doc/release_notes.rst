@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.8.0) - Fri, 15 Jan 2016 11:53:01 -0800*
+
 * Obsolete files removed, and some name refactoring.
 * xpbin.py created.
 * All figures from unit tests moved to doc/figures.
