@@ -47,7 +47,7 @@ class TestCountSpectrum(unittest.TestCase):
         file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.arf')
         self.aeff = xEffectiveArea(file_path)
 
-    def test_power_law_stationary(self, interactive=False):
+    def test_power_law_stationary(self):
         """Test a time-independent power law.
 
         This creates a count spectrum with no time dependence, i.e., with
@@ -104,7 +104,7 @@ class TestCountSpectrum(unittest.TestCase):
 
         _t = numpy.linspace(tmin, tmax, 2)
         count_spectrum = xCountSpectrum(powerlaw, self.aeff, _t)
-        count_spectrum.plot(show=interactive)
+        count_spectrum.plot(show=False)
         overlay_tag(color='white')
         save_current_figure('test_power_law_stationary_2d.png')
 
@@ -116,7 +116,7 @@ class TestCountSpectrum(unittest.TestCase):
         delta = abs((_y - ref_slice(_x))/_y).max()
         self.assertTrue(delta < 1e-3, 'max deviation %.9f' % delta)
         plt.plot(_x, _y, 'o', label='Direct convolution with aeff')
-        ref_slice.plot(logx=True, logy=True, show=interactive,
+        ref_slice.plot(logx=True, logy=True, show=False,
                        label='xCountSpectrum output')
         overlay_tag()
         plt.text(0.1, 0.1, 'Max. difference = %.3e' % delta,
@@ -124,22 +124,7 @@ class TestCountSpectrum(unittest.TestCase):
         plt.legend(bbox_to_anchor=(0.65, 0.5))
         save_current_figure('test_power_law_stationary_slice.png')
 
-        #count_spectrum.vppf.vslice(tref).plot(overlay=True)
-        #ref_slice.plot()
-        #n = 100000
-        #evt_time = numpy.random.uniform(tmin, tmax, n)
-        #evt_time = numpy.zeros(n)
-        #evt_time.fill(tref)
-        #evt_energy = count_spectrum.rvs(evt_time)
-        #_hist = plt.hist(evt_energy, bins=numpy.linspace(1, 10, 100),
-        #         histtype='step')
-        #plt.yscale('log')
-        #_x = numpy.linspace(1, 10, 100)
-        #scale = 75.
-        #plt.plot(_x, scale*ref_slice(_x))
-        #plt.show()
-
-    def test_power_law_variable(self, interactive=False):
+    def test_power_law_variable(self):
         """Test a time-dependent power law.
 
         This creates a time-dependent count spectrum, where the two parameters
@@ -200,10 +185,9 @@ class TestCountSpectrum(unittest.TestCase):
             """
             return C(t)*numpy.power(E, -Gamma(t))
 
-
         _t = numpy.linspace(tmin, tmax, 100)
         count_spectrum = xCountSpectrum(powerlaw, self.aeff, _t)
-        count_spectrum.plot(show=interactive)
+        count_spectrum.plot(show=False)
         overlay_tag(color='white')
         save_current_figure('test_power_law_variable_2d.png')
 
@@ -215,7 +199,7 @@ class TestCountSpectrum(unittest.TestCase):
         delta = abs((_y - ref_slice(_x))/_y).max()
         self.assertTrue(delta < 1e-3, 'max deviation %.9f' % delta)
         plt.plot(_x, _y, 'o', label='Direct convolution with aeff')
-        ref_slice.plot(logx=True, logy=True, show=interactive,
+        ref_slice.plot(logx=True, logy=True, show=False,
                        label='xCountSpectrum output')
         overlay_tag()
         plt.text(0.1, 0.1, 'Max. difference = %.3e' % delta,
@@ -231,13 +215,81 @@ class TestCountSpectrum(unittest.TestCase):
         plt.plot(_x, _y, 'o', label='Direct integral flux values')
         delta = abs((_y - count_spectrum.light_curve(_x))/_y).max()
         self.assertTrue(delta < 1e-3, 'max deviation %.9f' % delta)
-        count_spectrum.light_curve.plot(show=interactive,
+        count_spectrum.light_curve.plot(show=False,
                                         label='xCountSpectrum light-curve')
         overlay_tag()
         plt.legend(bbox_to_anchor=(0.65, 0.75))
         plt.text(0.5, 0.1, 'Max. difference = %.3e' % delta,
                  transform=plt.gca().transAxes)
         save_current_figure('test_power_law_variable_lc.png')
+
+    def test_power_law_rvs(self, num_events=1000000):
+        """Test the generation of event energies from a count power-law
+        spectrum convoluted with the effective area.
+
+        This turned out to be more tricky than we anticipated. Since the
+        convolution of the source spectrum with the effective area falls
+        pretty quickly at high energy, there's typically very few events above
+        a few keV and, as a consequence, the slope of the corresponding ppf is
+        fairly steep close to one.
+
+        .. image:: ../figures/test_power_law_rvs_vppf.png
+
+        This implies that the ppf in each slice must be properly sampled
+        close to 1 (initial tests showed, e.g., that a uniform grid with
+        100 points between 0 and 1 was not enough to throw meaningful random
+        numbers for a typical power-law source spectrum). This is particularly
+        true for soft spectral indices---which is why we picked `Gamma = 3.`
+        for this test.
+
+        .. image:: ../figures/test_power_law_rvs_counts.png
+
+        """
+        tmin = 0.
+        tmax = 100.
+        tref = 0.5*(tmin + tmax)
+        C = 1.
+        Gamma = 3.
+
+        def powerlaw(E, t):
+            """Function defining a time-dependent energy spectrum.
+            """
+            return C*numpy.power(E, -Gamma)
+
+        _t = numpy.linspace(tmin, tmax, 2)
+        count_spectrum = xCountSpectrum(powerlaw, self.aeff, _t)
+
+        count_spectrum.vppf.vslice(tref).plot(show=False, overlay=True)
+        overlay_tag()
+        save_current_figure('test_power_law_rvs_vppf.png')
+
+        ref_slice = count_spectrum.slice(tref)
+        _time = numpy.zeros(num_events)
+        _time.fill(tref)
+        _energy = count_spectrum.rvs(_time)
+        obs, bins, patches = plt.hist(_energy, bins=numpy.linspace(1, 10, 100),
+                                      histtype='step', label='Random energies')
+        plt.yscale('log')
+        # We want to overlay the reference count-spectrum slice, normalized
+        # to the total number of events simulated.
+        bin_width = (bins[1] - bins[0])
+        scale = num_events*bin_width/ref_slice.norm()
+        _x = 0.5*(bins[:-1] + bins[1:])
+        _y = scale*ref_slice(_x)
+        plt.plot(_x, _y, label='Underlying pdf')
+        # And, for the chisquare, we do correctly integrate the slice in each
+        # energy bin, rather than evaluating it at the bin center.
+        exp = []
+        scale = num_events/ref_slice.norm()
+        for _emin, _emax in zip(bins[:-1], bins[1:]):
+            exp.append(scale*ref_slice.integral(_emin, _emax))
+        exp = numpy.array(exp)
+        chisquare = ((exp - obs)**2/exp).sum()
+        plt.text(0.5, 0.1, '$\chi^2$/ndof = %.2f/%d' % (chisquare, len(obs)),
+                 transform=plt.gca().transAxes)
+        plt.legend(bbox_to_anchor=(0.5, 0.5))
+        overlay_tag()
+        save_current_figure('test_power_law_rvs_counts.png')
 
 
 if __name__ == '__main__':

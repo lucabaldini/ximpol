@@ -214,7 +214,9 @@ class xUnivariateSplineBase:
         _x, _mask = numpy.unique(_x, return_index=True)
         _x/= self.norm()
         _y = _y[_mask]
-        return xInterpolatedUnivariateSplineLinear(_x, _y)
+        fmt = dict(xname='Normalized integral', yname=self.xname,
+                   yunits=self.xunits)
+        return xInterpolatedUnivariateSplineLinear(_x, _y, **fmt)
 
     def plot(self, num_points=1000, overlay=False, logx=False, logy=False,
              show=True, label=None):
@@ -525,7 +527,9 @@ class xInterpolatedBivariateSplineLinear(xBivariateSplineBase,
             _ppf = self.vslice(_xp).build_ppf()
             for j, _yp in enumerate(_y):
                 _z[i, j] = _ppf(_yp)
-        return xInterpolatedBivariateSplineLinear(_x, _y, _z)
+        fmt = dict(yname='Normalized integral', xname=self.xname,
+                   xunits=self.xunits, zname=self.yname, zunits=self.yunits)
+        return xInterpolatedBivariateSplineLinear(_x, _y, _z, **fmt)
 
     def plot(self, num_pointsx=100, num_pointsy=100, num_contours=75,
              show=True):
