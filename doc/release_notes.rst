@@ -1,7 +1,8 @@
 Release notes
 =============
 
-* Obsolete files removed.
+* Obsolete files removed, and some name refactoring.
+* xpbin.py created.
 
 
 *ximpol (0.7.0) - Thu, 14 Jan 2016 15:15:44 -0800*
