@@ -28,7 +28,7 @@ from ximpol.irf.arf import xEffectiveArea
 from ximpol.irf.psf import xPointSpreadFunction
 from ximpol.irf.mrf import xModulationFactor
 from ximpol.irf.rmf import xEnergyDispersion
-from ximpol.event import xMonteCarloEventList
+from ximpol.datafmt.event import xMonteCarloEventList
 from ximpol.utils.profile import xChrono
 from ximpol.utils.logging_ import logger, startmsg
 from ximpol import XIMPOL_IRF

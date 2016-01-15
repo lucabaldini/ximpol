@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* Obsolete files removed.
+
 
 *ximpol (0.7.0) - Thu, 14 Jan 2016 15:15:44 -0800*
 
