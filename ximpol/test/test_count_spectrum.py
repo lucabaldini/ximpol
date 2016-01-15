@@ -25,12 +25,11 @@ import numpy
 import unittest
 
 from ximpol import XIMPOL_IRF
-from ximpol.test import save_current_figure
 from ximpol.irf.arf import xEffectiveArea
 from ximpol.srcmodel.spectrum import xCountSpectrum
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
 from ximpol.utils.matplotlib_ import pyplot as plt
-from ximpol.utils.matplotlib_ import overlay_tag
+from ximpol.utils.matplotlib_ import overlay_tag, save_current_figure
 
 
 class TestCountSpectrum(unittest.TestCase):
@@ -68,7 +67,7 @@ class TestCountSpectrum(unittest.TestCase):
 
         and the underlying xUnivariateAuxGenerator looks like.
 
-        .. image:: ../../ximpol/test/figures/test_power_law_stationary_2d.png
+        .. image:: ../figures/test_power_law_stationary_2d.png
 
         Then a vertical slice (i.e., an interpolated linear spline) is taken
         in the middle of the auxiliary axis
@@ -89,7 +88,7 @@ class TestCountSpectrum(unittest.TestCase):
         The figure below is also showing the original power-law spectrum
         multiplied by the peak effective area.
 
-        .. image:: ../../ximpol/test/figures/test_power_law_stationary_slice.png
+        .. image:: ../figures/test_power_law_stationary_slice.png
 
         """
         tmin = 0.
@@ -162,7 +161,7 @@ class TestCountSpectrum(unittest.TestCase):
         the time axis with 100 points).
         The underlying xUnivariateAuxGenerator looks like.
 
-        .. image:: ../../ximpol/test/figures/test_power_law_variable_2d.png
+        .. image:: ../figures/test_power_law_variable_2d.png
 
         Then a vertical slice (i.e., an interpolated linear spline) is taken
         in the middle of the auxiliary axis and the y-values of the spline
@@ -171,7 +170,7 @@ class TestCountSpectrum(unittest.TestCase):
         they should be on top of each other. The figure below is also showing
         the orignal power-law spectrum multiplied by the peak effective area.
 
-        .. image:: ../../ximpol/test/figures/test_power_law_variable_slice.png
+        .. image:: ../figures/test_power_law_variable_slice.png
 
         Finally, we do test the light-curve building by comparing it with the
         values from a direct intergration of the vertical slices on a
@@ -179,7 +178,7 @@ class TestCountSpectrum(unittest.TestCase):
         time and the spectral index becomes harder, the light-curve increases
         more than linearly.
 
-        .. image:: ../../ximpol/test/figures/test_power_law_variable_lc.png
+        .. image:: ../figures/test_power_law_variable_lc.png
 
         """
         tmin = 0.

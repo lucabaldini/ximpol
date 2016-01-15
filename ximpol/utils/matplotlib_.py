@@ -23,9 +23,11 @@
 import matplotlib
 import numpy
 import time
+import os
 from matplotlib import pyplot
 
 from ximpol.__version__ import TAG
+from ximpol import XIMPOL_DOC_FIGURES
 
 
 DEFAULT_FIG_WIDTH = 8.
@@ -57,6 +59,22 @@ def overlay_tag(x=0.95, y=0.95, color='black'):
     text = 'Created by ximpol %s on %s' % (TAG, time.asctime())
     pyplot.text(x, y, text, color=color, size=10, horizontalalignment='right',
                 transform=pyplot.gca().transAxes)
+
+def save_current_figure(file_name, clear=True):
+    """Save the current matplotlib figure in `XIMPOL_DOC_FIGURES`.
+
+    Arguments
+    ---------
+    file_name : string
+        The name of the output file.
+
+    clear : bool
+        If `True`, the current image is cleared after the fact.
+    """
+    file_path = os.path.join(XIMPOL_DOC_FIGURES, file_name)
+    pyplot.savefig(file_path)
+    if clear:
+        pyplot.clf()
 
 def setup():
     """Basic setup.

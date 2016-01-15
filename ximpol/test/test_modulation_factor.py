@@ -26,11 +26,10 @@ import unittest
 
 from ximpol import XIMPOL_IRF
 from ximpol.detector.xipe import GPD_MODF_FILE_PATH, IRF_NAME
-from ximpol.test import save_current_figure
 from ximpol.irf.mrf import xModulationFactor
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
 from ximpol.utils.matplotlib_ import pyplot as plt
-from ximpol.utils.matplotlib_ import overlay_tag
+from ximpol.utils.matplotlib_ import overlay_tag, save_current_figure
 
 
 class TestModulationFactor(unittest.TestCase):
