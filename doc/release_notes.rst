@@ -3,6 +3,7 @@ Release notes
 
 * Obsolete files removed, and some name refactoring.
 * xpbin.py created.
+* All figures from unit tests moved to doc/figures.
 
 
 *ximpol (0.7.0) - Thu, 14 Jan 2016 15:15:44 -0800*
