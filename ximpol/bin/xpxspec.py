@@ -52,6 +52,7 @@ if __name__=='__main__':
                         help='the path to the input .pha file')
     parser.add_argument('-m', '--model', type=str, default='powerlaw',
                         help='the spectral model for the fit')
+
     args = parser.parse_args()
     startmsg()
     xpxspec(args.file_path, args.model)

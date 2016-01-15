@@ -56,8 +56,8 @@ GPD_MODF_FILE_PATH = _full_path('modfact_hedme8020_1atm_1cm_mng.asc')
 
 """Energy bounds and sampling for the actual IRFs.
 """
-ENERGY_MIN = 1.0            # keV
-ENERGY_MAX = 10.0           # keV
+ENERGY_MIN = 0.1            # keV
+ENERGY_MAX = 11.0           # keV
 ENERGY_STEP = 0.01          # keV
 ENERGY_LO = numpy.arange(ENERGY_MIN, ENERGY_MAX, ENERGY_STEP)
 ENERGY_HI = numpy.append(ENERGY_LO[1:], ENERGY_MAX)

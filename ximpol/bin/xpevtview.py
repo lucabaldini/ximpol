@@ -41,11 +41,18 @@ def xpevtview(file_path):
         fig = plt.figure()
 
     ax = plt.subplot(2, 2, 1)
-    plt.hist(evtdata['MC_ENERGY'], bins=numpy.logspace(0,1,100),
-             histtype='step')
+    _emin = evtdata['ENERGY'].min()
+    _emax = evtdata['ENERGY'].max()
+    _binning = numpy.logspace(numpy.log10(_emin), numpy.log10(_emax), 100)
+    plt.hist(evtdata['ENERGY'], bins=_binning, histtype='step',
+             label='Reconstructed')
+    plt.hist(evtdata['MC_ENERGY'], bins=_binning, histtype='step',
+             label='True')
     plt.xscale('log')
     plt.yscale('log')
-    plt.xlabel('True energy [keV]')
+    plt.axis([_emin, _emax, None, None])
+    plt.xlabel('Energy [keV]')
+    plt.legend(bbox_to_anchor=(0.5, 0.75))
 
     ax = plt.subplot(2, 2, 2)
     plt.hist2d(evtdata['RA'], evtdata['DEC'], 100)

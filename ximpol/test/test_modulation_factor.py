@@ -41,7 +41,6 @@ class TestModulationFactor(unittest.TestCase):
     def setUpClass(self):
         """Setup---here we essentially create the modulation factor.
         """
-        mrf_file_path = os.path.join(XIMPOL_IRF, 'fits', '%s.mrf' % IRF_NAME)
         self.measx, self.measy = numpy.loadtxt(GPD_MODF_FILE_PATH, unpack=True)
         file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.mrf')
         self.modf = xModulationFactor(file_path)
