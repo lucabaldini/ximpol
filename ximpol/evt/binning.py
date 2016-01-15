@@ -28,9 +28,38 @@ from ximpol.irf.base import xColDefsBase
 from ximpol.irf.base import xPrimaryHDU, update_header
 
 
+"""TODO: clean up the header and get rid of the hard-coded stuff.
+"""
+
 SPECTRUM_HEADER_SPECS = [
-    ('EXTNAME' , 'SPECTRUM', 'name of this binary table extension')
+    ('EXTNAME' , 'SPECTRUM', 'name of this binary table extension'),
+    ('HDUCLASS', 'OGIP'    , None),
+    ('HDUCLAS1', 'SPECTRUM', None),
+    ('HDUCLAS2', 'TOTAL'   , None),
+    ('HDUCLAS3', 'RATE'    , None),
+    ('CHANTYPE', 'PI'      , None),
+    ('HDUVERS' , '1.2.1'   , 'OGIP version number'),
+    ('TELESCOP', None      , None),
+    ('INSTRUME', None      , None),
+    ('DETNAM'  , None      , None),
+    ('FILTER'  , None      , None),
+    ('DATAMODE', None      , None),
+    ('DETCHANS', 256       , 'Number of channels in spectrum'),
+    ('TLMIN1'  , 0         , 'First channel number'),
+    ('EXPOSURE', 1.        , 'Exposure time'),
+    ('CORRSCAL', 1.        , 'Scaling for correction file'),
+    ('POISSERR', 'T'       , 'Is error Poisson ?'),
+    ('RESPFILE', None      , None),
+    ('ANCRFILE', None      , None),
+    ('BACKFILE', None      , None),
+    ('CORRFILE', None      , None),
+    ('SYS_ERR' , 0.        , None),
+    ('QUALITY' , 0         , None),
+    ('GROUPING', 0         , None),
+    ('AREASCAL', 1.        , None),
+    ('BACKSCAL', 1.        , None)
 ]
+
 
 class xColDefsSpectrum(xColDefsBase):
 

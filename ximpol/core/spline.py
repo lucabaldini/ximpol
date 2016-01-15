@@ -508,20 +508,12 @@ class xInterpolatedBivariateSplineLinear(xBivariateSplineBase,
                    yunits=self.zunits)
         return xInterpolatedUnivariateSplineLinear(_x, _y, **fmt)
 
-    def build_vppf(self, num_points=100):
+    def build_vppf(self):
         """Create the vertical percent point function (or inverse of cdf).
-
-        Warning
-        -------
-        We're making some crazy shit with the optimization of the xgrid for the
-        ppf. We should be coming back and think about this carefully.
-        It would probably make sense to be able to decide on a case-by-case
-        basis.
         """
         _refppf = self.vslice(self.xmin()).build_ppf()
-        _optx, _opty = optimize_grid_linear(_refppf.x, _refppf.y, 1e-5)
         _x = self.x.copy()
-        _y = _optx
+        _y = _refppf.x
         _z = numpy.zeros(shape = (_x.size, _y.size))
         for i, _xp in enumerate(_x):
             _ppf = self.vslice(_xp).build_ppf()

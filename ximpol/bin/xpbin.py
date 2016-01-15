@@ -44,7 +44,7 @@ def xpbin(file_path):
     # And also the GTI
     _elapsed_time = evtdata['TIME'][-1] - evtdata['TIME'][0]
 
-    _binning = numpy.linspace(-0.5, _num_chans - 0.5, 256)
+    _binning = numpy.linspace(-0.5, _num_chans - 0.5, _num_chans)
     n, bins, patches = plt.hist(evtdata['PHA'], bins=_binning)
 
     output_file_path = file_path.replace('.fits', '.pha')
