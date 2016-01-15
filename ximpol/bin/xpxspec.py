@@ -30,11 +30,12 @@ from ximpol.utils.logging_ import logger, startmsg
 def xpxspec(file_path, model_name):
     """Do a spectral fit in XSPEC
     """
-    spec = xspec.Spectrum('test.pha')
+    spec = xspec.Spectrum(file_path)
     # These must be loaded automagically.
     spec.response = os.path.join(XIMPOL_IRF, 'fits', 'xipe_baseline.rmf')
     spec.response.arf = os.path.join(XIMPOL_IRF, 'fits', 'xipe_baseline.arf')
-    spec.ignore('**-1.')
+    spec.ignore('**-0.5')
+    spec.ignore('10.-**')
 
     model = xspec.Model(model_name)
     xspec.Fit.perform()

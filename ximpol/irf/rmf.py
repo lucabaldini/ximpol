@@ -101,6 +101,16 @@ class xEnergyDispersionMatrix(xUnivariateAuxGenerator):
     underlying spline tends to have blob-like features, and the vertical slices
     are no longer necessarily accurate representations of the energy dispersion.
     We should keep an eye on it.
+
+    Warning
+    -------
+    We really have to understand the -0.5 at the end of
+
+    >>> numpy.arange(0, len(_matrix['MATRIX'][0]), 1) - 0.5
+
+    We might be writing the rmf file wrong and compesate here, but the -0.5
+    is necessary to recover the spectral parameters when analyzing the thing in
+    XSPEC.
     """
 
     def __init__(self, hdu, num_aux_points=200):
@@ -109,7 +119,7 @@ class xEnergyDispersionMatrix(xUnivariateAuxGenerator):
         # First build a bivariate spline with the full data grid.
         _matrix = hdu.data
         _x = 0.5*(_matrix['ENERG_LO'] + _matrix['ENERG_HI'])
-        _y = numpy.arange(0, len(_matrix['MATRIX'][0]), 1)
+        _y = numpy.arange(0, len(_matrix['MATRIX'][0]), 1) - 0.5
         _z = _matrix['MATRIX']
         _pdf = xInterpolatedBivariateSplineLinear(_y, _x, _z.transpose())
         # Then initialize the actual xUnivariateAuxGenerator object

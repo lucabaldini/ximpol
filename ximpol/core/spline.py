@@ -510,8 +510,15 @@ class xInterpolatedBivariateSplineLinear(xBivariateSplineBase,
 
     def build_vppf(self):
         """Create the vertical percent point function (or inverse of cdf).
+
+        Warning
+        -------
+        This really, really need to be fixed. Instead of grabbing a vertical
+        slice at xmean, we should pass an argument to the function so that
+        the subclasses can implement whatever is right for them.
         """
-        _refppf = self.vslice(self.xmin()).build_ppf()
+        _xmean = 0.5*(self.xmin() + self.xmax())
+        _refppf = self.vslice(_xmean).build_ppf()
         _x = self.x.copy()
         _y = _refppf.x
         _z = numpy.zeros(shape = (_x.size, _y.size))
