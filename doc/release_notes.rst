@@ -5,6 +5,7 @@ Release notes
 * xpbin.py created.
 * All figures from unit tests moved to doc/figures.
 * More unit tests.
+* Event times in xpobbsim sorted.
 
 
 *ximpol (0.7.0) - Thu, 14 Jan 2016 15:15:44 -0800*
