@@ -51,6 +51,8 @@ class TestXipeArf(unittest.TestCase):
         gpd_eff = xInterpolatedUnivariateSplineLinear(_x, _y)
         aeff = xEffectiveArea(arf_file_path)
         _x = numpy.linspace(aeff.xmin(), aeff.xmax(), 100)
+        # Remove the data points where the effective area is 0.
+        _x = _x[aeff(_x) > 0.]
         _delta = abs((aeff(_x) - opt_aeff(_x)*gpd_eff(_x))/aeff(_x))
         self.assertTrue(_delta.max() < 5e-3, 'max. diff. %.9f' % _delta.max())
 

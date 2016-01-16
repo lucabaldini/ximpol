@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* All unit tests fixed (issue #26).
+
 
 *ximpol (0.9.0) - Fri, 15 Jan 2016 16:34:58 -0800*
 

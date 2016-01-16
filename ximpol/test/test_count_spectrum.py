@@ -23,6 +23,7 @@
 import os
 import numpy
 import unittest
+import sys
 
 from ximpol import XIMPOL_IRF
 from ximpol.irf.arf import xEffectiveArea
@@ -46,6 +47,7 @@ class TestCountSpectrum(unittest.TestCase):
         """
         file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.arf')
         self.aeff = xEffectiveArea(file_path)
+        self.interactive = sys.flags.interactive
 
     def test_power_law_stationary(self):
         """Test a time-independent power law.
@@ -106,23 +108,29 @@ class TestCountSpectrum(unittest.TestCase):
         count_spectrum = xCountSpectrum(powerlaw, self.aeff, _t)
         count_spectrum.plot(show=False)
         overlay_tag(color='white')
-        save_current_figure('test_power_law_stationary_2d.png')
+        save_current_figure('test_power_law_stationary_2d.png',
+                            show=self.interactive)
 
         ref_slice = count_spectrum.slice(tref)
         _x = self.aeff.x
         _y = C*numpy.power(_x, -Gamma)*self.aeff.y.max()
         plt.plot(_x, _y, '-', label='Original power-law spectrum')
         _y = C*numpy.power(_x, -Gamma)*self.aeff.y
+        _mask = _y > 0.
+        _x = _x[_mask]
+        _y = _y[_mask]
         delta = abs((_y - ref_slice(_x))/_y).max()
-        #self.assertTrue(delta < 1e-3, 'max deviation %.9f' % delta)
+        self.assertTrue(delta < 1e-3, 'max deviation %.9f' % delta)
         plt.plot(_x, _y, 'o', label='Direct convolution with aeff')
         ref_slice.plot(logx=True, logy=True, show=False,
                        label='xCountSpectrum output')
         overlay_tag()
         plt.text(0.1, 0.1, 'Max. difference = %.3e' % delta,
                  transform=plt.gca().transAxes)
-        plt.legend(bbox_to_anchor=(0.65, 0.5))
-        save_current_figure('test_power_law_stationary_slice.png')
+        plt.legend(bbox_to_anchor=(0.75, 0.5))
+        plt.axis([0.6, 10, None, None])
+        save_current_figure('test_power_law_stationary_slice.png',
+                            show=self.interactive)
 
     def test_power_law_variable(self):
         """Test a time-dependent power law.
@@ -189,23 +197,29 @@ class TestCountSpectrum(unittest.TestCase):
         count_spectrum = xCountSpectrum(powerlaw, self.aeff, _t)
         count_spectrum.plot(show=False)
         overlay_tag(color='white')
-        save_current_figure('test_power_law_variable_2d.png')
+        save_current_figure('test_power_law_variable_2d.png',
+                            show=self.interactive)
 
         ref_slice = count_spectrum.slice(tref)
         _x = self.aeff.x
         _y = self.aeff.y.max()*C(tref)*numpy.power(_x, -Gamma(tref))
         plt.plot(_x, _y, '-', label='Original power-law spectrum')
         _y = C(tref)*numpy.power(_x, -Gamma(tref))*self.aeff.y
+        _mask = _y > 0.
+        _x = _x[_mask]
+        _y = _y[_mask]
         delta = abs((_y - ref_slice(_x))/_y).max()
-        #self.assertTrue(delta < 1e-3, 'max deviation %.9f' % delta)
+        self.assertTrue(delta < 1e-3, 'max deviation %.9f' % delta)
         plt.plot(_x, _y, 'o', label='Direct convolution with aeff')
         ref_slice.plot(logx=True, logy=True, show=False,
                        label='xCountSpectrum output')
         overlay_tag()
         plt.text(0.1, 0.1, 'Max. difference = %.3e' % delta,
                  transform=plt.gca().transAxes)
-        plt.legend(bbox_to_anchor=(0.65, 0.5))
-        save_current_figure('test_power_law_variable_slice.png')
+        plt.legend(bbox_to_anchor=(0.75, 0.5))
+        plt.axis([0.6, 10, None, None])
+        save_current_figure('test_power_law_variable_slice.png',
+                            show=self.interactive)
 
         _x = numpy.linspace(tmin, tmax, 33)
         _y = []
@@ -221,7 +235,8 @@ class TestCountSpectrum(unittest.TestCase):
         plt.legend(bbox_to_anchor=(0.65, 0.75))
         plt.text(0.5, 0.1, 'Max. difference = %.3e' % delta,
                  transform=plt.gca().transAxes)
-        save_current_figure('test_power_law_variable_lc.png')
+        save_current_figure('test_power_law_variable_lc.png',
+                            show=self.interactive)
 
     def test_power_law_rvs(self, num_events=1000000):
         """Test the generation of event energies from a count power-law
@@ -261,7 +276,8 @@ class TestCountSpectrum(unittest.TestCase):
 
         count_spectrum.vppf.vslice(tref).plot(show=False, overlay=True)
         overlay_tag()
-        save_current_figure('test_power_law_rvs_vppf.png')
+        save_current_figure('test_power_law_rvs_vppf.png',
+                            show=self.interactive)
 
         ref_slice = count_spectrum.slice(tref)
         _time = numpy.zeros(num_events)
@@ -285,13 +301,17 @@ class TestCountSpectrum(unittest.TestCase):
         for _emin, _emax in zip(bins[:-1], bins[1:]):
             exp.append(scale*ref_slice.integral(_emin, _emax))
         exp = numpy.array(exp)
+        _mask = exp > 0.
+        exp = exp[_mask]
+        obs = obs[_mask]
         chisquare = ((exp - obs)**2/exp).sum()
         plt.text(0.5, 0.1, '$\chi^2$/ndof = %.2f/%d' % (chisquare, len(obs)),
                  transform=plt.gca().transAxes)
-        plt.legend(bbox_to_anchor=(0.5, 0.5))
+        plt.legend(bbox_to_anchor=(0.85, 0.75))
         overlay_tag()
-        save_current_figure('test_power_law_rvs_counts.png')
+        save_current_figure('test_power_law_rvs_counts.png',
+                            show=self.interactive)
 
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(exit=not sys.flags.interactive)

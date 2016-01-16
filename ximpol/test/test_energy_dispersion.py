@@ -23,6 +23,7 @@
 import os
 import numpy
 import unittest
+import sys
 
 from ximpol import XIMPOL_IRF
 from ximpol.detector.xipe import GPD_ERES_FILE_PATH, IRF_NAME
@@ -44,6 +45,7 @@ class TestEnergyDispersion(unittest.TestCase):
         self.measx, self.measy = numpy.loadtxt(GPD_ERES_FILE_PATH, unpack=True)
         file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.rmf')
         self.edisp = xEnergyDispersion(file_path)
+        self.interactive = sys.flags.interactive
 
     def test_rvs(self, num_events=100000):
         """
@@ -63,4 +65,4 @@ class TestEnergyDispersion(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(exit=not sys.flags.interactive)

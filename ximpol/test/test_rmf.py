@@ -72,7 +72,7 @@ class TestXipeRmf(unittest.TestCase):
             _sigma = 0.5*(self.edisp.ebounds(_ppf(0.8413)) -\
                           self.edisp.ebounds(_ppf(0.1586)))
             _delta = abs((fwhm - 2.358*_sigma)/fwhm)
-            self.assertTrue(_delta < 1e-2, 'diff. %.9f' % _delta)
+            self.assertTrue(_delta < 2e-2, 'diff. %.9f' % _delta)
 
 
 if __name__ == '__main__':

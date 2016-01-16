@@ -46,6 +46,9 @@ class TestXipeMrf(unittest.TestCase):
         mrf_file_path = os.path.join(XIMPOL_IRF, 'fits', '%s.mrf' % IRF_NAME)
         _x, _y = numpy.loadtxt(GPD_MODF_FILE_PATH, unpack=True)
         modf = xModulationFactor(mrf_file_path)
+        _mask = _y > 0.
+        _x = _x[_mask]
+        _y = _y[_mask]
         _delta = abs((_y - modf(_x))/_y)
         self.assertTrue(_delta.max() < 5e-3, 'max. diff. %.9f' % _delta.max())
 

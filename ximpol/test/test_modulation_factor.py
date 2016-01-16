@@ -23,6 +23,7 @@
 import os
 import numpy
 import unittest
+import sys
 
 from ximpol import XIMPOL_IRF
 from ximpol.detector.xipe import GPD_MODF_FILE_PATH, IRF_NAME
@@ -44,6 +45,7 @@ class TestModulationFactor(unittest.TestCase):
         self.measx, self.measy = numpy.loadtxt(GPD_MODF_FILE_PATH, unpack=True)
         file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.mrf')
         self.modf = xModulationFactor(file_path)
+        self.interactive = sys.flags.interactive
 
     def test_constant(self, num_events=1000000, interactive=False):
         """Test the modulation factor as a random number generator when
@@ -95,4 +97,4 @@ class TestModulationFactor(unittest.TestCase):
         #plt.show()
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(exit=not sys.flags.interactive)
