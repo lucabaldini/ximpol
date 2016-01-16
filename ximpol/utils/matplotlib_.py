@@ -28,6 +28,7 @@ from matplotlib import pyplot
 
 from ximpol.__version__ import TAG
 from ximpol import XIMPOL_DOC_FIGURES
+from ximpol.utils.logging_ import logger
 
 
 DEFAULT_FIG_WIDTH = 8.
@@ -72,6 +73,7 @@ def save_current_figure(file_name, clear=True, show=False):
         If `True`, the current image is cleared after the fact.
     """
     file_path = os.path.join(XIMPOL_DOC_FIGURES, file_name)
+    logger.info('Saving current figure to %s...' % file_path)
     pyplot.savefig(file_path, transparent=True)
     if show:
         pyplot.show()
