@@ -33,6 +33,11 @@ from ximpol.utils.matplotlib_ import pyplot as plt
 from ximpol.utils.matplotlib_ import overlay_tag, save_current_figure
 
 
+"""We explictely set the random seed to have reproducible results.
+"""
+numpy.random.seed(0)
+
+
 class TestCountSpectrum(unittest.TestCase):
 
     """Unit test for xCountSpectrum.
@@ -304,8 +309,15 @@ class TestCountSpectrum(unittest.TestCase):
         _mask = exp > 0.
         exp = exp[_mask]
         obs = obs[_mask]
-        chisquare = ((exp - obs)**2/exp).sum()
-        plt.text(0.5, 0.1, '$\chi^2$/ndof = %.2f/%d' % (chisquare, len(obs)),
+        chi2 = ((exp - obs)**2/exp).sum()
+        ndof = len(obs)
+        chi2_min = ndof - 3*numpy.sqrt(2*ndof)
+        chi2_max = ndof + 3*numpy.sqrt(2*ndof)
+        self.assertTrue(chi2 > chi2_min, 'chisquare too low (%.2f/%d)' %\
+                        (chi2, ndof))
+        self.assertTrue(chi2 < chi2_max, 'chisquare too high (%.2f/%d)' %\
+                        (chi2, ndof))
+        plt.text(0.5, 0.1, '$\chi^2$/ndof = %.2f/%d' % (chi2, ndof),
                  transform=plt.gca().transAxes)
         plt.legend(bbox_to_anchor=(0.85, 0.75))
         overlay_tag()
