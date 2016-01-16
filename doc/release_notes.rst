@@ -3,6 +3,9 @@ Release notes
 
 * IRFs extended ("by hand") down below 1 keV (need to do it properly, see
   issue #19).
+* A couple of subtle bug fixes in the energy dispersion (see issues #21 and
+  #22).
+* First version that allows to recover the spectral parameters in XSPEC.
 
 
 *ximpol (0.8.0) - Fri, 15 Jan 2016 11:53:01 -0800*
