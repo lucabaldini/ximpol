@@ -43,7 +43,7 @@ def xpxspec(file_path, model_name):
 
     xspec.Plot.device = '/xs'
     xspec.Plot.xAxis = 'keV'
-    xspec.Plot('ldata')
+    xspec.Plot('ldata', 'resid')
 
 
 if __name__=='__main__':
