@@ -59,7 +59,7 @@ class TestEnergyDispersion(unittest.TestCase):
         bin_width = (bins[1] - bins[0])
         scale = n.sum()*bin_width/_slice.norm()
         plt.plot(_slice.x, scale*_slice.y)
-        plt.show()
+        #plt.show()
 
 
 if __name__ == '__main__':
