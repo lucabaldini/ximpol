@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.9.0) - Fri, 15 Jan 2016 16:34:58 -0800*
+
 * IRFs extended ("by hand") down below 1 keV (need to do it properly, see
   issue #19).
 * A couple of subtle bug fixes in the energy dispersion (see issues #21 and
