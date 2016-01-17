@@ -33,6 +33,11 @@ from ximpol.utils.matplotlib_ import pyplot as plt
 from ximpol.utils.matplotlib_ import overlay_tag, save_current_figure
 
 
+"""We explictely set the random seed to have reproducible results.
+"""
+numpy.random.seed(0)
+
+
 class TestModulationFactor(unittest.TestCase):
 
     """Unit test for xModulationFactor.
@@ -47,7 +52,7 @@ class TestModulationFactor(unittest.TestCase):
         self.modf = xModulationFactor(file_path)
         self.interactive = sys.flags.interactive
 
-    def test_constant(self, num_events=1000000, interactive=False):
+    def test_constant(self, num_events=2000000):
         """Test the modulation factor as a random number generator when
         both the polarization angle and degrees are energy- and
         time-independent.
@@ -55,7 +60,9 @@ class TestModulationFactor(unittest.TestCase):
         polarization_angle = 20.
         polarization_degree = 1.
         self.modf.build_generator(polarization_angle, polarization_degree)
-        self.modf.generator.plot(show=interactive)
+        self.modf.generator.plot(show=False)
+        save_current_figure('test_modulation_constant_generator.png',
+                            show=self.interactive)
         emin = self.modf.xmin()
         emax = self.modf.xmax()
         E = numpy.random.uniform(emin, emax, num_events)
@@ -63,7 +70,7 @@ class TestModulationFactor(unittest.TestCase):
         ebinning = numpy.linspace(emin, emax, 10)
         phi_binning = numpy.linspace(0, 360, 60)
         fit_results = []
-        for _emin, _emax in zip(ebinning[:-1], ebinning[1:]):
+        for i, (_emin, _emax) in enumerate(zip(ebinning[:-1], ebinning[1:])):
             _emean = 0.5*(_emin + _emax)
             _mask = (E > _emin)*(E < _emax)
             _phi = phi[_mask]
@@ -76,25 +83,29 @@ class TestModulationFactor(unittest.TestCase):
             overlay_tag()
             plt.text(0.1, 0.1, 'Energy: %.2f--%.2f keV' % (_emin, _emax),
                      transform=plt.gca().transAxes)
-            plt.text(0.1, 0.05, str(fit_results), transform=plt.gca().transAxes)
+            plt.text(0.1, 0.05, str(_fr), transform=plt.gca().transAxes)
+            save_current_figure('test_modulation_constant_fit_slice%d.png' % i,
+                                show=self.interactive)
         _x = [_fr.emean for _fr in fit_results]
         _y = [_fr.phi0 for _fr in fit_results]
         _dy = [_fr.phi0_err for _fr in fit_results]
         plt.clf()
         plt.errorbar(_x, _y, yerr=_dy, fmt='o')
-        plt.axis([emin, emax, polarization_angle-5, polarization_angle+5])
+        plt.axis([emin, emax, polarization_angle - 10, polarization_angle + 10])
         plt.xlabel('Energy [keV]')
         plt.ylabel('Modulation angle [$^\circ$]')
-        #plt.show()
-        plt.clf()
+        save_current_figure('test_modulation_constant_angle.png',
+                            show=self.interactive)
         _y = [_fr.vis for _fr in fit_results]
         _dy = [_fr.vis_err for _fr in fit_results]
         plt.errorbar(_x, _y, yerr=_dy, fmt='o')
         plt.axis([emin, emax, 0, 1])
-        self.modf.plot(show=interactive)
+        self.modf.plot(show=False)
         plt.xlabel('Energy [keV]')
         plt.ylabel('Modulation visibility')
-        #plt.show()
+        save_current_figure('test_modulation_constant_visibility.png',
+                            show=self.interactive)
+
 
 if __name__ == '__main__':
     unittest.main(exit=not sys.flags.interactive)
