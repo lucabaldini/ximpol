@@ -2,7 +2,7 @@ Release notes
 =============
 
 * Added math support in the sphinx config file.
-* Major refactoring of the classes related to the modulation factor.
+* Major refactoring of the classes related to the modulation factor (issue #28).
 * More unit tests added.
 * More documentation added.
 

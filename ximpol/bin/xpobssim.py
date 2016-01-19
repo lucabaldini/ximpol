@@ -35,7 +35,19 @@ from ximpol import XIMPOL_IRF
 from ximpol.srcmodel.spectrum import xCountSpectrum
 
 
-def xpobssim(output_file_path, config_file_path, duration, start_time,
+def load_irfs(irf_name, folder_path=None):
+    """
+    """
+    if folder_path is None:
+        folder_path = os.path.join(XIMPOL_IRF,'fits')
+    aeff = xEffectiveArea(os.path.join(folder_path, '%s.arf' % irf_name))
+    psf = xPointSpreadFunction(os.path.join(folder_path, '%s.psf' % irf_name))
+    modf = xModulationFactor(os.path.join(folder_path, '%s.mrf' % irf_name))
+    edisp = xEnergyDispersion(os.path.join(folder_path, '%s.rmf' % irf_name))
+    return aeff, psf, modf, edisp
+
+
+def xpobssim(output_file_path, config_file_path, irf_name, duration, start_time,
              time_steps, random_seed):
     """Run the ximpol fast simulator.
     """
@@ -44,45 +56,39 @@ def xpobssim(output_file_path, config_file_path, duration, start_time,
     numpy.random.seed(random_seed)
 
     logger.info('Loading the instrument response functions...')
-    file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.arf')
-    aeff = xEffectiveArea(file_path)
-    file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.psf')
-    psf = xPointSpreadFunction(file_path)
-    file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.mrf')
-    modf = xModulationFactor(file_path)
-    file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.rmf')
-    edisp = xEnergyDispersion(file_path)
+    aeff, psf, modf, edisp = load_irfs(irf_name)
     logger.info('Done %s.' % chrono)
 
     logger.info('Setting up the source model...')
     module_name = os.path.basename(config_file_path).replace('.py', '')
     source = imp.load_source(module_name, config_file_path).source
     stop_time = start_time + duration
-    t = numpy.linspace(start_time, stop_time, time_steps)
-    count_spectrum = xCountSpectrum(source.spectrum, aeff, t)
+    sampling_time = numpy.linspace(start_time, stop_time, time_steps)
+    count_spectrum = xCountSpectrum(source.spectrum, aeff, sampling_time)
     logger.info('Done %s.' % chrono)
 
     logger.info('Extracting the event times...')
-    event_list = xMonteCarloEventList()
     num_events = numpy.random.poisson(count_spectrum.light_curve.norm())
-    _time = count_spectrum.light_curve.rvs(num_events)
-    logger.info('Sorting event times...')
-    _time.sort()
+    col_time = count_spectrum.light_curve.rvs(num_events)
+    col_time.sort()
     logger.info('Done %s, %d events generated.' % (chrono, num_events))
+
     logger.info('Filling output columns...')
-    event_list.set_column('TIME', _time)
-    _mc_energy = count_spectrum.rvs(_time)
-    event_list.set_column('MC_ENERGY', _mc_energy)
-    _pha = edisp.matrix.rvs(_mc_energy)
-    event_list.set_column('PHA', _pha)
-    event_list.set_column('ENERGY', edisp.ebounds(_pha))
-    _ra, _dec = psf.smear_single(source.ra, source.dec, num_events)
-    event_list.set_column('RA', _ra)
-    event_list.set_column('DEC', _dec)
-    _pol_degree = source.polarization_degree(_mc_energy, _time)
-    _pol_angle = source.polarization_angle(_mc_energy, _time)
-    _pe_angle = modf.rvs_phi(_mc_energy, _pol_degree, _pol_angle)
-    event_list.set_column('PE_ANGLE', _pe_angle)
+    event_list = xMonteCarloEventList()
+    event_list.set_column('TIME', col_time)
+    col_mc_energy = count_spectrum.rvs(col_time)
+    event_list.set_column('MC_ENERGY', col_mc_energy)
+    col_pha = edisp.matrix.rvs(col_mc_energy)
+    event_list.set_column('PHA', col_pha)
+    event_list.set_column('ENERGY', edisp.ebounds(col_pha))
+    col_ra, col_dec = psf.smear_single(source.ra, source.dec, num_events)
+    event_list.set_column('RA', col_ra)
+    event_list.set_column('DEC', col_dec)
+    polarization_degree = source.polarization_degree(col_mc_energy, col_time)
+    polarization_angle = source.polarization_angle(col_mc_energy, col_time)
+    col_pe_angle = modf.rvs_phi(col_mc_energy, polarization_degree,
+                                polarization_angle)
+    event_list.set_column('PE_ANGLE', col_pe_angle)
     event_list.set_column('MC_RA', source.ra)
     event_list.set_column('MC_RA', source.dec)
     event_list.set_column('MC_SRC_ID', source.identifier)
@@ -98,6 +104,8 @@ if __name__=='__main__':
                         help='the output FITS event file')
     parser.add_argument('-c', '--config-file', type=str, required=True,
                         help='the input configuration file')
+    parser.add_argument('-r', '--irf-name', type=str, default='xipe_baseline',
+                        help='the input configuration file')
     parser.add_argument('-d', '--duration', type=float, default=10,
                         help='the duration (in s) of the simulation')
     parser.add_argument('-t', '--start-time', type=float, default=0.,
@@ -108,5 +116,5 @@ if __name__=='__main__':
                         help='the random seed for the simulation')
     args = parser.parse_args()
     startmsg()
-    xpobssim(args.output_file, args.config_file, args.duration, args.start_time,
-            args.time_steps, args.random_seed)
+    xpobssim(args.output_file, args.config_file, args.irf_name, args.duration,
+             args.start_time, args.time_steps, args.random_seed)
