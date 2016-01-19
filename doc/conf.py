@@ -52,7 +52,8 @@ else:
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
-    _napoleon
+    _napoleon,
+    'sphinx.ext.pngmath'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
