@@ -1,6 +1,11 @@
 Release notes
 =============
 
+* Added math support in the sphinx config file.
+* Major refactoring of the classes related to the modulation factor.
+* More unit tests added.
+* More documentation added.
+
 
 *ximpol (0.9.1) - Sat, 16 Jan 2016 07:17:52 -0800*
 
