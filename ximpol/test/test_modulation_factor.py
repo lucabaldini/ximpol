@@ -28,6 +28,7 @@ import sys
 from ximpol import XIMPOL_IRF
 from ximpol.detector.xipe import GPD_MODF_FILE_PATH, IRF_NAME
 from ximpol.irf.mrf import xModulationFactor
+from ximpol.irf.mrf import xAzimuthalResponseGenerator
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
 from ximpol.utils.matplotlib_ import pyplot as plt
 from ximpol.utils.matplotlib_ import overlay_tag, save_current_figure
@@ -52,52 +53,50 @@ class TestModulationFactor(unittest.TestCase):
         self.modf = xModulationFactor(file_path)
         self.interactive = sys.flags.interactive
 
-    def test_constant(self, num_events=2000000):
+    def test_constant(self, num_events=1000000, polarization_degree=1.,
+                      polarization_angle=numpy.radians(20)):
         """Test the modulation factor as a random number generator when
         both the polarization angle and degrees are energy- and
         time-independent.
         """
-        polarization_angle = 20.
-        polarization_degree = 1.
-        self.modf.build_generator(polarization_angle, polarization_degree)
+        poldegree = numpy.zeros(num_events)
+        poldegree.fill(polarization_degree)
+        polangle = numpy.zeros(num_events)
+        polangle.fill(polarization_angle)
         self.modf.generator.plot(show=False)
         save_current_figure('test_modulation_constant_generator.png',
                             show=self.interactive)
         emin = self.modf.xmin()
         emax = self.modf.xmax()
-        E = numpy.random.uniform(emin, emax, num_events)
-        phi = self.modf.rvs(E)
+        energy = numpy.random.uniform(emin, emax, num_events)
+        phi = self.modf.rvs_phi(energy, poldegree, polangle)
         ebinning = numpy.linspace(emin, emax, 10)
-        phi_binning = numpy.linspace(0, 360, 60)
+        phi_binning = numpy.linspace(0, 2*numpy.pi, 100)
         fit_results = []
         for i, (_emin, _emax) in enumerate(zip(ebinning[:-1], ebinning[1:])):
             _emean = 0.5*(_emin + _emax)
-            _mask = (E > _emin)*(E < _emax)
+            _mask = (energy > _emin)*(energy < _emax)
             _phi = phi[_mask]
             _hist = plt.hist(_phi, bins=phi_binning, histtype='step')
-            _fr = xModulationFactor.fit_histogram(_hist)
+            _fr = xAzimuthalResponseGenerator.fit_histogram(_hist)
             _fr.emean = _emean
             fit_results.append(_fr)
-            _fr.plot()
-            plt.axis([0., 360., 0., 1.2*_hist[0].max()])
+            _fr.plot(label='Energy: %.2f--%.2f keV' % (_emin, _emax))
+            plt.axis([0., 2*numpy.pi, 0., 1.2*_hist[0].max()])
             overlay_tag()
-            plt.text(0.1, 0.1, 'Energy: %.2f--%.2f keV' % (_emin, _emax),
-                     transform=plt.gca().transAxes)
-            plt.text(0.1, 0.05, str(_fr), transform=plt.gca().transAxes)
             save_current_figure('test_modulation_constant_fit_slice%d.png' % i,
                                 show=self.interactive)
         _x = [_fr.emean for _fr in fit_results]
-        _y = [_fr.phi0 for _fr in fit_results]
-        _dy = [_fr.phi0_err for _fr in fit_results]
-        plt.clf()
+        _y = [_fr.phase for _fr in fit_results]
+        _dy = [_fr.phase_error for _fr in fit_results]
         plt.errorbar(_x, _y, yerr=_dy, fmt='o')
-        plt.axis([emin, emax, polarization_angle - 10, polarization_angle + 10])
+        plt.plot(_x, numpy.array([polarization_angle]*len(_x)))
         plt.xlabel('Energy [keV]')
         plt.ylabel('Modulation angle [$^\circ$]')
         save_current_figure('test_modulation_constant_angle.png',
                             show=self.interactive)
-        _y = [_fr.vis for _fr in fit_results]
-        _dy = [_fr.vis_err for _fr in fit_results]
+        _y = [_fr.visibility for _fr in fit_results]
+        _dy = [_fr.visibility_error for _fr in fit_results]
         plt.errorbar(_x, _y, yerr=_dy, fmt='o')
         plt.axis([emin, emax, 0, 1])
         self.modf.plot(show=False)

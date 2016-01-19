@@ -204,13 +204,15 @@ class xModulationFitResults:
         self.visibility_error, self.phase_error,\
             self.normalization_error = numpy.sqrt(pcov.diagonal())
 
-    def plot(self, show=False, stat=True, *options):
+    def plot(self, show=False, stat=True, label=None, *options):
         """Plot the fit results.
         """
         from ximpol.utils.matplotlib_ import pyplot as plt
         _x = numpy.linspace(0., 2*numpy.pi, 100)
         _y = xAzimuthalResponseGenerator.fit_function(_x, *self.popt)
         plt.plot(_x, _y, *options)
+        if label is not None:
+            plt.text(0.05, 0.1, label, transform=plt.gca().transAxes)
         if stat:
             plt.text(0.05, 0.05, self.latex(), transform=plt.gca().transAxes)
         if show:
@@ -270,126 +272,14 @@ class xModulationFactor(xInterpolatedUnivariateSplineLinear):
         fmt = dict(xname='Energy', xunits='keV', yname='Modulation factor',
                    optimize=True, tolerance=1e-4)
         xInterpolatedUnivariateSplineLinear.__init__(self, _x, _y, **fmt)
+        self.generator = xAzimuthalResponseGenerator()
 
-    @classmethod
-    def mu(self, A, B):
-        """Return the modulation factor for an azimuthal distribution like
-
-        >>> N(phi) = A + B*(cos(phi - phi0))**2
-
-        with `A` and `B` passed as arguments.
-
-        Warning
-        -------
-        Obsolete, to be removed.
+    def rvs_phi(self, energy, polarization_degree, polarization_angle):
+        """Return random variates for a given array of values of energy,
+        polarization degree and polarization angle.
         """
-        return B/(2*A + B)
-
-    @classmethod
-    def A(self, mu):
-        """Return the `A` parameter for the azimuthal cos-square distribution
-        given the modulation factor `mu`.
-
-        (This is calculated in a such a way the overall distribution is
-        normalized to 1.)
-
-        Warning
-        -------
-        Obsolete, to be removed.
-        """
-        return (1 - mu)/(2*numpy.pi)
-
-    @classmethod
-    def B(self, mu):
-        """Return the `B` parameter for the azimuthal cos-square distribution
-        given the modulation factor `mu`.
-
-        (This is calculated in a such a way the overall distribution is
-        normalized to 1.)
-
-        Warning
-        -------
-        Obsolete, to be removed.
-        """
-        return mu/numpy.pi
-
-    @classmethod
-    def modulation_function(self, phi, visibility, phi0, norm=1):
-        """The internal representation of the azimuthal cos-square distribution.
-
-        This is used to construct the underlying generator, but can be used
-        to fit modulation histograms, as well.
-
-        Arguments
-        ---------
-        phi : float or array
-            The value(s) of the azimuthal angle where we want to evaluate the\
-            modulation function.
-
-        mu : float
-            The visibility of the modulation, i.e., (max - min)/(max + min).
-
-        angle : float
-            The modulation angle in degrees [0--360].
-
-        Warning
-        -------
-        Obsolete, to be removed.
-        """
-        return norm*(self.A(visibility) + self.B(visibility)*numpy.power(
-            numpy.cos(numpy.radians(phi - phi0)), 2.))
-
-    @classmethod
-    def fit_histogram(self, histogram):
-        """Fit an azimuthal histogram.
-
-        Warning
-        -------
-        Obsolete, to be removed.
-        """
-        from scipy.optimize import curve_fit
-        _y, binning, patches = histogram
-        _x = 0.5*(binning[1:] + binning[:-1])
-        pstart = (0.5, 0., _y.sum())
-        popt, pcov = curve_fit(self.modulation_function, _x, _y, pstart,
-                               numpy.sqrt(_y))
-        return xModulationFitResults(popt, pcov)
-
-    def build_generator(self, polarization_angle=0., polarization_degree=1.):
-        """Construct the underlying generator to throw random numbers
-        according to the proper distribution.
-
-        Arguments
-        ---------
-        polarization_angle : float
-            The polarization angle in degrees [0--360].
-
-        polarization_degree : float
-            The polarization degree [0--1].
-
-        Warning
-        -------
-        More work is needed to fully support energy- and time-dependent
-        polarization degree and agle. (We probably need some kind of
-        trivariate spline data sctructure.)
-        """
-        _x = self.x.copy()
-        _y = numpy.linspace(0., 360., 100)
-        # Maybe the loop for _z could be done in a more numpy-like fashion?
-        _z = numpy.zeros(shape = (_x.size, _y.size))
-        for i, _xp in enumerate(_x):
-            mu = self(_xp)
-            for j, _yp in enumerate(_y):
-                _z[i, j] = self.modulation_function(_yp, mu*polarization_degree,
-                                                    polarization_angle)
-        fmt = dict(auxname='Energy', auxunits='keV', rvname='Azimuthal angle',
-                   rvunits='$^\circ$')
-        self.generator = xUnivariateAuxGenerator(_x, _y, _z, **fmt)
-
-    def rvs(self, E):
-        """Return random variates for a given array of values of energies.
-        """
-        return self.generator.rvs(E)
+        visibility = self(energy)*polarization_degree
+        return self.generator.rvs_phi(visibility, polarization_angle)
 
 
 def main():
@@ -404,9 +294,8 @@ def main():
     x = numpy.linspace(1, 10, 10)
     print(modf(x))
     modf.plot(overlay=True)
-    modf.build_generator(polarization_angle=20.)
     modf.generator.plot()
-    modf.generator.slice(5).plot()
+    modf.generator.slice(0.5).plot()
 
 
 if __name__ == '__main__':
