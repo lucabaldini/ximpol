@@ -49,34 +49,187 @@ class xColDefsMODFRESP(xColDefsBase):
     ]
 
 
+class xAzimuthalResponseGenerator(xUnivariateAuxGenerator):
+
+    """Random number generator for the azimuthal response of the polarimeter.
+
+    Here is the basic underlying math. Typically the response of a polarimeter
+    to monochromatic, linearly polarized incident radiation is of the form:
+
+    .. math:: N(\\phi) = A + B \\cos^2(\\phi - \\phi_0).
+
+    This can be conveniently rewritten in term of the overall normalization
+    (i.e., the total number of events) and the visibility of the modulation,
+    defined as
+
+    .. math::
+        \\xi = \\frac{N_\\text{max} - N_\\text{min}}
+        {N_\\text{max} + N_\\text{min}} = \\frac{B}{2A + B}
+
+    (the visibility can also be characterized as the fraction of modulated
+    events in a given distribution, as can be readily demonstrated.) The
+    angular response now becomes
+
+    .. math::
+        N(\\phi) = \\frac{N_0}{\\pi} \\left[
+        \\frac{(1 - \\xi)}{2} + \\xi \\cos^2(\\phi - \\phi_0)
+        \\right].
+
+    In terms of throwing random numbers, the phase is a trivial constant that
+    can be added after the fact (modulo 2pi), so effectively the
+    relevant probability density function is
+
+    .. math::
+        \\text{pdf}(\\phi) = \\frac{1}{\\pi} \\left[
+        \\frac{(1 - \\xi)}{2} + \\xi \\cos^2(\\phi) \\right],
+
+    (with the visibility being our auxiliary variable) and the corresponding
+    cumulative distribution function is
+
+    .. math::
+        \\text{cdf}(\\phi) = \\frac{1}{2\\pi} \\left(
+        \\phi + \\frac{\\xi}{2}\\sin{(2\\phi)} \\right).
+
+    It is unfortunate that the cdf cannot be inverted, otherwise we would
+    have no need to interpolate for generating random numbers according to
+    this distribution.
+    """
+
+    def __init__(self):
+        """Constructor.
+        """
+        _visibility = numpy.linspace(0., 1., 100)
+        _phi = numpy.linspace(0., 2*numpy.pi, 100)
+        fmt = dict(auxname='$\\xi$', rvname='$\\phi$', rvunits='rad')
+        xUnivariateAuxGenerator.__init__(self, _visibility, _phi, self.pdf,
+                                         **fmt)
+
+    @classmethod
+    def pdf(self, phi, visibility):
+        """Evaluate the underlying one-dimensional pdf for a given value of the
+        visibility, and assuming that the phase of the modulation is zero.
+
+        Arguments
+        ---------
+        phi : float or array
+            The (independent) azimuthal angle variable, in radians.
+
+        visibility : float or array
+            The visibility of the modulation, in [0--1].
+        """
+        return (0.5*(1. - visibility) +\
+                visibility*numpy.power(numpy.cos(phi), 2.0))/numpy.pi
+
+    @classmethod
+    def cdf(self, phi, visibility):
+        """Evaluate the underlying one-dimensional cdf for a given value of the
+        visibility, and assuming that the phase of the modulation is zero.
+
+        Warning
+        -------
+        We could overload the build_vpppf method for the class using this,
+        since we have an analytic expression.
+        """
+        return (phi + 0.5*visibility*numpy.sin(2.*phi))/(2*numpy.pi)
+
+    def rvs_phi(self, visibility, phase):
+        """Generate random variates for any visibility and phase values.
+
+        This is essentially calling the underlying xUnivariateAuxGenerator.rvs()
+        method passing the visibility array as an argument and adding the phase
+        array modulo 2pi.
+        """
+        return numpy.mod(self.rvs(visibility) + phase, 2*numpy.pi)
+
+    @classmethod
+    def fit_function(self, phi, visibility, phase, normalization):
+        """Convenience function (with the phase back in) to allow histogram
+        fitting.
+        """
+        return normalization*self.pdf((phi - phase), visibility)
+
+    @classmethod
+    def fit_histogram(self, histogram, fit_normalization=False):
+        """Fit an azimuthal histogram.
+        """
+        from scipy.optimize import curve_fit
+        _y, binning, patches = histogram
+        _x = 0.5*(binning[1:] + binning[:-1])
+        norm = _y.sum()*(binning[1] - binning[0])
+        if not fit_normalization:
+            p0 = (0.5, 0.5)
+            # Wrap the fit function, keeping the normalization frozen.
+            def f(phi, visibility, phase):
+                return self.fit_function(phi, visibility, phase, norm)
+        else:
+            p0 = (0.5, 0.5, norm)
+            f = self.fit_function
+        popt, pcov = curve_fit(f, _x, _y, p0, numpy.sqrt(_y))
+        if not fit_normalization:
+            # Add back the normalization to the parameter vector and covariance
+            # matrix.
+            popt = numpy.concatenate((popt, numpy.array([norm])))
+            pcov = numpy.vstack((pcov, numpy.array([[0., 0.]])))
+            pcov = numpy.hstack((pcov, numpy.array([[0., 0., 0.]]).transpose()))
+        _xs = numpy.linspace(0, 2*numpy.pi, 250)
+        _ys = self.fit_function(_xs, *popt)/(binning[1] - binning[0])
+        spline = xInterpolatedUnivariateSplineLinear(_xs, _ys)
+        mask = _y > 0.
+        obs = _y[mask]
+        exp = []
+        for _min, _max in zip(binning[:-1], binning[1:]):
+            exp.append(spline.integral(_min, _max))
+        exp = numpy.array(exp)
+        chisquare = ((exp - obs)**2/exp).sum()
+        return xModulationFitResults(popt, pcov, chisquare, len(mask))
+
 
 class xModulationFitResults:
 
     """Small convenience class encapsulating the result of a fit to an
     azimuthal angle distribution.
+
+    This includes facilities for plotting and annotating the best-fit
+    model (e.g., overlaying it onto the underlying fitted histogram).
     """
 
-    def __init__(self, popt, pcov):
+    def __init__(self, popt, pcov, chisquare, ndof):
         """Constructor.
         """
         self.popt = popt
         self.pcov = pcov
-        self.vis, self.phi0, self.norm = popt
-        self.vis_err, self.phi0_err, self.norm_err = numpy.sqrt(pcov.diagonal())
+        self.chisquare = chisquare
+        self.ndof = ndof
+        self.visibility, self.phase, self.normalization = popt
+        self.visibility_error, self.phase_error,\
+            self.normalization_error = numpy.sqrt(pcov.diagonal())
 
-    def plot(self, *options):
+    def plot(self, show=False, stat=True, *options):
         """Plot the fit results.
         """
         from ximpol.utils.matplotlib_ import pyplot as plt
-        x = numpy.linspace(0., 360., 100)
-        y = xModulationFactor.modulation_function(x, *self.popt)
-        plt.plot(x, y, *options)
+        _x = numpy.linspace(0., 2*numpy.pi, 100)
+        _y = xAzimuthalResponseGenerator.fit_function(_x, *self.popt)
+        plt.plot(_x, _y, *options)
+        if stat:
+            plt.text(0.05, 0.05, self.latex(), transform=plt.gca().transAxes)
+        if show:
+            plt.show()
+
+    def latex(self):
+        """LaTeX formatting.
+        """
+        return '$\\xi = %.3f \\pm %.3f$, $\\phi = (%.2f \\pm %.2f)^\\circ$,'\
+            '$\\chi^2/{\\rm ndf} = %.1f/%d$' %\
+            (self.visibility, self.visibility_error, numpy.degrees(self.phase),
+             numpy.degrees(self.phase_error), self.chisquare, self.ndof)
 
     def __str__(self):
         """String formatting.
         """
-        return 'Visibility = %.3f +/- %.3f, angle = %.2f +/- %.2f' %\
-            (self.vis, self.vis_err, self.phi0, self.phi0_err)
+        return 'Visibility = %.3f +/- %.3f, phase = %.2f +/- %.2f deg' %\
+            (self.visibility, self.visibility_error, numpy.degrees(self.phase),
+             numpy.degrees(self.phase_error))
 
 
 class xModulationFactor(xInterpolatedUnivariateSplineLinear):
@@ -125,6 +278,10 @@ class xModulationFactor(xInterpolatedUnivariateSplineLinear):
         >>> N(phi) = A + B*(cos(phi - phi0))**2
 
         with `A` and `B` passed as arguments.
+
+        Warning
+        -------
+        Obsolete, to be removed.
         """
         return B/(2*A + B)
 
@@ -135,6 +292,10 @@ class xModulationFactor(xInterpolatedUnivariateSplineLinear):
 
         (This is calculated in a such a way the overall distribution is
         normalized to 1.)
+
+        Warning
+        -------
+        Obsolete, to be removed.
         """
         return (1 - mu)/(2*numpy.pi)
 
@@ -145,6 +306,10 @@ class xModulationFactor(xInterpolatedUnivariateSplineLinear):
 
         (This is calculated in a such a way the overall distribution is
         normalized to 1.)
+
+        Warning
+        -------
+        Obsolete, to be removed.
         """
         return mu/numpy.pi
 
@@ -166,6 +331,10 @@ class xModulationFactor(xInterpolatedUnivariateSplineLinear):
 
         angle : float
             The modulation angle in degrees [0--360].
+
+        Warning
+        -------
+        Obsolete, to be removed.
         """
         return norm*(self.A(visibility) + self.B(visibility)*numpy.power(
             numpy.cos(numpy.radians(phi - phi0)), 2.))
@@ -173,6 +342,10 @@ class xModulationFactor(xInterpolatedUnivariateSplineLinear):
     @classmethod
     def fit_histogram(self, histogram):
         """Fit an azimuthal histogram.
+
+        Warning
+        -------
+        Obsolete, to be removed.
         """
         from scipy.optimize import curve_fit
         _y, binning, patches = histogram
