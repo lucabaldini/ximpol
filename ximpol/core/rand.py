@@ -158,10 +158,12 @@ class xUnivariateAuxGenerator(xInterpolatedBivariateSplineLinear):
     If `pdf` is a callable, than a meshgrid is created and the callable is
     evaluated on the meshgrid itself.
     """
-    def __init__(self, aux, rv, pdf, auxname=None, auxunits=None, rvname=None,
-                 rvunits=None, pdfname='pdf', pdfunits=None):
+    def __init__(self, aux, rv, pdf, auxname='aux', auxunits=None, rvname='rv',
+                 rvunits=None, pdfname=None, pdfunits=None):
         """Constructor.
         """
+        if pdfname is None:
+            pdfname = 'pdf(%s; %s)' % (rvname, auxname)
         if pdfunits is None and rvunits is not None:
             pdfunits = '1/%s' % rvunits
         if hasattr(pdf, '__call__'):
