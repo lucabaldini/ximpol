@@ -60,8 +60,6 @@ def xpobssim(output_file_path, config_file_path, duration, start_time,
     stop_time = start_time + duration
     t = numpy.linspace(start_time, stop_time, time_steps)
     count_spectrum = xCountSpectrum(source.spectrum, aeff, t)
-
-    modf.build_generator(source.polarization_angle, source.polarization_degree)
     logger.info('Done %s.' % chrono)
 
     logger.info('Extracting the event times...')
@@ -81,7 +79,9 @@ def xpobssim(output_file_path, config_file_path, duration, start_time,
     _ra, _dec = psf.smear_single(source.ra, source.dec, num_events)
     event_list.set_column('RA', _ra)
     event_list.set_column('DEC', _dec)
-    _pe_angle = modf.rvs(_mc_energy)
+    _pol_degree = source.polarization_degree(_mc_energy, _time)
+    _pol_angle = source.polarization_angle(_mc_energy, _time)
+    _pe_angle = modf.rvs_phi(_mc_energy, _pol_degree, _pol_angle)
     event_list.set_column('PE_ANGLE', _pe_angle)
     event_list.set_column('MC_RA', source.ra)
     event_list.set_column('MC_RA', source.dec)

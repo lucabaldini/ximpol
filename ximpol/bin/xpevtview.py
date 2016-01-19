@@ -27,6 +27,7 @@ from astropy.io import fits
 from ximpol.utils.matplotlib_ import pyplot as plt
 from ximpol.utils.matplotlib_ import context_two_by_two
 from ximpol.utils.logging_ import logger, startmsg
+from ximpol.irf.mrf import xAzimuthalResponseGenerator
 
 
 def xpevtview(file_path):
@@ -67,10 +68,13 @@ def xpevtview(file_path):
 
     ax = plt.subplot(2, 2, 4)
     pe_angle = evtdata['PE_ANGLE']
-    binning = numpy.linspace(0, 360, 100)
-    plt.hist(pe_angle, bins=binning, histtype='step')
+    binning = numpy.linspace(0., 2*numpy.pi, 100)
+    hist = plt.hist(pe_angle, bins=binning, histtype='step')
+    fit_results = xAzimuthalResponseGenerator.fit_histogram(hist)
+    fit_results.plot()
     plt.xlabel('PE emission angle [deg]')
-    plt.axis([0., 360., None, None])
+    plt.axis([0., 2*numpy.pi, 0., None])
+
 
     plt.show()
 
