@@ -167,7 +167,7 @@ class xEnergyDispersion:
         self.ebounds = xEnergyDispersionBounds(hdu_list['EBOUNDS'])
         hdu_list.close()
 
-    def plot(self):
+    def plot(self, show=True):
         """Plot the energy dispersion.
         """
         from ximpol.utils.matplotlib_ import pyplot as plt
@@ -197,7 +197,8 @@ class xEnergyDispersion:
             self.ebounds.plot(overlay=False, show=False)
             _plot_vslice(emin + 0.333*(emax - emin), 3)
             _plot_vslice(emin + 0.666*(emax - emin), 4)
-        plt.show()
+        if show:
+            plt.show()
 
 
 def main():
