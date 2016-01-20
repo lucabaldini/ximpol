@@ -97,7 +97,7 @@ as a function of the energy is tabulated in
 <https://raw.githubusercontent.com/lucabaldini/ximpol/master/ximpol/detector/data/eres_fwhm_hedme8020_1atm_1cm.asc>`_.
 We're using 256 channels between 0 and 11 keV (or 0.043 keV/channel), which
 seems to sample the energy dispersion adequately across the entire energy range
-(the typical FWHM being 1 keV or 25 channels).
+(the typical FWHM being 1 keV or 25 channels). The ``MATRIX`` and ``EBOUNDS`` are shown in the top panel of the figure below. The bottom panel shows slices (i.e., the pdf as a function of channel) of the ``MATRIX`` at 3.73 keV and 7.36 keV.
 
 .. image:: figures/xipe_baseline_edisp.png
 
