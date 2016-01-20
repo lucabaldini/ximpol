@@ -43,7 +43,9 @@ How you actually go about making sure that all the packages are correctly
 installed depends on the operating system you're using. For GNU/Linux
 in the Fedora flavor, for instance, you would do something like
 
->>> $yum install numpy scipy python-matplotlib python-astropy APLpy
+.. code-block:: bash
+
+    yum install numpy scipy python-matplotlib python-astropy APLpy
 
 For XSPEC and the corresponding Python bindings, refer to the
 `HEASOFT download page <http://heasarc.nasa.gov/lheasoft/download.html>`_.
@@ -75,8 +77,11 @@ Basic environment
 The only thing you have to do is to make sure that the root folder of the
 repository is included in the ``$PYTHONPATH`` environmental variable.
 You might also want to add `ximpol/bin` to the ``$PATH`` environmental variable,
-so that you have the executables off hand. Here is an example for users of the Bourne shell (sh, ash, ksh, and bash): 
+so that you have the executables off hand. Here is an example for users of the
+Bourne shell (sh, ash, ksh, and bash): 
 
->>> export PYTHONPATH=/data/work/xipe/ximpol:$PYTHONPATH
->>> export PATH=/data/work/xipe/ximpol/ximpol/bin:$PATH
+.. code-block:: bash
+
+    export PYTHONPATH=/data/work/xipe/ximpol:$PYTHONPATH
+    export PATH=/data/work/xipe/ximpol/ximpol/bin:$PATH
 

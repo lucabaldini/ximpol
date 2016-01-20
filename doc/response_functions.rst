@@ -174,7 +174,10 @@ in another section.
 The small application `bin/xpxirfview.py` provides a common interface to
 display the content of the IRF FITS files
 
->>> $ximpol/bin/xpirfview.py ximpol/irf/fits/xipe_baseline.arf
+
+.. code-block:: bash
+
+    ximpol/bin/xpirfview.py ximpol/irf/fits/xipe_baseline.arf
 
 
            

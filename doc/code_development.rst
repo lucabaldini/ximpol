@@ -17,8 +17,10 @@ you use it.
 Mind that, in order to be able to push back changes to the remote repository
 you will need to tell git on your machine who you are, i.e.:
 
->>> git config --global user.name "Your Name"
->>> git config --global user.email you@example.com
+.. code-block:: bash
+                
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
 
 
 Cloning the repository
@@ -29,15 +31,19 @@ Windows as well.)
 
 Cloning the reprository is as easy as typing
 
->>> git clone git@github.com:lucabaldini/ximpol.git
+.. code-block:: bash
+
+    git clone git@github.com:lucabaldini/ximpol.git
 
 (mind this will create a ximpol folder in the current directory, so cd to the
 appropriate place in your filesystem first). If you get an error message along
 the lines of
 
->>> Permission denied (publickey).
->>> fatal: Could not read from remote repository.
->>> Please make sure you have the correct access rights and the repository exists.
+.. code-block:: bash
+
+    Permission denied (publickey).
+    fatal: Could not read from remote repository.
+    Please make sure you have the correct access rights and the repository exists.
 
 that simply means that you have to exchange you public SSH key with the server.
 In order to do that, click on your github profile icon on the top-right of the
@@ -48,7 +54,9 @@ the local (i.e. on the machine you are cloning the repository into)
 
 If you don't have a public ssh key, you can generate it by typing
 
->>> ssh-keygen
+.. code-block:: bash
+
+    ssh-keygen
 
 (press ENTER a couple of times and here is you public key in
 `~/.ssh/id_rsa.pub`)
@@ -63,8 +71,10 @@ the `$PYTHONPATH` environmental variable.
 You might also want to add `ximpol/bin` to the `$PATH` environmental variable,
 so that you have the executables off hand. Here is an example:
 
->>> export PYTHONPATH=/data/work/xipe/ximpol:$PYTHONPATH
->>> export PATH=/data/work/xipe/ximpol/ximpol/bin:$PATH
+.. code-block:: bash
+
+    export PYTHONPATH=/data/work/xipe/ximpol:$PYTHONPATH
+    export PATH=/data/work/xipe/ximpol/ximpol/bin:$PATH
 
 
 Coding guidelines
@@ -125,9 +135,11 @@ be rendered `like this
 
 You can compile and view the ximpol documentation locally by doing
 
->>> cd doc
->>> make html
->>> htmlview _build/html/index.html
+.. code-block:: bash
+
+    cd doc
+    make html
+    htmlview _build/html/index.html
 
 which is useful to make sure everything is in order when writing and
 documenting code.
@@ -157,8 +169,10 @@ discovery will look for.
 
 To run the full suite:
 
->>> cd ximpol/test
->>> make test
+.. code-block:: bash
+
+    cd ximpol/test
+    make test
 
 
 Continuous integration

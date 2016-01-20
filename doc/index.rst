@@ -13,6 +13,7 @@ Contents:
 
    installation
    quick_start
+   source_models
    response_functions
    code_development
    system_tests
