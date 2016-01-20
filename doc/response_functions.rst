@@ -55,7 +55,7 @@ distinct pieces:
   (Ne/DME 80/20, 1 atm, 1 cm absorption gap), available in
   `eff_hedme8020_1atm_1cm_cuts80p_be50um_p_x.asc
   <https://raw.githubusercontent.com/lucabaldini/ximpol/master/ximpol/detector/data/eff_hedme8020_1atm_1cm_cuts80p_be50um_p_x.asc>`_.
-  (Mind this include the effect of the 50 um Be window and that of an
+  (Mind this includes the effect of the 50 um Be window and that of an
   energy-independent cut on the quality of the event to achieve the modulation
   factor predicted by the Monte Carlo.)
 
@@ -63,7 +63,7 @@ distinct pieces:
 
 
 The point-spread function (PSF) is apparently difficult to estimate accurately
-based on the design of the optics, as it depends substantially on on the
+based on the design of the optics, as it depends substantially on the
 defects of the surfaces (i.e., you need some metrology on the actual mirrors).
 For the XIPE baseline design we start by assuming a gaussian + King profile
 with a HEW of 15 arcsec, with the exact same parametrization and parameters
@@ -71,7 +71,7 @@ values of `Fabiani et al. (2014) <http://arxiv.org/abs/1403.7200>`_.
 For completeness, another paper of interest is `Romano et al. (2005)
 <http://proceedings.spiedigitallibrary.org/proceeding.aspx?articleid=868815>`_.
 Below is the actual profile of the PSF, which should be identical to
-Figure 6 of Fabiani at al. (2014), the parameter values being taken from
+Figure 6 of Fabiani at al. (2014); the parameter values were taken from
 Table 2 (@ 4.51 keV).
 
 .. image:: figures/xipe_baseline_psf.png
@@ -85,18 +85,19 @@ and shown in the figure below.
 .. image:: figures/xipe_baseline_modf.png
 
 
-The energy dispersion (i.e., the content of the `.mrf` FITS files) contains
+The energy dispersion (i.e., the content of the .mrf FITS files) contains
 a two-dimensional table of the redistribution matrix in the PHA-true energy
-space (the `MATRIX` extension), and a one-dimensional table containing the
-correspondence between the PHA channels and the energy (the `EBOUNDS`
+space (the ``MATRIX`` extension), and a one-dimensional table containing the
+correspondence between the PHA channels and the energy (the ``EBOUNDS``
 extension).
 
 For the time being we are using a simple gaussian parametrization whose FWHM
 as a function of the energy is tabulated in
 `eres_fwhm_hedme8020_1atm_1cm.asc
 <https://raw.githubusercontent.com/lucabaldini/ximpol/master/ximpol/detector/data/eres_fwhm_hedme8020_1atm_1cm.asc>`_.
-We're using 256 channels between 0 and 11 keV, which seem to sample the
-energy dispersion adequately across the entire energy range.
+We're using 256 channels between 0 and 11 keV (or 0.043 keV/channel), which
+seems to sample the energy dispersion adequately across the entire energy range
+(the typical FWHM being 1 keV or 25 channels).
 
 .. image:: figures/xipe_baseline_edisp.png
 
