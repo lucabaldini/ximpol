@@ -13,6 +13,7 @@ Contents:
 
    installation
    quick_start
+   response_functions
    code_development
    system_tests
    release_notes

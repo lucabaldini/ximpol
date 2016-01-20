@@ -1,0 +1,70 @@
+Instrument response functions (IRFs)
+====================================
+
+The instrument response functions are a crtical part of the package, and they
+are used (in identical form) both in the event simulation and in the analysis
+of the data products from the simulations.
+
+All the response functions are stored in FITS files in the OGIP format defined
+in `CAL/GEN/92-002
+<http://heasarc.gsfc.nasa.gov/docs/heasarc/caldb/docs/memos/cal_gen_92_002/cal_gen_92_002.html>`_
+(and modifications `CAL/GEN/92-002a
+<http://heasarc.gsfc.nasa.gov/docs/heasarc/caldb/docs/memos/cal_gen_92_002a/cal_gen_92_002a.html>`_)
+and are intended to be fully compatible with the spectral analysis tools
+provided by `XSPEC <https://heasarc.gsfc.nasa.gov/xanadu/xspec/>`_ (see
+`here <http://heasarc.gsfc.nasa.gov/docs/xanadu/xspec/fits/fitsfiles.html>`_
+for more details).
+
+We identify four different types of response functions, listed in the following
+table.
+
+=====================  =========  ======================== ===============
+IRF Type               Extension  ximpol module            ximpol class
+=====================  =========  ======================== ===============
+Effective area         `.arf`     :py:mod:`ximpol.irf.arf` :py:class:`ximpol.irf.arf.xEffectiveArea`
+Point-spread function  `.psf`     :py:mod:`ximpol.irf.psf` :py:class:`ximpol.irf.psf.xPointSpreadFunction`
+Modulation factor      `.mrf`     :py:mod:`ximpol.irf.mrf` :py:class:`ximpol.irf.mrf.xModulationFactor`
+Energy dispersion      `.rmf`     :py:mod:`ximpol.irf.rmf` :py:class:`ximpol.irf.rmf.xEnergyDispersion`
+=====================  =========  ======================== ===============
+
+(If you are familiar with basic spectral analysis in XSPEC, the `.arf` and
+`.rmf` files have exactly the meaning that you would expect, and can be
+in fact used in XSPEC).
+
+ximpol provodes facilities for generating, reading displaying and using IRFs, as
+illustrated below.
+
+
+Creating an IRF set: XIPE
+-------------------------
+
+The python module `ximpol.detector.xipe.py
+<https://github.com/lucabaldini/ximpol/blob/master/ximpol/detector/xipe.py>`_
+generates a full set of instrument response functions for the baseline
+XIPE configuration, and it's a sensible example of how to go about
+generating IRFs for arbitrary detector configurations.
+
+The XIPE effective area (shown in the figure below) is the product of two
+distinct pieces:
+
+* The collecting area of the XIPE optics, available in
+  `aeff_optics_xipe_m4_x3.asc
+  <https://raw.githubusercontent.com/lucabaldini/ximpol/master/ximpol/detector/data/aeff_optics_xipe_m4_x3.asc>`_
+  in ascii format. (This is the overall area for the three telescopes.)
+* The quantum efficiency of the MGD in the baseline configuration
+  (Ne/DME 80/20, 1 atm, 1 cm absorption gap), available in
+  `eff_hedme8020_1atm_1cm_cuts80p_be50um_p_x.asc
+  <https://raw.githubusercontent.com/lucabaldini/ximpol/master/ximpol/detector/data/eff_hedme8020_1atm_1cm_cuts80p_be50um_p_x.asc>`_.
+  (Mind this include the effect of the 50 um Be window and that of an
+  energy-independent cut on the quality of the event to achieve the modulation
+  factor predicted by the Monte Carlo.)
+
+
+
+.. image:: figures/xipe_baseline_aeff.png
+
+.. image:: figures/xipe_baseline_psf.png
+
+.. image:: figures/xipe_baseline_modf.png
+
+.. image:: figures/xipe_baseline_edisp.png

@@ -45,15 +45,19 @@ class TestIrfPlot(unittest.TestCase):
         """Plot all the instrument response functions and save images.
         """
         self.aeff.plot(show=False)
+        overlay_tag()
         save_current_figure('%s_aeff.png' % self.irf_name,
                             show=self.interactive)
         self.psf.plot(show=False)
+        overlay_tag()
         save_current_figure('%s_psf.png' % self.irf_name,
                             show=self.interactive)
         self.modf.plot(show=False)
+        overlay_tag()
         save_current_figure('%s_modf.png' % self.irf_name,
                             show=self.interactive)
         self.edisp.plot(show=False)
+        overlay_tag()
         save_current_figure('%s_edisp.png' % self.irf_name,
                             show=self.interactive)
 
