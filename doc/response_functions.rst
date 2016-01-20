@@ -107,7 +107,7 @@ Loading (and using) IRFs
 
 All the instrument response functions are stored in FITS files (living in
 `ximpol/irf/fits`) and have suitable interfaces to load and use them.
-You load, e.g., the baseline XIPE effective area by doing:
+You can load the baseline XIPE effective area by running the following:
 
 >>> import os
 >>> from ximpol import XIMPOL_IRF
@@ -115,19 +115,17 @@ You load, e.g., the baseline XIPE effective area by doing:
 >>> file_path = os.path.join(XIMPOL_IRF, 'fits', 'xipe_baseline.arf')
 >>> aeff = xEffectiveArea(file_path)
 
-(The same works for the other three IRFs. Note that ``XIMPOL_IRF`` is a
+The same works for the other three IRFs. Note that ``XIMPOL_IRF`` is a
 convenience variable that allows you to avoid machine-dependent absolute
-paths and is always pointing to `ximpol/irf`, no matter what the package
+paths and is always pointing to `ximpol/irf`, no matter where the package
 is installed. There's many other such variables defined in `ximpol.__init__.py
-<https://github.com/lucabaldini/ximpol/blob/master/ximpol/__init__.py>`_.)
-You can also load all the four response functions at a time:
+<https://github.com/lucabaldini/ximpol/blob/master/ximpol/__init__.py>`_.
+You can also load all four of the response functions at a time:
 
 >>> from ximpol.irf import load_irfs
 >>> aeff, psf, modf, edisp = load_irfs('xipe_baseline')
 
-Ok, now that I got the IRF(s), what do I do with them? For one thing response
-function objects are typically capable of evaluating themselves at any given
-point---compare the outputs below with the plots at the top of the page.
+The IRFs are objects that can be evaluated at any given point---compare the outputs below with the plots at the top of the page.
 
 >>> # Print the values of the effective area and the modulation factor and 3 keV
 >>> print(aeff(3.))
@@ -138,10 +136,24 @@ point---compare the outputs below with the plots at the top of the page.
 >>> print(psf(20.))
 >>> 0.000131813525114
 
-(The energy dispersion is a somewhat more complicated object, i.e., a
-distribution whose parameters depend on the energy, for which this has no
-real sense.) In passing, since internally we work with array, we can also
-evaluate the response functions over arbitrary grids of points in one pass, e.g
+The energy dispersion is a somewhat more complicated object, it consists of
+a two-dimensional redistribution matrix and one-dimensional table containing
+the correspondence between the PHA channels and the energy. Below are a few examples
+of methods which the energy dispersion object has:
+
+>>> # plot the 2-dimensional redistribution matrix
+>>> edisp.matrix.plot()
+>>> # plot a slice of the matrix at 3 keV
+>>> edisp.matrix.slice(3.).plot()
+>>> # plot the correspondence between the PHA channels and the energy
+>>> edisp.ebounds.plot()
+>>> # print the energy (in keV) corresponding to PHA channel 23
+>>> print(edisp.ebounds(23))
+>>> 1.009765625 
+
+Note also that the IRFs are internally represented as arrays and therefore
+we can also evaluate the response functions over arbitrary grids of points in
+one pass, e.g
 
 >>> import numpy
 >>> energy = numpy.linspace(1, 10, 10)
@@ -151,17 +163,16 @@ evaluate the response functions over arbitrary grids of points in one pass, e.g
 >>> [   4.9761498   305.13298991  164.87064362   68.54330826   31.6964035
 >>>   16.27694702    7.43255687    3.34847045    1.49684757    0.62106234]
 
-Response functions are also capable of plotting themselves and you might
-want to check this out:
+All of the response functions have the plot method: 
 
 >>> aeff.plot()
 
-Most importantly, IRFs have facilities to throw random number according to
+Most importantly, IRFs have facilities to throw random numbers according to
 suitable distributions to generate list of events, but this is covered
 in another section.
 
-The small application `bin/xpxirfview.py` provide a common interface to
-display the content of IRF FITS files
+The small application `bin/xpxirfview.py` provides a common interface to
+display the content of the IRF FITS files
 
 >>> $ximpol/bin/xpirfview.py ximpol/irf/fits/xipe_baseline.arf
 
