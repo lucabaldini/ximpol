@@ -52,6 +52,9 @@ class TestAzimuthalResponse(unittest.TestCase):
         """Test the one-dimensional azimuthal response underlying pdf.
         """
         self.generator.plot(show=self.interactive)
+        overlay_tag(color='white')
+        save_current_figure('test_azimuthal_resp_generator.png',
+                            show=self.interactive)
         phi = numpy.linspace(0., 2*numpy.pi, 100)
         for visibility in numpy.linspace(1, 0, 5):
             pdf = self.generator.pdf(phi, visibility)
@@ -63,7 +66,8 @@ class TestAzimuthalResponse(unittest.TestCase):
         plt.axis([0., 2*numpy.pi, None, None])
         plt.xlabel('$\\phi$ [rad]')
         plt.ylabel('pdf($\\phi$) [1/rad]')
-        plt.legend(bbox_to_anchor=(0.88, 0.99))
+        plt.legend(bbox_to_anchor=(0.88, 0.92))
+        overlay_tag()
         save_current_figure('test_azimuthal_resp_pdf.png',
                             show=self.interactive)
 
@@ -81,7 +85,8 @@ class TestAzimuthalResponse(unittest.TestCase):
         plt.axis([0., 2*numpy.pi, None, None])
         plt.xlabel('$\\phi$ [rad]')
         plt.ylabel('cdf($\\phi$)')
-        plt.legend(bbox_to_anchor=(0.4, 0.99))
+        plt.legend(bbox_to_anchor=(0.4, 0.92))
+        overlay_tag()
         save_current_figure('test_azimuthal_resp_cdf.png',
                             show=self.interactive)
 
@@ -97,6 +102,7 @@ class TestAzimuthalResponse(unittest.TestCase):
         fit_results.plot()
         plt.xlabel('$\\phi$ [rad]')
         plt.axis([0, 2*numpy.pi, 0, None])
+        overlay_tag()
         save_current_figure('test_azimuthal_resp_rvs.png',
                             show=self.interactive)
 

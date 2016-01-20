@@ -67,13 +67,24 @@ class xAzimuthalResponseGenerator(xUnivariateAuxGenerator):
         {N_\\text{max} + N_\\text{min}} = \\frac{B}{2A + B}
 
     (the visibility can also be characterized as the fraction of modulated
-    events in a given distribution, as can be readily demonstrated.) The
-    angular response now becomes
+    events in a given distribution, as can be readily demonstrated, and it is
+    the quantity that the detector is effectively measuring).
+    The angular response now becomes
 
     .. math::
         N(\\phi) = \\frac{N_0}{\\pi} \\left[
         \\frac{(1 - \\xi)}{2} + \\xi \\cos^2(\\phi - \\phi_0)
         \\right].
+
+    For completeness, the visibility, the modulation factor and the polarization
+    degree for a monocromatic source are related to each other through:
+
+    .. math::
+        \\xi(E, t) = P(E, t) \\times \\mu(E)
+
+    (i.e., at any given energy the modulation factor is the visibility of the
+    modulation of the detector response for 100% linearly polarized incident
+    radiation).
 
     In terms of throwing random numbers, the phase is a trivial constant that
     can be added after the fact (modulo 2pi), so effectively the
@@ -83,16 +94,49 @@ class xAzimuthalResponseGenerator(xUnivariateAuxGenerator):
         \\text{pdf}(\\phi) = \\frac{1}{\\pi} \\left[
         \\frac{(1 - \\xi)}{2} + \\xi \\cos^2(\\phi) \\right],
 
-    (with the visibility being our auxiliary variable) and the corresponding
-    cumulative distribution function is
+    .. image:: ../figures/test_azimuthal_resp_pdf.png
+
+    The corresponding cumulative distribution function is
 
     .. math::
         \\text{cdf}(\\phi) = \\frac{1}{2\\pi} \\left(
-        \\phi + \\frac{\\xi}{2}\\sin{(2\\phi)} \\right).
+        \\phi + \\frac{\\xi}{2}\\sin{(2\\phi)} \\right),
 
-    It is unfortunate that the cdf cannot be inverted, otherwise we would
+    and it is unfortunate that it cannot be inverted, otherwise we would
     have no need to interpolate for generating random numbers according to
     this distribution.
+
+    .. image:: ../figures/test_azimuthal_resp_cdf.png
+
+    From the prospecive of the code, this generator is a standard
+    `xUnivariateAuxGenerator` where the azimuthal angle is our
+    random variable and the visbility is our auxiliary variable. For any given
+    value of the visibility, a vertical slice is providing the corresponding
+    one-dimensional pdf.
+
+    .. image:: ../figures/test_azimuthal_resp_generator.png
+
+    The class also provide facilities to fit a histogram to recover the
+    underlying modulation visibility and phase.
+
+    Example
+    -------
+    >>> import numpy
+    >>> from ximpol.utils.matplotlib_ import pyplot as plt
+    >>> from ximpol.irf.mrf import xAzimuthalResponseGenerator
+    >>>
+    >>> generator = xAzimuthalResponseGenerator()
+    >>> visibility = numpy.zeros(1000000)
+    >>> visibility.fill(0.5)
+    >>> phase = numpy.radians(45.)
+    >>> phi = generator.rvs_phi(visibility, phase)
+    >>> hist = plt.hist(phi, bins=numpy.linspace(0, 2*numpy.pi, 100),
+                        histtype='step', label='Random angles')
+    >>> fit_results = generator.fit_histogram(hist)
+    >>> fit_results.plot()
+    >>> plt.show()
+
+    .. image:: ../figures/test_azimuthal_resp_rvs.png
     """
 
     def __init__(self):
