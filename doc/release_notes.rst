@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.11.0) - Wed, 20 Jan 2016 15:43:39 -0800*
+
 * load_irf moved from bin/xpobssim.py to irf/__init__.py, so that it can be
   reused.
 * Unit test for IRF plotting added (issue #30).
