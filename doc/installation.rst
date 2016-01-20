@@ -49,13 +49,13 @@ For XSPEC and the corresponding Python bindings, refer to the
 `HEASOFT download page <http://heasarc.nasa.gov/lheasoft/download.html>`_.
 
 
-Downloadind the code
+Downloading the code
 --------------------
 
 The easiest (though not the best) way to get the code is by directly
 downloading the zip or tar file for the latest tag (or the tag you are
 interested in) from the `github release page
-<https://github.com/lucabaldini/ximpol/releases>`_. Unzip the archive
+<https://github.com/lucabaldini/ximpol/releases>`_. Unzip the archive in
 your favorite folder and setup the environment as detailed in the next
 section.
 
@@ -75,8 +75,7 @@ Basic environment
 The only thing you have to do is to make sure that the root folder of the
 repository is included in the ``$PYTHONPATH`` environmental variable.
 You might also want to add `ximpol/bin` to the ``$PATH`` environmental variable,
-so that you have the executables off hand. Here is an example. Here is
-a bash snippet that you can adapt to your shell/operating system.
+so that you have the executables off hand. Here is an example for users of the Bourne shell (sh, ash, ksh, and bash): 
 
 >>> export PYTHONPATH=/data/work/xipe/ximpol:$PYTHONPATH
 >>> export PATH=/data/work/xipe/ximpol/ximpol/bin:$PATH
