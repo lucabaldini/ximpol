@@ -169,10 +169,19 @@ class xAzimuthalResponseGenerator(xUnivariateAuxGenerator):
         """Evaluate the underlying one-dimensional cdf for a given value of the
         visibility, and assuming that the phase of the modulation is zero.
 
+        Arguments
+        ---------
+        phi : float or array
+            The (independent) azimuthal angle variable, in radians.
+
+        visibility : float or array
+            The visibility of the modulation, in [0--1].
+
         Warning
         -------
         We could overload the build_vpppf method for the class using this,
-        since we have an analytic expression.
+        since we have an analytic expression. (This function is effectively
+        not used at the moment.)
         """
         return (phi + 0.5*visibility*numpy.sin(2.*phi))/(2*numpy.pi)
 
@@ -181,7 +190,17 @@ class xAzimuthalResponseGenerator(xUnivariateAuxGenerator):
 
         This is essentially calling the underlying xUnivariateAuxGenerator.rvs()
         method passing the visibility array as an argument and adding the phase
-        array modulo 2pi.
+        array (modulo 2pi) to the output.
+
+        Arguments
+        ---------
+        visibility : array
+            An array of visibility values. (The function returns an equal-length
+            array of phi values.)
+
+        phase : float or array
+            The phase of the modulation. (This can either be a vector or an
+            array of the same length as `visibility`.)
         """
         return numpy.mod(self.rvs(visibility) + phase, 2*numpy.pi)
 
@@ -288,7 +307,12 @@ class xModulationFactor(xInterpolatedUnivariateSplineLinear):
     Arguments
     ---------
     mrf_file_path : str
-        The path to the .mrf FITS file containing the effective area table.
+        The path to the .mrf FITS file containing the modulation response table.
+
+
+    To zero-th order, an `xModulationFactor` instance is an object capable of
+    evaluating itself in a point or in a grid of points, and capable of
+    plotting itself.
 
     Example
     -------
@@ -300,7 +324,32 @@ class xModulationFactor(xInterpolatedUnivariateSplineLinear):
     >>> modf = xModulationFactor(file_path)
     >>> x = numpy.arange(1, 10, 1)
     >>> print(modf(x))
-    >>> modf.plot(overlay=False)
+    >>> modf.plot()
+
+    More interestingly, it can generate random `phi` values, given a vector
+    of event energies and corresponding vectors (or simple floats) representing
+    the polarization degree and angle corresponding to the energies themselves.
+    Internally, any `xModulationFactor` has an `xAzimuthalResponseGenerator`
+    object and when the `xModulationFactor.rvs_phi()` method is called,
+    the polarization degree is multiplied by the modulation factor of the
+    detector, evaluated at the right energy, and converted into a visibility
+    value, after which the underlying `xAzimuthalResponseGenerator.rvs_phi()`
+    is called.
+
+    Example
+    -------
+    >>> import os
+    >>> import numpy
+    >>> from ximpol import XIMPOL_IRF
+    >>>
+    >>> file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.mrf')
+    >>> modf = xModulationFactor(file_path)
+    >>> # Throw 100000 random energy values.
+    >>> energy = numpy.random.uniform(1, 10, 100000)
+    >>> # This will create an array of 100000 phi values where the visibility
+    >>> # of the modulation is tracking the modulation factor of the polarimeter
+    >>> # (the phase is constant at 45 degrees).
+    >>> phi = modf.rvs_phi(energy, 1., numpy.radians(45))
     """
 
     def __init__(self, mrf_file_path):
@@ -321,6 +370,21 @@ class xModulationFactor(xInterpolatedUnivariateSplineLinear):
     def rvs_phi(self, energy, polarization_degree, polarization_angle):
         """Return random variates for a given array of values of energy,
         polarization degree and polarization angle.
+
+        Arguments
+        ---------
+        energy : array
+            An array of energy values. (The function returns an equal-length
+            array of phi values.)
+
+        polarization_degree : array or float
+            The polarization degree, in [0--1]. (This can either be a vector
+            or an array of the same length as `energy`.)
+
+        polarization_angle : array or float
+            The polarization angle, in radians. (This can either be a vector or
+            an array of the same length as `energy`.)
+
         """
         visibility = self(energy)*polarization_degree
         return self.generator.rvs_phi(visibility, polarization_angle)
