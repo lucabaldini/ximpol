@@ -67,7 +67,6 @@ so that you have the executables off hand. Here is an example:
 >>> export PATH=/data/work/xipe/ximpol/ximpol/bin:$PATH
 
 
-
 Coding guidelines
 -----------------
 
