@@ -136,7 +136,7 @@ def main():
     file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.psf')
     psf = xPointSpreadFunction(file_path)
     print(psf.rvs(10))
-    ra, dec = 5.0, 12.3
+    ra, dec = 1., 1.
     print(psf.smear_single(ra, dec, 10))
     rmax = 50
     plt.hist(psf.rvs(100000), rmax, (0, rmax), rwidth=1, histtype='step',

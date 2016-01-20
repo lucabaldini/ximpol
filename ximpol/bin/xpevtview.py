@@ -24,6 +24,7 @@ import os
 import numpy
 from astropy.io import fits
 
+import matplotlib
 from ximpol.utils.matplotlib_ import pyplot as plt
 from ximpol.utils.matplotlib_ import context_two_by_two
 from ximpol.utils.logging_ import logger, startmsg
@@ -53,18 +54,26 @@ def xpevtview(file_path):
     plt.yscale('log')
     plt.axis([_emin, _emax, None, None])
     plt.xlabel('Energy [keV]')
-    plt.legend(bbox_to_anchor=(0.5, 0.75))
+    plt.legend(bbox_to_anchor=(1.025, 0.99))
 
     ax = plt.subplot(2, 2, 2)
-    plt.hist2d(evtdata['RA'], evtdata['DEC'], 100)
+    ra_mean = evtdata['RA'].sum()/len(evtdata['RA'])
+    dec_mean = evtdata['Dec'].sum()/len(evtdata['Dec'])
+    r0 = 100/3600.
+    ra_bins = numpy.linspace(ra_mean - r0, ra_mean + r0, 100)
+    dec_bins = numpy.linspace(dec_mean - r0, dec_mean + r0, 100)
+    plt.hist2d(evtdata['RA'], evtdata['DEC'], bins=(ra_bins, dec_bins),
+               norm=matplotlib.colors.LogNorm())
     plt.xlabel('RA [deg]')
     plt.ylabel('Dec [deg]')
+    plt.colorbar()
 
     ax = plt.subplot(2, 2, 3)
     plt.plot(evtdata['TIME'], evtdata['MC_ENERGY'], 'o')
     plt.yscale('log')
     plt.xlabel('Time [s]')
     plt.ylabel('Energy [keV]')
+    plt.axis([None, None, _emin, _emax])
 
     ax = plt.subplot(2, 2, 4)
     pe_angle = evtdata['PE_ANGLE']

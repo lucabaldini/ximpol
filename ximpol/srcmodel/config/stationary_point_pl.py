@@ -48,8 +48,8 @@ def polarization_angle(E, t):
 
 source = xSource()
 source.name = 'test point source'
-source.ra = 44.1267
-source.dec = 23.9865
+source.ra = 10.
+source.dec = 10.
 source.spectrum = dNdE
 source.polarization_degree = polarization_degree
 source.polarization_angle = polarization_angle
