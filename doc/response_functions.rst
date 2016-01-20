@@ -59,12 +59,53 @@ distinct pieces:
   energy-independent cut on the quality of the event to achieve the modulation
   factor predicted by the Monte Carlo.)
 
-
-
 .. image:: figures/xipe_baseline_aeff.png
+
+
+The point-spread function (PSF) is apparently difficult to estimate accurately
+based on the design of the optics, as it depends substantially on on the
+defects of the surfaces (i.e., you need some metrology on the actual mirrors).
+For the XIPE baseline design we start by assuming a gaussian + King profile
+with a HEW of 15 arcsec, with the exact same parametrization and parameters
+values of `Fabiani et al. (2014) <http://arxiv.org/abs/1403.7200>`_.
+For completeness, another paper of interest is `Romano et al. (2005)
+<http://proceedings.spiedigitallibrary.org/proceeding.aspx?articleid=868815>`_.
+Below is the actual profile of the PSF, which should be identical to
+Figure 6 of Fabiani at al. (2014), the parameter values being taken from
+Table 2 (@ 4.51 keV).
 
 .. image:: figures/xipe_baseline_psf.png
 
+
+The modulation factor as a function of the energy for the relevant GPD
+configuration is tabulated in `modfact_hedme8020_1atm_1cm_mng.asc
+<https://raw.githubusercontent.com/lucabaldini/ximpol/master/ximpol/detector/data/modfact_hedme8020_1atm_1cm_mng.asc>`_
+and shown in the figure below.
+
 .. image:: figures/xipe_baseline_modf.png
 
+
+The energy dispersion (i.e., the content of the `.mrf` FITS files) contains
+a two-dimensional table of the redistribution matrix in the PHA-true energy
+space (the `MATRIX` extension), and a one-dimensional table containing the
+correspondence between the PHA channels and the energy (the `EBOUNDS`
+extension).
+
+For the time being we are using a simple gaussian parametrization whose FWHM
+as a function of the energy is tabulated in
+`eres_fwhm_hedme8020_1atm_1cm.asc
+<https://raw.githubusercontent.com/lucabaldini/ximpol/master/ximpol/detector/data/eres_fwhm_hedme8020_1atm_1cm.asc>`_.
+We're using 256 channels between 0 and 11 keV, which seem to sample the
+energy dispersion adequately across the entire energy range.
+
 .. image:: figures/xipe_baseline_edisp.png
+
+
+
+Viewing IRFs
+------------
+
+
+           
+Loading (and using) IRFs
+------------------------
