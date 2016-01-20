@@ -24,27 +24,12 @@ import os
 import numpy
 import imp
 
-from ximpol.irf.arf import xEffectiveArea
-from ximpol.irf.psf import xPointSpreadFunction
-from ximpol.irf.mrf import xModulationFactor
-from ximpol.irf.rmf import xEnergyDispersion
+from ximpol.irf import load_irfs
 from ximpol.evt.event import xMonteCarloEventList
 from ximpol.utils.profile import xChrono
 from ximpol.utils.logging_ import logger, startmsg
 from ximpol import XIMPOL_IRF
 from ximpol.srcmodel.spectrum import xCountSpectrum
-
-
-def load_irfs(irf_name, folder_path=None):
-    """
-    """
-    if folder_path is None:
-        folder_path = os.path.join(XIMPOL_IRF,'fits')
-    aeff = xEffectiveArea(os.path.join(folder_path, '%s.arf' % irf_name))
-    psf = xPointSpreadFunction(os.path.join(folder_path, '%s.psf' % irf_name))
-    modf = xModulationFactor(os.path.join(folder_path, '%s.mrf' % irf_name))
-    edisp = xEnergyDispersion(os.path.join(folder_path, '%s.rmf' % irf_name))
-    return aeff, psf, modf, edisp
 
 
 def xpobssim(output_file_path, config_file_path, irf_name, duration, start_time,
