@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.10.1) - Tue, 19 Jan 2016 16:41:33 -0800*
+
 * More documentation and unit tests.
 
 
