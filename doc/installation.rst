@@ -85,3 +85,17 @@ Bourne shell (sh, ash, ksh, and bash):
     export PYTHONPATH=/data/work/xipe/ximpol:$PYTHONPATH
     export PATH=/data/work/xipe/ximpol/ximpol/bin:$PATH
 
+Loosely speaking, if you can open a Python prompt and do
+
+>>> import ximpol
+
+without getting back an error message like this
+
+>>> import ximpol
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+    ImportError: No module named ximpol
+>>> 
+
+again, you should be all set. If not, I am sorry to say, you really do have to
+fix this before moving on.
