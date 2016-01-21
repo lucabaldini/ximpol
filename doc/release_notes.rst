@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.11.1) - Wed, 20 Jan 2016 16:57:24 -0800*
+
 * Minor addition to the doc.
 
 
