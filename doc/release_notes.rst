@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.12.0) - Thu, 21 Jan 2016 16:35:14 -0800*
+
 * First implementation of extended sources.
 
 
