@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.12.1) - Fri, 22 Jan 2016 06:44:01 -0800*
+
 * Bug fix in srcmodel/source.py.
 
 
