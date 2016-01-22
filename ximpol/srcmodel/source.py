@@ -58,7 +58,7 @@ class xPointSource(xSourceBase):
         _ra.fill(self.ra)
         _dec = numpy.zeros(size)
         _dec.fill(self.dec)
-        return (_ra, dec)
+        return (_ra, _dec)
 
 
 class xExtendedSource(xSourceBase):
