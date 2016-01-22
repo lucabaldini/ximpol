@@ -119,6 +119,21 @@ class xMonteCarloEventList(dict):
             self.length = len(data)
         self[name] = data
 
+    def __add__(self, other):
+        """Concatenate two event lists.
+        """
+        _list = xMonteCarloEventList()
+        for (name, fmt, units) in xColDefsMonteCarloEvent.COLUMN_SPECS:
+            _list.set_column(numpy.concatenate(self[name], other[name]))
+        return _list
+
+    def sort(self):
+        """Sort an event list.
+        """
+        _index = numpy.argsort(self['TIME'])
+        for (name, fmt, units) in xColDefsMonteCarloEvent.COLUMN_SPECS:
+            self.set_column(self[name][_index])
+
     def write_fits(self, file_path):
         """Write the event list to file.
         """
