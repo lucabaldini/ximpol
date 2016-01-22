@@ -19,40 +19,27 @@
 
 import numpy
 
+from ximpol.srcmodel.source import xPointSource
 
-class xSource:
-
-    pass
-
-
-C = 10.
-Gamma = 2.
-PF = 1.
-PA = numpy.radians(44.)
 
 def dNdE(E, t):
     """Photon energy spectrum as a function of energy and time.
     """
-    return C*numpy.power(E, -Gamma)
+    return 10.*numpy.power(E, -2.)
 
 def polarization_degree(E, t):
     """Polarization degree as a function of energy and time.
     """
-    return PF
+    return 1.
 
 def polarization_angle(E, t):
     """Polarization angle as a function of energy and time.
     """
-    return PA
+    return numpy.radians(44.)
 
 
-source = xSource()
-source.name = 'test point source'
-source.ra = 10.
-source.dec = 10.
+source = xPointSource(name='test point source', ra=10., dec=10.)
 source.spectrum = dNdE
 source.polarization_degree = polarization_degree
 source.polarization_angle = polarization_angle
 source.identifier = 1
-source.min_energy = 1
-source.max_energy = 10

@@ -57,11 +57,12 @@ def xpevtview(file_path):
     plt.legend(bbox_to_anchor=(1.025, 0.99))
 
     ax = plt.subplot(2, 2, 2)
-    ra_mean = evtdata['RA'].sum()/len(evtdata['RA'])
-    dec_mean = evtdata['Dec'].sum()/len(evtdata['Dec'])
-    r0 = 100/3600.
-    ra_bins = numpy.linspace(ra_mean - r0, ra_mean + r0, 100)
-    dec_bins = numpy.linspace(dec_mean - r0, dec_mean + r0, 100)
+    ra0 = 0.5*(evtdata['RA'].max() + evtdata['RA'].min())
+    dec0 = 0.5*(evtdata['DEC'].max() + evtdata['DEC'].min())
+    r0 = 75/3600.
+    nbins = 200
+    ra_bins = numpy.linspace(ra0 - r0, ra0 + r0, nbins)
+    dec_bins = numpy.linspace(dec0 - r0, dec0 + r0, nbins)
     plt.hist2d(evtdata['RA'], evtdata['DEC'], bins=(ra_bins, dec_bins),
                norm=matplotlib.colors.LogNorm())
     plt.xlabel('RA [deg]')
