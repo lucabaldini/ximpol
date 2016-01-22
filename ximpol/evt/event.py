@@ -87,8 +87,8 @@ class xMonteCarloEventList(dict):
         """Constructor.
         """
         for (name, fmt, units) in xColDefsMonteCarloEvent.COLUMN_SPECS:
-            self[name] = None
-        self.length = None
+            self[name] = numpy.array([])
+        self.length = 0
 
     def __len__(self):
         """Return the length of the event list.
@@ -113,7 +113,7 @@ class xMonteCarloEventList(dict):
             _col = numpy.empty(self.length)
             _col.fill(data)
             data = _col
-        if self.length is not None:
+        if self.length > 0:
             assert(len(data) == self.length)
         else:
             self.length = len(data)
@@ -124,7 +124,7 @@ class xMonteCarloEventList(dict):
         """
         _list = xMonteCarloEventList()
         for (name, fmt, units) in xColDefsMonteCarloEvent.COLUMN_SPECS:
-            _list.set_column(numpy.concatenate(self[name], other[name]))
+            _list.set_column(name,numpy.append(self[name], other[name]))
         return _list
 
     def sort(self):
@@ -132,7 +132,7 @@ class xMonteCarloEventList(dict):
         """
         _index = numpy.argsort(self['TIME'])
         for (name, fmt, units) in xColDefsMonteCarloEvent.COLUMN_SPECS:
-            self.set_column(self[name][_index])
+            self.set_column(name,self[name][_index])
 
     def write_fits(self, file_path):
         """Write the event list to file.

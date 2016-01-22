@@ -18,18 +18,15 @@
 
 
 import numpy
-import os
-
-from ximpol.srcmodel.source import xExtendedSource, xROIModel
+from ximpol.srcmodel.source import xPointSource
+from ximpol.srcmodel.config.crab_nebula import ROI_MODEL
 from ximpol.srcmodel.spectrum import power_law, constant
 
-from ximpol import XIMPOL_SRCMODEL
 
-ROI_MODEL = xROIModel(10., 10., 1.0)
+pulsar = xPointSource(name='pulsar', ra=83.633083, dec=22.014500)
+pulsar.spectrum = power_law(10., 2.)
+pulsar.polarization_degree = constant(0.0)
+pulsar.polarization_angle = constant(0.0)
+ROI_MODEL.add_source(pulsar)
 
-img_file_path = os.path.join(XIMPOL_SRCMODEL, 'fits', 'crab_0p3_10p0_keV.fits')
-source = xExtendedSource('Crab Nebula', img_file_path)
-source.spectrum = power_law(10., 2.)
-source.polarization_degree = constant(0.157)
-source.polarization_angle = constant(numpy.radians(161.1))
-ROI_MODEL.add_source(source)
+

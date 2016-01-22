@@ -20,19 +20,19 @@
 import numpy
 from ximpol.core.rand import xUnivariateGenerator, xUnivariateAuxGenerator
 
+def power_law(C, Gamma):
+    """Photon energy spectrum as a function of energy and time.
+    """
+    def _function(E, t):
+        return C*numpy.power(E, -Gamma)
+    return _function
 
-class xSpectralComponent:
-
-    def build_count_spectrum(self, effective_area, t):
-        """
-        """
-        pass
-
-    def build_light_curve(self):
-        """
-        """
-        pass
-
+def constant(C):
+    """
+    """
+    def _function(E,t):
+        return C
+    return _function
 
 class xCountSpectrum(xUnivariateAuxGenerator):
 

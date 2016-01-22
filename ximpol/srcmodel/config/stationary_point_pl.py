@@ -19,27 +19,14 @@
 
 import numpy
 
-from ximpol.srcmodel.source import xPointSource
+from ximpol.srcmodel.source import xPointSource, xROIModel
+from ximpol.srcmodel.spectrum import power_law, constant
 
+ROI_MODEL = xROIModel(90., 0., 1.0)
 
-def dNdE(E, t):
-    """Photon energy spectrum as a function of energy and time.
-    """
-    return 10.*numpy.power(E, -2.)
+source1 = xPointSource(name='source1', ra=90.0, dec=0.0)
+source1.spectrum = power_law(10., 2.)
+source1.polarization_degree = constant(0.5)
+source1.polarization_angle = constant(numpy.radians(65.))
 
-def polarization_degree(E, t):
-    """Polarization degree as a function of energy and time.
-    """
-    return 1.
-
-def polarization_angle(E, t):
-    """Polarization angle as a function of energy and time.
-    """
-    return numpy.radians(44.)
-
-
-source = xPointSource(name='test point source', ra=10., dec=10.)
-source.spectrum = dNdE
-source.polarization_degree = polarization_degree
-source.polarization_angle = polarization_angle
-source.identifier = 1
+ROI_MODEL.add_source(source1)

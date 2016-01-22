@@ -46,38 +46,10 @@ def xpobssim(output_file_path, config_file_path, irf_name, duration, start_time,
 
     logger.info('Setting up the source model...')
     module_name = os.path.basename(config_file_path).replace('.py', '')
-    source = imp.load_source(module_name, config_file_path).source
+    ROI_MODEL = imp.load_source(module_name, config_file_path).ROI_MODEL
     stop_time = start_time + duration
     sampling_time = numpy.linspace(start_time, stop_time, time_steps)
-    count_spectrum = xCountSpectrum(source.spectrum, aeff, sampling_time)
-    logger.info('Done %s.' % chrono)
-
-    logger.info('Extracting the event times...')
-    num_events = numpy.random.poisson(count_spectrum.light_curve.norm())
-    col_time = count_spectrum.light_curve.rvs(num_events)
-    col_time.sort()
-    logger.info('Done %s, %d events generated.' % (chrono, num_events))
-
-    logger.info('Filling output columns...')
-    event_list = xMonteCarloEventList()
-    event_list.set_column('TIME', col_time)
-    col_mc_energy = count_spectrum.rvs(col_time)
-    event_list.set_column('MC_ENERGY', col_mc_energy)
-    col_pha = edisp.matrix.rvs(col_mc_energy)
-    event_list.set_column('PHA', col_pha)
-    event_list.set_column('ENERGY', edisp.ebounds(col_pha))
-    col_mc_ra, col_mc_dec = source.rvs_sky_coordinates(num_events)
-    event_list.set_column('MC_RA', col_mc_ra)
-    event_list.set_column('MC_DEC', col_mc_dec)
-    col_ra, col_dec = psf.smear(col_mc_ra, col_mc_dec)
-    event_list.set_column('RA', col_ra)
-    event_list.set_column('DEC', col_dec)
-    polarization_degree = source.polarization_degree(col_mc_energy, col_time)
-    polarization_angle = source.polarization_angle(col_mc_energy, col_time)
-    col_pe_angle = modf.rvs_phi(col_mc_energy, polarization_degree,
-                                polarization_angle)
-    event_list.set_column('PE_ANGLE', col_pe_angle)
-    event_list.set_column('MC_SRC_ID', source.identifier)
+    event_list=ROI_MODEL.rvs_event_list( aeff, psf, modf, edisp,sampling_time)  
     logger.info('Done %s.' % chrono)
     event_list.write_fits(output_file_path)
     logger.info('All done %s!' % chrono)
