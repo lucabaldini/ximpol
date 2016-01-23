@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.14.0) - Fri, 22 Jan 2016 20:54:23 -0800*
+
 * xpobbsim.py generating an output file name based on the source model
   (if not specified).
 * Added CMAP mode to xpbin.py
