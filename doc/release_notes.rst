@@ -2,6 +2,8 @@ Release notes
 =============
 
 * srcmodel config files renamed.
+* Point source in the Crab comple sample file dimmer.
+* Added option to xpimgview.py to save the image to file.
 
 
 *ximpol (0.14.0) - Fri, 22 Jan 2016 20:54:23 -0800*

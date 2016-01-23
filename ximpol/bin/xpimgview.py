@@ -25,10 +25,10 @@ import aplpy
 
 from ximpol.utils.matplotlib_ import pyplot as plt
 from ximpol.utils.matplotlib_ import context_no_grids
-from ximpol.utils.logging_ import startmsg
+from ximpol.utils.logging_ import logger, startmsg
 
 
-def xpimgview(file_path):
+def xpimgview(file_path, output_file):
     """Quick FITS image viewer.
     """
     hdu_list = fits.open(file_path)
@@ -38,6 +38,9 @@ def xpimgview(file_path):
         fig = aplpy.FITSFigure(hdu_list[0], figure = plt.figure(0))
     fig.add_grid()
     fig.show_colorscale(cmap = 'afmhot')
+    if output_file is not None:
+        logger.info('Saving image to %s...' % output_file)
+        plt.savefig(output_file)
     plt.show()
 
 
@@ -47,6 +50,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__description__)
     parser.add_argument('file_path', type=str,
                         help='the input FITS image file')
+    parser.add_argument('-o', '--output-file', type=str, default=None,
+                        help='path to the output file to save the image')
     args = parser.parse_args()
     startmsg()
-    xpimgview(args.file_path)
+    xpimgview(args.file_path, args.output_file)
