@@ -32,4 +32,5 @@ source = xExtendedSource('Crab Nebula', img_file_path)
 source.spectrum = power_law(10., 2.)
 source.polarization_degree = constant(0.157)
 source.polarization_angle = constant(numpy.radians(161.1))
+
 ROI_MODEL.add_source(source)

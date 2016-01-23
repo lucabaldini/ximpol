@@ -18,15 +18,22 @@
 
 
 import numpy
-from ximpol.srcmodel.source import xPointSource
-from ximpol.srcmodel.config.crab_nebula import ROI_MODEL
+
+from ximpol.srcmodel.source import xPointSource, xROIModel
 from ximpol.srcmodel.spectrum import power_law, constant
 
 
-pulsar = xPointSource(name='pulsar', ra=83.633083, dec=22.014500)
-pulsar.spectrum = power_law(10., 2.)
-pulsar.polarization_degree = constant(0.0)
-pulsar.polarization_angle = constant(0.0)
-ROI_MODEL.add_source(pulsar)
+ROI_MODEL = xROIModel(10., 10., 1.0)
 
+source1 = xPointSource(name='source1', ra=9.98, dec=9.99)
+source1.spectrum = power_law(10., 2.)
+source1.polarization_degree = constant(1.0)
+source1.polarization_angle = constant(numpy.radians(65.))
 
+source2 = xPointSource(name='source2', ra=10., dec=10.)
+source2.spectrum = power_law(15., 3.)
+source2.polarization_degree = constant(0.0)
+source2.polarization_angle = constant(numpy.radians(0))
+
+ROI_MODEL.add_source(source1)
+ROI_MODEL.add_source(source2)
