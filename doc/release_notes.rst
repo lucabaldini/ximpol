@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* srcmodel config files renamed.
+
 
 *ximpol (0.14.0) - Fri, 22 Jan 2016 20:54:23 -0800*
 
