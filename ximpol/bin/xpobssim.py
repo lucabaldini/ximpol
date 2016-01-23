@@ -36,6 +36,11 @@ def xpobssim(output_file_path, config_file_path, irf_name, duration, start_time,
              time_steps, random_seed):
     """Run the ximpol fast simulator.
     """
+    assert(config_file_path.endswith('.py'))
+    if output_file_path is None:
+        file_name = os.path.basename(config_file_path).replace('.py', '.fits')
+        output_file_path = file_name
+
     chrono = xChrono()
     logger.info('Setting the random seed to %d...' % random_seed)
     numpy.random.seed(random_seed)
@@ -49,7 +54,7 @@ def xpobssim(output_file_path, config_file_path, irf_name, duration, start_time,
     ROI_MODEL = imp.load_source(module_name, config_file_path).ROI_MODEL
     stop_time = start_time + duration
     sampling_time = numpy.linspace(start_time, stop_time, time_steps)
-    event_list=ROI_MODEL.rvs_event_list( aeff, psf, modf, edisp,sampling_time)  
+    event_list=ROI_MODEL.rvs_event_list( aeff, psf, modf, edisp,sampling_time)
     logger.info('Done %s.' % chrono)
     event_list.write_fits(output_file_path)
     logger.info('All done %s!' % chrono)
@@ -58,7 +63,7 @@ def xpobssim(output_file_path, config_file_path, irf_name, duration, start_time,
 if __name__=='__main__':
     import argparse
     parser = argparse.ArgumentParser(description=__description__)
-    parser.add_argument('-o', '--output-file', type=str, required=True,
+    parser.add_argument('-o', '--output-file', type=str, default=None,
                         help='the output FITS event file')
     parser.add_argument('-c', '--config-file', type=str, required=True,
                         help='the input configuration file')

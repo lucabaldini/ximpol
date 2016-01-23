@@ -1,11 +1,16 @@
 Release notes
 =============
 
+* xpobbsim.py generating an output file name based on the source model
+  (if not specified).
+* Added CMAP mode to xpbin.py
+
 
 *ximpol (0.13.0) - Fri, 22 Jan 2016 13:58:51 -0800*
 
 * Implemented the infrastructure for multiple source in ROI
 
+  
 *ximpol (0.12.1) - Fri, 22 Jan 2016 06:44:01 -0800*
 
 * Bug fix in srcmodel/source.py.
