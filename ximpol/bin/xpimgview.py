@@ -38,6 +38,8 @@ def xpimgview(file_path, output_file):
         fig = aplpy.FITSFigure(hdu_list[0], figure = plt.figure(0))
     fig.add_grid()
     fig.show_colorscale(cmap = 'afmhot')
+    fig.add_colorbar()
+    fig.colorbar.set_axis_label_text('Counts/pixel')
     if output_file is not None:
         logger.info('Saving image to %s...' % output_file)
         plt.savefig(output_file)
