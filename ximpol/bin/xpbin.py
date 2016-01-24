@@ -29,6 +29,7 @@ from ximpol.utils.matplotlib_ import pyplot as plt
 from ximpol.utils.logging_ import logger, startmsg, abort
 from ximpol.irf.base import xPrimaryHDU, update_header
 from ximpol.evt.binning import xColDefsSpectrum, SPECTRUM_HEADER_SPECS
+from ximpol.irf.mrf import xAzimuthalResponseGenerator
 
 
 def pha1(event_data, output_file_path):
@@ -97,11 +98,81 @@ def cmap(event_data, output_file_path, nside=256, mc=False):
     hdu.writeto(output_file_path, clobber=True)
     logger.info('Binned (CMAP) written to %s...' % output_file_path)
 
+def ccube(event_data, output_file_path):
+    """
+    """
+    abort('Not implemented, yet.')
 
-BIN_MODE_DICT = {'PHA1': pha1,
-                 'PHA2': pha2,
-                 'LC'  : lc,
-                 'CMAP': cmap}
+
+def mcube(event_data, output_file_path):
+    """
+    """
+    energy = event_data['MC_ENERGY']
+    phi = event_data['PE_ANGLE']
+    ebinning = numpy.linspace(1, 10, 10)
+    phi_binning = numpy.linspace(0, 2*numpy.pi, 100)
+    fit_results = []
+    emean = []
+    for i, (_emin, _emax) in enumerate(zip(ebinning[:-1], ebinning[1:])):
+        #_emean = 0.5*(_emin + _emax)
+
+        _mask = (energy > _emin)*(energy < _emax)
+        _energy = energy[_mask]
+        _phi = phi[_mask]
+        _emean = _energy.sum()/len(_energy)
+        emean.append(_emean)
+        _hist = plt.hist(_phi, bins=phi_binning, histtype='step')
+        _fr = xAzimuthalResponseGenerator.fit_histogram(_hist)
+        _fr.emean = _emean
+        fit_results.append(_fr)
+        _fr.plot(label='Energy: %.2f--%.2f keV' % (_emin, _emax))
+        plt.axis([0., 2*numpy.pi, 0., 1.2*_hist[0].max()])
+        #plt.show()
+        plt.savefig('polarization_fit%d.png' % i)
+        plt.clf()
+
+    from ximpol.irf.mrf import xModulationFactor
+    from ximpol import XIMPOL_IRF
+    file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.mrf')
+    modf = xModulationFactor(file_path)
+
+    emean = numpy.array(emean)
+    degree = [fr.visibility for fr in fit_results]
+    degree = numpy.array(degree)
+    degree /= modf(emean)
+    err = [fr.visibility_error for fr in fit_results]
+    plt.errorbar(emean, degree, yerr=err, fmt='o')
+    plt.xlabel('Energy [keV]')
+    plt.ylabel('Polarization degree')
+    x = numpy.linspace(1, 10, 2)
+    y = numpy.array([0.157]*2)
+    plt.plot(x, y)
+    plt.savefig('polarization_degree.png')
+    plt.show()
+
+
+    angle = [fr.phase for fr in fit_results]
+    angle = numpy.degrees(numpy.array(angle))
+    err = [fr.phase_error for fr in fit_results]
+    err = numpy.degrees(numpy.array(err))
+    plt.errorbar(emean, angle, yerr=err, fmt='o')
+    plt.xlabel('Energy [keV]')
+    plt.ylabel('Polarization angle [$^\\circ$]')
+    x = numpy.linspace(1, 10, 2)
+    y = numpy.array([161.1]*2)
+    plt.plot(x, y)
+    plt.savefig('polarization_angle.png')
+    plt.show()
+
+
+
+BIN_MODE_DICT = {'PHA1' : pha1,
+                 'PHA2' : pha2,
+                 'LC'   : lc,
+                 'CMAP' : cmap,
+                 'CCUBE': ccube,
+                 'MCUBE': mcube
+}
 BIN_MODES = BIN_MODE_DICT.keys()
 BIN_MODES.sort()
 

@@ -244,6 +244,12 @@ class xAzimuthalResponseGenerator(xUnivariateAuxGenerator):
             exp.append(spline.integral(_min, _max))
         exp = numpy.array(exp)
         chisquare = ((exp - obs)**2/exp).sum()
+        # Horrible hack.
+        if popt[0] < 0.:
+            popt[0] = -popt[0]
+            popt[1] += 0.5*numpy.pi
+        if popt[1] < 0.:
+            popt[1] += numpy.pi
         return xModulationFitResults(popt, pcov, chisquare, len(mask))
 
 
