@@ -141,12 +141,13 @@ def mcube(event_data, output_file_path):
     degree = numpy.array(degree)
     degree /= modf(emean)
     err = [fr.visibility_error for fr in fit_results]
-    plt.errorbar(emean, degree, yerr=err, fmt='o')
+    plt.errorbar(emean, degree, yerr=err, fmt='o', label='Simulation output')
     plt.xlabel('Energy [keV]')
     plt.ylabel('Polarization degree')
     x = numpy.linspace(1, 10, 2)
     y = numpy.array([0.157]*2)
-    plt.plot(x, y)
+    plt.plot(x, y, label='Model input')
+    plt.legend(bbox_to_anchor=(0.45, 0.95))
     plt.savefig('polarization_degree.png')
     plt.show()
 
@@ -155,12 +156,13 @@ def mcube(event_data, output_file_path):
     angle = numpy.degrees(numpy.array(angle))
     err = [fr.phase_error for fr in fit_results]
     err = numpy.degrees(numpy.array(err))
-    plt.errorbar(emean, angle, yerr=err, fmt='o')
+    plt.errorbar(emean, angle, yerr=err, fmt='o', label='Simulation output')
     plt.xlabel('Energy [keV]')
     plt.ylabel('Polarization angle [$^\\circ$]')
     x = numpy.linspace(1, 10, 2)
     y = numpy.array([161.1]*2)
-    plt.plot(x, y)
+    plt.plot(x, y, label='Model input')
+    plt.legend(bbox_to_anchor=(0.45, 0.45))
     plt.savefig('polarization_angle.png')
     plt.show()
 
