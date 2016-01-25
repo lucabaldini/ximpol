@@ -18,7 +18,7 @@
 
 
 import numpy
-from ximpol.srcmodel.source import xPointSource
+from ximpol.srcmodel.roi import xPointSource
 from ximpol.srcmodel.config.crab_nebula import ROI_MODEL
 from ximpol.srcmodel.spectrum import power_law, constant
 

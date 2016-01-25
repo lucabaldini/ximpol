@@ -20,7 +20,7 @@
 import numpy
 import os
 
-from ximpol.srcmodel.source import xExtendedSource, xROIModel
+from ximpol.srcmodel.roi import xExtendedSource, xROIModel
 from ximpol.srcmodel.spectrum import power_law, constant
 
 from ximpol import XIMPOL_SRCMODEL

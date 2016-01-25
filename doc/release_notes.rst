@@ -6,6 +6,7 @@ Release notes
 * Added option to xpimgview.py to save the image to file.
 * Horrible hack in the azimuthal fit to prevent the visibility from going
   negative (issue #34, significantly more work needed).
+* Some refactoring and more documentation.
 
 
 *ximpol (0.14.0) - Fri, 22 Jan 2016 20:54:23 -0800*

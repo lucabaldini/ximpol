@@ -19,7 +19,7 @@
 
 import numpy
 
-from ximpol.srcmodel.source import xPointSource, xROIModel
+from ximpol.srcmodel.roi import xPointSource, xROIModel
 from ximpol.srcmodel.spectrum import power_law, constant
 
 ROI_MODEL = xROIModel(90., 0., 1.0)
