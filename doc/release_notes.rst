@@ -1,12 +1,17 @@
 Release notes
 =============
 
+
+*ximpol (0.15.0) - Mon, 25 Jan 2016 15:57:27 -0800*
+
 * srcmodel config files renamed.
 * Point source in the Crab complex sample file dimmer.
 * Added option to xpimgview.py to save the image to file.
 * Horrible hack in the azimuthal fit to prevent the visibility from going
   negative (issue #34, significantly more work needed).
 * Some refactoring and more documentation.
+* Radius removed from the xROIModel class, and ROI model for the Crab
+  nebula now correctly centered on the right coordinates.
 
 
 *ximpol (0.14.0) - Fri, 22 Jan 2016 20:54:23 -0800*

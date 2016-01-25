@@ -25,7 +25,7 @@ from ximpol.srcmodel.spectrum import power_law, constant
 
 from ximpol import XIMPOL_SRCMODEL
 
-ROI_MODEL = xROIModel(10., 10., 1.0)
+ROI_MODEL = xROIModel(83.633083, 22.014500)
 
 img_file_path = os.path.join(XIMPOL_SRCMODEL, 'fits', 'crab_0p3_10p0_keV.fits')
 source = xExtendedSource('Crab Nebula', img_file_path)

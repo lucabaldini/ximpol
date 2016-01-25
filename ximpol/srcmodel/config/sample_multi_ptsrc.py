@@ -23,7 +23,7 @@ from ximpol.srcmodel.roi import xPointSource, xROIModel
 from ximpol.srcmodel.spectrum import power_law, constant
 
 
-ROI_MODEL = xROIModel(10., 10., 1.0)
+ROI_MODEL = xROIModel(10., 10.)
 
 source1 = xPointSource(name='source1', ra=9.98, dec=9.99)
 source1.spectrum = power_law(10., 2.)

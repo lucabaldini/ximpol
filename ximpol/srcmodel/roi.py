@@ -28,14 +28,25 @@ from collections import OrderedDict
 
 class xModelComponentBase:
 
-    """Base class for the source object
+    """Base class for the source object.
+
+    Note that the source identifier defaults to none and is typically assign
+    after the fact when the source itself is added to a source model.
+
+    Arguments
+    ---------
+    name : string
+        The name of the source.
+
+    identifier : int
+        A unique identifier of the source within a ROI model.
     """
 
-    def __init__(self, name):
+    def __init__(self, name, identifier=None):
         """Constructor.
         """
         self.name = name
-        self.identifier = None
+        self.identifier = identifier
 
     def rvs_sky_coordinates(self, size=1):
         """Generate random coordinates for the model component.
@@ -53,7 +64,7 @@ class xModelComponentBase:
     def __str__(self):
         """String formatting.
         """
-        return '%s (id:%d)' %(self.name, self.identifier)
+        return '%s (id = %d)' % (self.name, self.identifier)
 
     def rvs_event_list(self, aeff, psf, modf, edisp, sampling_time):
         count_spectrum = xCountSpectrum(self.spectrum, aeff, sampling_time)
@@ -163,24 +174,19 @@ class xROIModel(OrderedDict):
 
     Arguments
     ---------
-    roi_ra : float
+    ra_center : float
         The right ascention of the center of the ROI (in degrees).
 
-    roi_dec : float
+    dec_center : float
         The declination of the center of the ROI (in degrees).
-
-    roi_radius : float
-        The radius of the ROI (in degrees).
     """
 
-    def __init__(self, roi_ra, roi_dec, roi_radius):
+    def __init__(self, ra_center, dec_center):
         """Constructor.
         """
         OrderedDict.__init__(self)
-        self.ra = roi_ra
-        self.dec = roi_dec
-        self.radius = roi_radius
-        pass
+        self.ra = ra_center
+        self.dec = dec_center
 
     def add_source(self, source):
         """Add a source to the ROI.
@@ -236,4 +242,13 @@ class xROIModel(OrderedDict):
                                                 sampling_time)
         event_list.sort()
         return event_list
-    pass
+
+
+def main():
+    """
+    """
+    model = xROIModel(0, 0, )
+
+
+if __name__ == '__main__':
+    main()

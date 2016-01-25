@@ -22,7 +22,7 @@ from ximpol.srcmodel.roi import xPointSource
 from ximpol.srcmodel.config.crab_nebula import ROI_MODEL
 from ximpol.srcmodel.spectrum import power_law, constant
 
-pulsar = xPointSource(name='pulsar', ra=83.633083, dec=22.014500)
+pulsar = xPointSource(name='pulsar', ra=ROI_MODEL.ra, dec=ROI_MODEL.dec)
 pulsar.spectrum = power_law(2., 2.)
 pulsar.polarization_degree = constant(0.0)
 pulsar.polarization_angle = constant(0.0)
