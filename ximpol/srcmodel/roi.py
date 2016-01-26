@@ -18,12 +18,11 @@
 
 
 import numpy
+from collections import OrderedDict
 
 from ximpol.srcmodel.img import xFITSImage
 from ximpol.srcmodel.spectrum import xCountSpectrum
 from ximpol.evt.event import xMonteCarloEventList
-
-from collections import OrderedDict
 
 
 class xModelComponentBase:
