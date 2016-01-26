@@ -18,7 +18,7 @@
 
 
 from astropy.io import fits
-import aplpy
+from astropy.wcs import wcs
 import numpy
 
 from ximpol.utils.logging_ import logger
@@ -26,9 +26,14 @@ from ximpol.utils.matplotlib_ import pyplot as plt
 from ximpol.utils.matplotlib_ import context_no_grids
 
 
-class xFitsImage(aplpy.FITSFigure):
+class xFitsImage:
 
     """Class describing a FITS image.
+
+    Arguments
+    ---------
+    file_path : string
+        The path to the FITS file containing the image.
 
     Warning
     -------
@@ -43,19 +48,36 @@ class xFitsImage(aplpy.FITSFigure):
         logger.info('Reading FITS image from %s...' % file_path)
         self.hdu_list = fits.open(file_path)
         self.hdu_list.info()
+        self.wcs = wcs.WCS(self.hdu_list['PRIMARY'].header)
         self.data = self.hdu_list['PRIMARY'].data.transpose()
+        self.__build_cdf()
+
+    def __build_cdf(self):
+        """Build the cumulative distribution function.
+
+        (This is used to extract random positions from the image when
+        simulating extended sources.)
+        """
         self.cdf = numpy.cumsum(self.data.ravel())
         self.cdf /= self.cdf[-1]
-        aplpy.FITSFigure.__init__(self, self.hdu_list['PRIMARY'])
-        plt.close()
 
     def rvs_coordinates(self, size=1, randomize=True):
         """Generate random coordinates based on the image map.
+
+        Arguments
+        ---------
+        size : int
+            The number of sky coordinates to be generated.
+
+        randomize : bool
+            If true, the positions are randomized uniformely within each pixel.
         """
         u = numpy.random.rand(size)
         pixel = numpy.searchsorted(self.cdf, u)
         row, col = numpy.unravel_index(pixel, self.data.shape)
-        ra, dec = self.pixel2world(row, col)
+        pixel_crd = numpy.vstack((row, col)).transpose()
+        world_crd = self.wcs.wcs_pix2world(pixel_crd, 1)
+        ra, dec = world_crd[:, 0], world_crd[:, 1]
         if randomize:
             delta_ra = 0.5*self.hdu_list['PRIMARY'].header['CDELT1']
             delta_dec = 0.5*self.hdu_list['PRIMARY'].header['CDELT2']
@@ -70,9 +92,16 @@ class xFitsImage(aplpy.FITSFigure):
 
     def plot(self, show=True):
         """Plot the image.
+
+        This is using aplpy to render the image.
         """
-        self.add_grid()
-        self.show_colorscale(cmap = 'afmhot')
+        import aplpy
+        with context_no_grids():
+            fig = aplpy.FITSFigure(self.hdu_list[0], figure = plt.figure(0))
+        fig.add_grid()
+        fig.show_colorscale(cmap = 'afmhot')
+        fig.add_colorbar()
+        fig.colorbar.set_axis_label_text('Counts/pixel')
         plt.show()
 
 
@@ -88,8 +117,7 @@ def main():
     ra, dec = img.rvs_coordinates(1000000)
     print(ra)
     print(dec)
-    plt.hist2d(ra, dec, bins=500)
-    plt.show()
+    img.plot()
 
 
 if __name__ == '__main__':
