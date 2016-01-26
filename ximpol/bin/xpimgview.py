@@ -21,8 +21,8 @@ __description__ = 'Quick FITS image viewer'
 
 
 from astropy.io import fits
-import aplpy
 
+from ximpol.srcmodel.img import xFitsImage
 from ximpol.utils.matplotlib_ import pyplot as plt
 from ximpol.utils.matplotlib_ import context_no_grids
 from ximpol.utils.logging_ import logger, startmsg
@@ -31,15 +31,8 @@ from ximpol.utils.logging_ import logger, startmsg
 def xpimgview(file_path, output_file):
     """Quick FITS image viewer.
     """
-    hdu_list = fits.open(file_path)
-    hdu_list.info()
-    data = hdu_list[0].data
-    with context_no_grids():
-        fig = aplpy.FITSFigure(hdu_list[0], figure = plt.figure(0))
-    fig.add_grid()
-    fig.show_colorscale(cmap = 'afmhot')
-    fig.add_colorbar()
-    fig.colorbar.set_axis_label_text('Counts/pixel')
+    img = xFitsImage(file_path, build_cdf=False)
+    img.plot(show=False)
     if output_file is not None:
         logger.info('Saving image to %s...' % output_file)
         plt.savefig(output_file)

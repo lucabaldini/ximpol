@@ -35,6 +35,10 @@ class xFitsImage:
     file_path : string
         The path to the FITS file containing the image.
 
+    build_cdf : bool
+        If True, build the cdf (i.e., equip the instance to generate random
+        numbers).
+
     Warning
     -------
     There are several things I don't quite understand here, first of all
@@ -42,7 +46,7 @@ class xFitsImage:
     residual offset by 1 pixel that we should try and sort out.)
     """
 
-    def __init__(self, file_path):
+    def __init__(self, file_path, build_cdf=True):
         """Constructor.
         """
         logger.info('Reading FITS image from %s...' % file_path)
@@ -50,9 +54,10 @@ class xFitsImage:
         self.hdu_list.info()
         self.wcs = wcs.WCS(self.hdu_list['PRIMARY'].header)
         self.data = self.hdu_list['PRIMARY'].data.transpose()
-        self.__build_cdf()
+        if build_cdf:
+            self.build_cdf()
 
-    def __build_cdf(self):
+    def build_cdf(self):
         """Build the cumulative distribution function.
 
         (This is used to extract random positions from the image when
@@ -90,7 +95,7 @@ class xFitsImage:
         """
         return self.data[i][j]
 
-    def plot(self, show=True):
+    def plot(self, show=True, zlabel='Counts/pixel'):
         """Plot the image.
 
         This is using aplpy to render the image.
@@ -101,7 +106,7 @@ class xFitsImage:
         fig.add_grid()
         fig.show_colorscale(cmap = 'afmhot')
         fig.add_colorbar()
-        fig.colorbar.set_axis_label_text('Counts/pixel')
+        fig.colorbar.set_axis_label_text(zlabel)
         plt.show()
 
 
