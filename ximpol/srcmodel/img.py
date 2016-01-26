@@ -76,6 +76,11 @@ class xFitsImage:
 
         randomize : bool
             If true, the positions are randomized uniformely within each pixel.
+
+        Warning
+        -------
+        There must be a better way to do this. We should take a look at
+        how aplpy.FITSImage is doing this.
         """
         u = numpy.random.rand(size)
         pixel = numpy.searchsorted(self.cdf, u)
