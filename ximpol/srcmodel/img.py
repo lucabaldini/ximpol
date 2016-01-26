@@ -26,7 +26,7 @@ from ximpol.utils.matplotlib_ import pyplot as plt
 from ximpol.utils.matplotlib_ import context_no_grids
 
 
-class xFitsImage:
+class xFITSImage:
 
     """Class describing a FITS image.
 
@@ -123,7 +123,7 @@ def main():
     import os
     from ximpol import XIMPOL_SRCMODEL
     file_path = os.path.join(XIMPOL_SRCMODEL, 'fits', 'crab_0p3_10p0_keV.fits')
-    img = xFitsImage(file_path)
+    img = xFITSImage(file_path)
     ra, dec = img.rvs_coordinates(1000000)
     print(ra)
     print(dec)

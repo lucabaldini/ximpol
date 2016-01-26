@@ -19,7 +19,7 @@
 
 import numpy
 
-from ximpol.srcmodel.img import xFitsImage
+from ximpol.srcmodel.img import xFITSImage
 from ximpol.srcmodel.spectrum import xCountSpectrum
 from ximpol.evt.event import xMonteCarloEventList
 
@@ -64,7 +64,8 @@ class xModelComponentBase:
     def __str__(self):
         """String formatting.
         """
-        return '%s (id = %d)' % (self.name, self.identifier)
+        return '%s %s (id = %s)' %\
+            (self.__class__.__name__, self.name, self.identifier)
 
     def rvs_event_list(self, aeff, psf, modf, edisp, sampling_time):
         count_spectrum = xCountSpectrum(self.spectrum, aeff, sampling_time)
@@ -74,7 +75,6 @@ class xModelComponentBase:
         event_list = xMonteCarloEventList()
         event_list.set_column('TIME', col_time)
         col_mc_energy = count_spectrum.rvs(col_time)
-
         event_list.set_column('MC_ENERGY', col_mc_energy)
         col_pha = edisp.matrix.rvs(col_mc_energy)
         event_list.set_column('PHA', col_pha)
@@ -151,7 +151,7 @@ class xExtendedSource(xModelComponentBase):
         """Constructor.
         """
         xModelComponentBase.__init__(self, name)
-        self.image = xFitsImage(img_file_path)
+        self.image = xFITSImage(img_file_path)
 
     def rvs_sky_coordinates(self, size=1):
         """Generate random coordinates for the model component.
@@ -198,9 +198,9 @@ class xROIModel(OrderedDict):
     def __str__(self):
         """String formatting.
         """
-        txt = ''
+        txt = 'ROI centered at (%.4f, %.4f):\n' % (self.ra, self.dec)
         for source in self.values():
-            txt += '%s\n' % source
+            txt += '- %s\n' % source
         return txt
 
     def build_hdu(self):
@@ -247,7 +247,14 @@ class xROIModel(OrderedDict):
 def main():
     """
     """
-    model = xROIModel(0, 0, )
+    model = xROIModel(0., 0.)
+    src1 = xPointSource('Source 1', 0.01, 0.01)
+    src2 = xPointSource('Source 2', -0.01, -0.01)
+    print(src1)
+    print(src2)
+    model.add_source(src1)
+    model.add_source(src2)
+    print(model)
 
 
 if __name__ == '__main__':

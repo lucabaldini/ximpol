@@ -22,7 +22,7 @@ __description__ = 'Quick FITS image viewer'
 
 from astropy.io import fits
 
-from ximpol.srcmodel.img import xFitsImage
+from ximpol.srcmodel.img import xFITSImage
 from ximpol.utils.matplotlib_ import pyplot as plt
 from ximpol.utils.matplotlib_ import context_no_grids
 from ximpol.utils.logging_ import logger, startmsg
@@ -31,7 +31,7 @@ from ximpol.utils.logging_ import logger, startmsg
 def xpimgview(file_path, output_file):
     """Quick FITS image viewer.
     """
-    img = xFitsImage(file_path, build_cdf=False)
+    img = xFITSImage(file_path, build_cdf=False)
     img.plot(show=False)
     if output_file is not None:
         logger.info('Saving image to %s...' % output_file)
