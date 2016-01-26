@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.15.1) - Mon, 25 Jan 2016 16:37:52 -0800*
+
 * astropy.wcs used in ximpol/srcmodel/img.py, and aplpy still used for
   plotting (issue #41).
 * Documentation for ximpol/srcmodel/img.py added.
