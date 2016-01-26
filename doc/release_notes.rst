@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.15.2) - Mon, 25 Jan 2016 18:04:33 -0800*
+
 * Minor refactoring of bin/xpimgview.py
 
 
