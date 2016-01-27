@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.16.0) - Tue, 26 Jan 2016 18:40:11 -0800*
+
 * Module ximpol.core.fitsio added (issue #49).
 * ximpol.evt.event refactored to use the new ximpol.core.fitsio module.
 * GTI list in the output event file (issue #24)
