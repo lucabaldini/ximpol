@@ -2,6 +2,7 @@ Release notes
 =============
 
 * Module ximpol.core.fitsio added (issue #49).
+* ximpol.evt.event refactored to use the new ximpol.core.fitsio module.
 
 
 *ximpol (0.15.2) - Mon, 25 Jan 2016 18:04:33 -0800*

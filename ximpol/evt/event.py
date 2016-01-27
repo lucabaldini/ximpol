@@ -26,18 +26,13 @@ import numbers
 from astropy.io import fits
 
 from ximpol.utils.logging_ import logger
-from ximpol.irf.base import xColDefsBase
-from ximpol.irf.base import xPrimaryHDU, update_header
+from ximpol.core.fitsio import xPrimaryHDU, xBinTableHDUBase
 
 
-EVENT_HEADER_SPECS = [
-    ('EXTNAME' , 'EVENTS', 'name of this binary table extension')
-]
+class xBinTableHDUEvents(xBinTableHDUBase):
 
-
-class xColDefsEvent(xColDefsBase):
-
-    """ximpol.irf.base.xColDefsBase subclass for an event FITS files.
+    """Binary table description for the EVENTS extension of the observation
+    output files.
 
     This is partially modeled based on the `XMM-Newton data format
     <http://www.mpe.mpg.de/xray/wave/xmm/cookbook/EPIC_PN/event_descr.php>`_.
@@ -50,31 +45,29 @@ class xColDefsEvent(xColDefsBase):
     elsewhere.
     """
 
-    COLUMN_SPECS = [
-        ('TIME'    , 'E', 's'),
-        ('PHA'     , 'I', None),
-        #('DETX'    , 'E', 'mm'),
-        #('DETY'    , 'E', 'mm'),
-        #('X'       , 'E', 'arcsecs'),
-        #('Y'       , 'E', 'arcsecs'),
-        ('PE_ANGLE', 'E', 'degrees'),
-        # And, for convenience, we add these three, too.
-        ('ENERGY'  , 'E', 'KeV'),
-        ('RA'      , 'E', 'degrees'),
-        ('DEC'     , 'E', 'degrees')
+    NAME = 'EVENTS'
+    SPECS = [
+        ('TIME'    , 'E', 's'      , 'Event time in seconds'),
+        ('PHA'     , 'I', None     , 'Uncorrected event channel'),
+        ('PE_ANGLE', 'E', 'degrees', 'Reconstructed photoelectron angle'),
+        ('ENERGY'  , 'E', 'KeV'    , 'Reconstructed event energy'),
+        ('RA'      , 'E', 'degrees', 'Reconstructed right ascension'),
+        ('DEC'     , 'E', 'degrees', 'Reconstructed declination')
     ]
 
 
-class xColDefsMonteCarloEvent(xColDefsBase):
+class xBinTableHDUMonteCarloEvent(xBinTableHDUBase):
 
-    """ximpol.irf.base.xColDefsBase subclass for a Monte Carlo event FITS files.
+    """Binary table description for the EVENTS extension of the observation
+    output files, including the additional Monte Carlo fields.
     """
 
-    COLUMN_SPECS = xColDefsEvent.COLUMN_SPECS + [
-        ('MC_ENERGY', 'E', 'keV'),
-        ('MC_RA'    , 'E', 'degrees'),
-        ('MC_DEC'   , 'E', 'degrees'),
-        ('MC_SRC_ID', 'I', None)
+    NAME = xBinTableHDUEvents.NAME
+    SPECS = xBinTableHDUEvents.SPECS + [
+        ('MC_ENERGY', 'E', 'keV'    , 'Monte Carlo event energy'),
+        ('MC_RA'    , 'E', 'degrees', 'Monte Carlo right ascension'),
+        ('MC_DEC'   , 'E', 'degrees', 'Monte Carlo declination'),
+        ('MC_SRC_ID', 'I', None     , 'Monte Carlo souce identifier')
     ]
 
 
@@ -86,7 +79,7 @@ class xMonteCarloEventList(dict):
     def __init__(self):
         """Constructor.
         """
-        for (name, fmt, units) in xColDefsMonteCarloEvent.COLUMN_SPECS:
+        for name in xBinTableHDUMonteCarloEvent.spec_names():
             self[name] = numpy.array([])
         self.length = 0
 
@@ -123,27 +116,23 @@ class xMonteCarloEventList(dict):
         """Concatenate two event lists.
         """
         _list = xMonteCarloEventList()
-        for (name, fmt, units) in xColDefsMonteCarloEvent.COLUMN_SPECS:
+        for name in xBinTableHDUMonteCarloEvent.spec_names():
             _list.set_column(name,numpy.append(self[name], other[name]))
         return _list
 
     def sort(self):
-        """Sort an event list.
+        """Sort the event list.
         """
         _index = numpy.argsort(self['TIME'])
-        for (name, fmt, units) in xColDefsMonteCarloEvent.COLUMN_SPECS:
-            self.set_column(name,self[name][_index])
+        for name in xBinTableHDUMonteCarloEvent.spec_names():
+            self.set_column(name, self[name][_index])
 
     def write_fits(self, file_path):
         """Write the event list to file.
         """
         primary_hdu = xPrimaryHDU()
-        data = []
-        for (name, fmt, units) in xColDefsMonteCarloEvent.COLUMN_SPECS:
-            data.append(self[name])
-        cols = xColDefsMonteCarloEvent(data)
-        event_hdu = fits.BinTableHDU.from_columns(cols)
-        update_header(event_hdu, EVENT_HEADER_SPECS)
+        data = [self[name] for name in xBinTableHDUMonteCarloEvent.spec_names()]
+        event_hdu = xBinTableHDUMonteCarloEvent(data)
         hdulist = fits.HDUList([primary_hdu, event_hdu])
         hdulist.info()
         hdulist.writeto(file_path, clobber=True)

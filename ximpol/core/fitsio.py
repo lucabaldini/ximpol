@@ -108,11 +108,18 @@ class xBinTableHDUBase(fits.BinTableHDU):
                 self.set_header_comment('TTYPE%d' % (i + 1),
                                         _kwcomments[col.name])
 
+    @classmethod
+    def spec_names(self):
+        """Return the name of the data fields specified in the SPEC class
+        member.
+        """
+        return [item[0] for item in self.SPECS]
+
     def set_ext_name(self, name):
         """Set the extension name for the binary table.
         """
-        name = ('EXTNAME', name, 'name of this binary table extension')
-        self.header.insert('BITPIX', name)
+        self.add_header_keyword('EXTNAME', name,
+                                'name of this binary table extension')
 
     def add_header_keyword(self, key, value, comment=''):
         """Add a keyword to the table header.
