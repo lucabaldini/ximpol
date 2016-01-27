@@ -28,7 +28,46 @@ from  astropy.io import fits
 from ximpol.__version__ import TAG
 
 
-class xPrimaryHDU(fits.PrimaryHDU):
+class xHDUBase:
+
+    """Base class for FITS HDU.
+    """
+
+    def add_comment(self, comment):
+        """Add a comment to the table header.
+        """
+        self.header['COMMENT'] = comment
+
+    def add_keyword(self, key, value, comment=''):
+        """Add a keyword to the table header.
+        """
+        self.header.set(key, value, comment)
+
+    def set_keyword_comment(self, keyword, comment):
+        """Set the comment for a header keyword.
+        """
+        self.header.comments[keyword] = comment
+
+    def setup_header(self, keywords=[], comments=[]):
+        """Update the table header with arbitrary additional information.
+        """
+        for item in keywords:
+            if len(item) == 3:
+                key, value, comment = item
+            elif len(item) == 2:
+                key, value = item
+                comment = ''
+            self.add_keyword(key, value, comment)
+        for comment in comments:
+            self.add_comment(comment)
+
+    def __str__(self):
+        """String formatting.
+        """
+        return repr(self.header)
+
+
+class xPrimaryHDU(fits.PrimaryHDU, xHDUBase):
 
     """Class describing a primary HDU to be written in a FITS file.
 
@@ -52,11 +91,6 @@ class xPrimaryHDU(fits.PrimaryHDU):
         self.header.set('DATE',
                         time.strftime('%Y-%m-%dT%H:%M:%S', time.gmtime()),
                         'file creation date (YYYY-MM-DDThh:mm:ss UT')
-
-    def __str__(self):
-        """String formatting.
-        """
-        return repr(self.header)
 
 
 class xBinTableHDUBase(fits.BinTableHDU):

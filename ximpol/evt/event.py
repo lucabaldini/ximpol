@@ -47,12 +47,12 @@ class xBinTableHDUEvents(xBinTableHDUBase):
 
     NAME = 'EVENTS'
     SPECS = [
-        ('TIME'    , 'D', 's'      , 'Event time in seconds'),
-        ('PHA'     , 'I', None     , 'Uncorrected event channel'),
-        ('PE_ANGLE', 'E', 'degrees', 'Reconstructed photoelectron angle'),
-        ('ENERGY'  , 'E', 'KeV'    , 'Reconstructed event energy'),
-        ('RA'      , 'E', 'degrees', 'Reconstructed right ascension'),
-        ('DEC'     , 'E', 'degrees', 'Reconstructed declination')
+        ('TIME'    , 'D', 's'      , 'event time in seconds'),
+        ('PHA'     , 'I', None     , 'uncorrected event channel'),
+        ('PE_ANGLE', 'E', 'degrees', 'reconstructed photoelectron angle'),
+        ('ENERGY'  , 'E', 'KeV'    , 'reconstructed event energy'),
+        ('RA'      , 'E', 'degrees', 'reconstructed right ascension'),
+        ('DEC'     , 'E', 'degrees', 'reconstructed declination')
     ]
 
 
@@ -90,8 +90,8 @@ class xBinTableHDURoiTable(xBinTableHDUBase):
 
     NAME = 'ROITABLE'
     SPECS = [
-        ('SRCID'  , 'I'  , None, 'Source identifier'),
-        ('SRCNAME', 'A20', None, 'Source name')
+        ('SRCID'  , 'I'  , None, 'source identifier'),
+        ('SRCNAME', 'A20', None, 'source name')
     ]
 
 
@@ -151,7 +151,7 @@ class xMonteCarloEventList(dict):
         for name in xBinTableHDUMonteCarloEvents.spec_names():
             self.set_column(name, self[name][_index])
 
-    def write_fits(self, file_path, gti_list=[], roi_model=None):
+    def write_fits(self, file_path, gti_list=[], roi_model=None, irf_name=None):
         """Write the event list and associated ancillary information to file.
 
         Arguments
@@ -164,8 +164,23 @@ class xMonteCarloEventList(dict):
 
         roi_model :
            The ROI model used to generate the event list.
+
+        irf_name : string
+           The name of the IRF set used for the simulations.
         """
         primary_hdu = xPrimaryHDU()
+        if roi_model is not None:
+            keywords = [
+                ('ROIRA'  , roi_model.ra , 'right ascension of the ROI center'),
+                ('ROIDEC' , roi_model.dec, 'declination of the ROI center'),
+                ('EQUINOX', 2000.        , 'equinox for RA and DEC')
+            ]
+            primary_hdu.setup_header(keywords)
+        if irf_name is not None:
+            keywords = [
+                ('IRFNAME', irf_name     , 'name of the IRFs used for the MC')
+            ]
+            primary_hdu.setup_header(keywords)
         data = [self[name] for name in\
                 xBinTableHDUMonteCarloEvents.spec_names()]
         event_hdu = xBinTableHDUMonteCarloEvents(data)

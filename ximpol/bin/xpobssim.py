@@ -57,7 +57,7 @@ def xpobssim(output_file_path, config_file_path, irf_name, duration, start_time,
     sampling_time = numpy.linspace(start_time, stop_time, time_steps)
     event_list=ROI_MODEL.rvs_event_list( aeff, psf, modf, edisp,sampling_time)
     logger.info('Done %s.' % chrono)
-    event_list.write_fits(output_file_path, gti_list, ROI_MODEL)
+    event_list.write_fits(output_file_path, gti_list, ROI_MODEL, irf_name)
     logger.info('All done %s!' % chrono)
 
 
