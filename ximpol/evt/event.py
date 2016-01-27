@@ -47,7 +47,7 @@ class xBinTableHDUEvents(xBinTableHDUBase):
 
     NAME = 'EVENTS'
     SPECS = [
-        ('TIME'    , 'E', 's'      , 'Event time in seconds'),
+        ('TIME'    , 'D', 's'      , 'Event time in seconds'),
         ('PHA'     , 'I', None     , 'Uncorrected event channel'),
         ('PE_ANGLE', 'E', 'degrees', 'Reconstructed photoelectron angle'),
         ('ENERGY'  , 'E', 'KeV'    , 'Reconstructed event energy'),
@@ -56,7 +56,7 @@ class xBinTableHDUEvents(xBinTableHDUBase):
     ]
 
 
-class xBinTableHDUMonteCarloEvent(xBinTableHDUBase):
+class xBinTableHDUMonteCarloEvents(xBinTableHDUBase):
 
     """Binary table description for the EVENTS extension of the observation
     output files, including the additional Monte Carlo fields.
@@ -71,6 +71,30 @@ class xBinTableHDUMonteCarloEvent(xBinTableHDUBase):
     ]
 
 
+class xBinTableHDUGTI(xBinTableHDUBase):
+
+    """Binary tablefor the good time intervals (GTI).
+    """
+
+    NAME = 'GTI'
+    SPECS = [
+        ('START', 'D', 's', 'GTI start time'),
+        ('STOP' , 'D', 's', 'GTI stop time')
+    ]
+
+
+class xBinTableHDURoiTable(xBinTableHDUBase):
+
+    """Binary tablefor the good time intervals (GTI).
+    """
+
+    NAME = 'ROITABLE'
+    SPECS = [
+        ('SRCID'  , 'I'  , None, 'Source identifier'),
+        ('SRCNAME', 'A20', None, 'Source name')
+    ]
+
+
 class xMonteCarloEventList(dict):
 
     """Class describing a Monte Carlo event list.
@@ -79,7 +103,7 @@ class xMonteCarloEventList(dict):
     def __init__(self):
         """Constructor.
         """
-        for name in xBinTableHDUMonteCarloEvent.spec_names():
+        for name in xBinTableHDUMonteCarloEvents.spec_names():
             self[name] = numpy.array([])
         self.length = 0
 
@@ -116,26 +140,44 @@ class xMonteCarloEventList(dict):
         """Concatenate two event lists.
         """
         _list = xMonteCarloEventList()
-        for name in xBinTableHDUMonteCarloEvent.spec_names():
+        for name in xBinTableHDUMonteCarloEvents.spec_names():
             _list.set_column(name,numpy.append(self[name], other[name]))
         return _list
 
     def sort(self):
-        """Sort the event list.
+        """Sort the event list based on the event time.
         """
         _index = numpy.argsort(self['TIME'])
-        for name in xBinTableHDUMonteCarloEvent.spec_names():
+        for name in xBinTableHDUMonteCarloEvents.spec_names():
             self.set_column(name, self[name][_index])
 
-    def write_fits(self, file_path):
-        """Write the event list to file.
+    def write_fits(self, file_path, gti_list=[], roi_model=None):
+        """Write the event list and associated ancillary information to file.
+
+        Arguments
+        ---------
+        file_path : str
+            The path to the output file.
+
+        gti : list of 2-elements (start, stop) tuples
+            The list of good time intervals.
+
+        roi_model :
+           The ROI model used to generate the event list.
         """
         primary_hdu = xPrimaryHDU()
-        data = [self[name] for name in xBinTableHDUMonteCarloEvent.spec_names()]
-        event_hdu = xBinTableHDUMonteCarloEvent(data)
-        hdulist = fits.HDUList([primary_hdu, event_hdu])
-        hdulist.info()
-        hdulist.writeto(file_path, clobber=True)
+        data = [self[name] for name in\
+                xBinTableHDUMonteCarloEvents.spec_names()]
+        event_hdu = xBinTableHDUMonteCarloEvents(data)
+        _start = numpy.array([gti[0] for gti in gti_list])
+        _stop = numpy.array([gti[1] for gti in gti_list])
+        gti_hdu = xBinTableHDUGTI([_start, _stop])
+        _src_id = numpy.array([src.identifier for src in roi_model.values()])
+        _src_name = numpy.array([src.name for src in roi_model.values()])
+        roi_hdu = xBinTableHDURoiTable([_src_id, _src_name])
+        hdu_list = fits.HDUList([primary_hdu, event_hdu, gti_hdu, roi_hdu])
+        hdu_list.info()
+        hdu_list.writeto(file_path, clobber=True)
         logger.info('Event list written to %s...' % file_path)
 
 

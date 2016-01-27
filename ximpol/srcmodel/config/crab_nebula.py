@@ -28,7 +28,7 @@ from ximpol import XIMPOL_SRCMODEL
 ROI_MODEL = xROIModel(83.633083, 22.014500)
 
 img_file_path = os.path.join(XIMPOL_SRCMODEL, 'fits', 'crab_0p3_10p0_keV.fits')
-source = xExtendedSource('Crab Nebula', img_file_path)
+source = xExtendedSource('Crab nebula', img_file_path)
 source.spectrum = power_law(10., 2.)
 source.polarization_degree = constant(0.157)
 source.polarization_angle = constant(numpy.radians(161.1))
