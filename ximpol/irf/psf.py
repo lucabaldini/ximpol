@@ -83,9 +83,9 @@ class xPointSpreadFunction(xUnivariateGenerator):
         """Constructor.
         """
         logger.info('Reading PSF data from %s...' % psf_file_path)
-        hdu_list = fits.open(psf_file_path)
-        hdu_list.info()
-        _data = hdu_list['PSF'].data
+        self.hdu_list = fits.open(psf_file_path)
+        self.hdu_list.info()
+        _data = self.hdu_list['PSF'].data
         W = _data['W']
         sigma = _data['SIGMA']
         N = _data['N']

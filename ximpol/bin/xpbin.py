@@ -17,44 +17,23 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-__description__ = 'Bin event data'
+__description__ = 'Bin event data in different flavors'
 
 
 import os
 import numpy
 from astropy.io import fits
-from astropy import wcs
 
 from ximpol.utils.matplotlib_ import pyplot as plt
 from ximpol.utils.logging_ import logger, startmsg, abort
-from ximpol.irf.base import xPrimaryHDU, update_header
-from ximpol.evt.binning import xColDefsSpectrum, SPECTRUM_HEADER_SPECS
 from ximpol.irf.mrf import xAzimuthalResponseGenerator
 
 
-def pha1(event_data, output_file_path):
+def pha1(file_path, **kwargs):
     """
     """
-    # Horrible---need to put the EBOUND information in the event file.
-    _num_chans = 256
-    # And also the GTI
-    _elapsed_time = event_data['TIME'][-1] - event_data['TIME'][0]
-    # Moving on...
-    _binning = numpy.linspace(-0.5, _num_chans - 0.5, _num_chans)
-    n, bins, patches = plt.hist(event_data['PHA'], bins=_binning)
-    primary_hdu = xPrimaryHDU()
-    data = [numpy.arange(_num_chans),
-            n/_elapsed_time,
-            numpy.sqrt(n)/_elapsed_time
-    ]
-    cols = xColDefsSpectrum(data)
-    spectrum_hdu = fits.BinTableHDU.from_columns(cols)
-    update_header(spectrum_hdu, SPECTRUM_HEADER_SPECS)
-    hdulist = fits.HDUList([primary_hdu, spectrum_hdu])
-    hdulist.info()
-    hdulist.writeto(output_file_path, clobber=True)
-    logger.info('Binned (PHA1) written to %s...' % output_file_path)
-
+    from ximpol.evt.binning import xEventBinningPHA1
+    xEventBinningPHA1(file_path, **kwargs).bin_()
 
 def pha2(event_data, output_file_path):
     """
@@ -68,35 +47,11 @@ def lc(event_data, output_file_path):
     abort('Not implemented, yet.')
 
 
-def cmap(event_data, output_file_path, nside=256, mc=False):
+def cmap(file_path, **kwargs):
     """
     """
-    if mc:
-        ra = event_data['MC_RA']
-        dec = event_data['MC_DEC']
-    else:
-        ra = event_data['RA']
-        dec = event_data['DEC']
-    # Horrible: this should be written in the event file at simulation time.
-    ra0 = 0.5*(ra.max() + ra.min())
-    dec0 = 0.5*(dec.max() + dec.min())
-    side = 5./60
-    # Moving on...
-    delta = side/nside
-    binning = numpy.linspace(0, nside, nside + 1)
-    # Build the WCS object
-    w = wcs.WCS(naxis=2)
-    w.wcs.crpix = [nside, 0.]
-    w.wcs.cdelt = [-delta, delta]
-    w.wcs.crval = [ra0 - 0.5*side, dec0 - 0.5*side]
-    w.wcs.ctype = ["RA---TAN", "DEC--TAN"]
-    w.wcs.equinox = 2000
-    header = w.to_header()
-    pix = w.wcs_world2pix(zip(ra, dec), 1)
-    n, x, y = numpy.histogram2d(pix[:,1], pix[:,0], bins=(binning, binning))
-    hdu = fits.PrimaryHDU(n, header=header)
-    hdu.writeto(output_file_path, clobber=True)
-    logger.info('Binned (CMAP) written to %s...' % output_file_path)
+    from ximpol.evt.binning import xEventBinningCMAP
+    xEventBinningCMAP(file_path, **kwargs).bin_()
 
 def ccube(event_data, output_file_path):
     """
@@ -106,6 +61,8 @@ def ccube(event_data, output_file_path):
 
 def mcube(event_data, output_file_path):
     """
+    """
+    abort('Not implemented, yet.')
     """
     energy = event_data['MC_ENERGY']
     phi = event_data['PE_ANGLE']
@@ -150,8 +107,6 @@ def mcube(event_data, output_file_path):
     plt.legend(bbox_to_anchor=(0.45, 0.95))
     plt.savefig('polarization_degree.png')
     plt.show()
-
-
     angle = [fr.phase for fr in fit_results]
     angle = numpy.degrees(numpy.array(angle))
     err = [fr.phase_error for fr in fit_results]
@@ -165,7 +120,7 @@ def mcube(event_data, output_file_path):
     plt.legend(bbox_to_anchor=(0.45, 0.45))
     plt.savefig('polarization_angle.png')
     plt.show()
-
+    """
 
 
 BIN_MODE_DICT = {'PHA1' : pha1,
@@ -183,13 +138,7 @@ def xpbin(file_path, mode, output_file_path):
     """Application to bin the data.
     """
     assert(file_path.endswith('.fits'))
-    logger.info('Opening input file %s...' % file_path)
-    hdu_list = fits.open(file_path)
-    hdu_list.info()
-    event_data = hdu_list['EVENTS'].data
-    if output_file_path is None:
-        output_file_path = file_path.replace('.fits', '_%s.fits' % mode)
-    BIN_MODE_DICT[mode](event_data, output_file_path)
+    BIN_MODE_DICT[mode](file_path)
 
 
 

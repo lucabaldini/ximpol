@@ -161,11 +161,10 @@ class xEnergyDispersion:
         """Constructor.
         """
         logger.info('Reading energy dispersion data from %s...' % mrf_file_path)
-        hdu_list = fits.open(mrf_file_path)
-        hdu_list.info()
-        self.matrix = xEnergyDispersionMatrix(hdu_list['MATRIX'])
-        self.ebounds = xEnergyDispersionBounds(hdu_list['EBOUNDS'])
-        hdu_list.close()
+        self.hdu_list = fits.open(mrf_file_path)
+        self.hdu_list.info()
+        self.matrix = xEnergyDispersionMatrix(self.hdu_list['MATRIX'])
+        self.ebounds = xEnergyDispersionBounds(self.hdu_list['EBOUNDS'])
 
     def plot(self, show=True):
         """Plot the energy dispersion.

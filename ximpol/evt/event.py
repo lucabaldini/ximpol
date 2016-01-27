@@ -46,7 +46,7 @@ class xBinTableHDUEvents(xBinTableHDUBase):
     """
 
     NAME = 'EVENTS'
-    SPECS = [
+    DATA_SPECS = [
         ('TIME'    , 'D', 's'      , 'event time in seconds'),
         ('PHA'     , 'I', None     , 'uncorrected event channel'),
         ('PE_ANGLE', 'E', 'degrees', 'reconstructed photoelectron angle'),
@@ -63,7 +63,7 @@ class xBinTableHDUMonteCarloEvents(xBinTableHDUBase):
     """
 
     NAME = xBinTableHDUEvents.NAME
-    SPECS = xBinTableHDUEvents.SPECS + [
+    DATA_SPECS = xBinTableHDUEvents.DATA_SPECS + [
         ('MC_ENERGY', 'E', 'keV'    , 'Monte Carlo event energy'),
         ('MC_RA'    , 'E', 'degrees', 'Monte Carlo right ascension'),
         ('MC_DEC'   , 'E', 'degrees', 'Monte Carlo declination'),
@@ -77,7 +77,7 @@ class xBinTableHDUGTI(xBinTableHDUBase):
     """
 
     NAME = 'GTI'
-    SPECS = [
+    DATA_SPECS = [
         ('START', 'D', 's', 'GTI start time'),
         ('STOP' , 'D', 's', 'GTI stop time')
     ]
@@ -89,7 +89,7 @@ class xBinTableHDURoiTable(xBinTableHDUBase):
     """
 
     NAME = 'ROITABLE'
-    SPECS = [
+    DATA_SPECS = [
         ('SRCID'  , 'I'  , None, 'source identifier'),
         ('SRCNAME', 'A20', None, 'source name')
     ]
@@ -151,7 +151,7 @@ class xMonteCarloEventList(dict):
         for name in xBinTableHDUMonteCarloEvents.spec_names():
             self.set_column(name, self[name][_index])
 
-    def write_fits(self, file_path, gti_list=[], roi_model=None, irf_name=None):
+    def write_fits(self, file_path, simulation_info):
         """Write the event list and associated ancillary information to file.
 
         Arguments
@@ -159,28 +159,32 @@ class xMonteCarloEventList(dict):
         file_path : str
             The path to the output file.
 
-        gti : list of 2-elements (start, stop) tuples
-            The list of good time intervals.
+        simulation_info :
+            A generic container with all the relevant information about the
+            simulation.
 
-        roi_model :
-           The ROI model used to generate the event list.
-
-        irf_name : string
-           The name of the IRF set used for the simulations.
+        Warning
+        -------
+        The information about the detector and telescope should be in the
+        primary header of the IRF tables, and that's where we should be
+        retrieving it from. (See issue #49.)
         """
         primary_hdu = xPrimaryHDU()
-        if roi_model is not None:
-            keywords = [
-                ('ROIRA'  , roi_model.ra , 'right ascension of the ROI center'),
-                ('ROIDEC' , roi_model.dec, 'declination of the ROI center'),
-                ('EQUINOX', 2000.        , 'equinox for RA and DEC')
-            ]
-            primary_hdu.setup_header(keywords)
-        if irf_name is not None:
-            keywords = [
-                ('IRFNAME', irf_name     , 'name of the IRFs used for the MC')
-            ]
-            primary_hdu.setup_header(keywords)
+        roi_model = simulation_info.roi_model
+        irf_name = simulation_info.irf_name
+        ebounds_header = simulation_info.edisp.hdu_list['EBOUNDS'].header
+        gti_list = simulation_info.gti_list
+        keywords = [
+            ('ROIRA'   , roi_model.ra , 'right ascension of the ROI center'),
+            ('ROIDEC'  , roi_model.dec, 'declination of the ROI center'),
+            ('EQUINOX' , 2000.        , 'equinox for RA and DEC'),
+            ('IRFNAME' , irf_name     , 'name of the IRFs used for the MC'),
+            ('TELESCOP', ebounds_header['TELESCOP']),
+            ('INSTRUME', ebounds_header['INSTRUME']),
+            ('DETNAM'  , ebounds_header['DETNAM']),
+            ('DETCHANS', ebounds_header['DETCHANS'])
+        ]
+        primary_hdu.setup_header(keywords)
         data = [self[name] for name in\
                 xBinTableHDUMonteCarloEvents.spec_names()]
         event_hdu = xBinTableHDUMonteCarloEvents(data)
@@ -194,6 +198,62 @@ class xMonteCarloEventList(dict):
         hdu_list.info()
         hdu_list.writeto(file_path, clobber=True)
         logger.info('Event list written to %s...' % file_path)
+
+
+class xEventFile:
+
+    """Read-mode interface to event files.
+    """
+
+    def __init__(self, file_path):
+        """Constructor.
+        """
+        assert(file_path.endswith('.fits'))
+        logger.info('Opening input event file %s...' % file_path)
+        self.hdu_list = fits.open(file_path)
+        self.hdu_list.info()
+        self.event_data = self.hdu_list['EVENTS'].data
+        self.roi_table = self.build_roi_table()
+
+    def file_path(self):
+        """Return the path to the underlying file.
+        """
+        return self.hdu_list.filename()
+
+    def build_roi_table(self):
+        """Rebuild the ROI table based in the information in the ROITABLE
+        extension of the event file.
+        """
+        roi_table = {}
+        _src_id = self.hdu_list['ROITABLE'].data['SRCID']
+        _src_name = self.hdu_list['ROITABLE'].data['SRCNAME']
+        for _id, _name in zip(_src_id, _src_name):
+            roi_table[_name] = _id
+        return roi_table
+
+    def roi_center(self):
+        """Return the righ ascension and declination of the center of the
+        ROI, as written in the header of the primary extension.
+        """
+        return self.hdu_list['PRIMARY'].header['ROIRA'],\
+            self.hdu_list['PRIMARY'].header['ROIDEC']
+
+    def irf_name(self):
+        """Return the name of the IRF set used to run the simulation.
+        """
+        return self.hdu_list['PRIMARY'].header['IRFNAME']
+
+    def good_time(self):
+        """Return the sum of all the GTIs in the event file.
+        """
+        _start = self.hdu_list['GTI'].data['START']
+        _stop = self.hdu_list['GTI'].data['STOP']
+        return (_stop - _start).sum()
+
+    def source_id(self, source_name):
+        """Return the source identifier for a given source name in the ROI.
+        """
+        return self.roi_table[source_name]
 
 
 def main():

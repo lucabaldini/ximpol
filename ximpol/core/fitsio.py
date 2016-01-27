@@ -102,16 +102,18 @@ class xBinTableHDUBase(fits.BinTableHDU, xHDUBase):
     """
 
     NAME = None
-    SPECS = []
+    HEADER_KEYWORDS = []
+    HEADER_COMMENTS = []
+    DATA_SPECS = []
 
     def __init__(self, data=None, keywords=[], comments=[]):
         """
         """
         if data is not None:
-            assert(len(data) == len(self.SPECS))
+            assert(len(data) == len(self.DATA_SPECS))
         cols = []
         _kwcomments = {}
-        for i, item in enumerate(self.SPECS):
+        for i, item in enumerate(self.DATA_SPECS):
             if len(item) == 4:
                 name, format_, units, comment = item
                 _kwcomments[name] = comment
@@ -133,7 +135,8 @@ class xBinTableHDUBase(fits.BinTableHDU, xHDUBase):
         if self.NAME is not None:
             self.set_ext_name(self.NAME)
         # Add the additional keywords and comments to the header.
-        self.setup_header(keywords, comments)
+        self.setup_header(self.HEADER_KEYWORDS + keywords,
+                          self.HEADER_COMMENTS + comments)
         # And we need to loop one more time to take care of the comments on the
         # columns, if any (could not find a way to do this on the columns
         # directly).
@@ -147,7 +150,7 @@ class xBinTableHDUBase(fits.BinTableHDU, xHDUBase):
         """Return the name of the data fields specified in the SPEC class
         member.
         """
-        return [item[0] for item in self.SPECS]
+        return [item[0] for item in self.DATA_SPECS]
 
     def set_ext_name(self, name):
         """Set the extension name for the binary table.
@@ -169,7 +172,13 @@ def main():
     class CustomBinTable(xBinTableHDUBase):
 
         NAME = 'CUSTOM'
-        SPECS = [
+        HEADER_KEYWORDS = [
+            ('PKEY', None)
+        ]
+        HEADER_COMMENTS = [
+            'A comment'
+        ]
+        DATA_SPECS = [
             ('ENERGY' , 'E', 'keV'  , 'The energy value'),
             ('CHANNEL', 'I'),
             ('AEFF'   , 'E', 'cm**2')
@@ -182,8 +191,8 @@ def main():
     table1 = CustomBinTable()
     print(table1)
     keywords = [
-        ('KEY1', 0, 'A keyword'),
-        ('KEY2', 1)
+        ('AKEY1', 0, 'A keyword'),
+        ('AKEY2', 1)
     ]
     comments = ['Howdy, partner?']
     table2 = CustomBinTable(data, keywords, comments)

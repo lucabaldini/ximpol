@@ -75,12 +75,11 @@ class xEffectiveArea(xInterpolatedUnivariateSplineLinear):
         """Constructor.
         """
         logger.info('Reading effective area data from %s...' % arf_file_path)
-        hdu_list = fits.open(arf_file_path)
-        hdu_list.info()
-        _data = hdu_list['SPECRESP'].data
+        self.hdu_list = fits.open(arf_file_path)
+        self.hdu_list.info()
+        _data = self.hdu_list['SPECRESP'].data
         _x = 0.5*(_data.field('ENERG_LO') + _data.field('ENERG_HI'))
         _y = _data.field('SPECRESP')
-        hdu_list.close()
         fmt = dict(xname='Energy', xunits='keV', yname='Effective area',
                    yunits='cm$^2$')
         xInterpolatedUnivariateSplineLinear.__init__(self, _x, _y, **fmt)

@@ -22,52 +22,176 @@
 
 import numpy
 from astropy.io import fits
+from astropy import wcs
 
-from ximpol.utils.logging_ import logger
+from ximpol.utils.logging_ import logger, abort
+from ximpol.evt.event import xEventFile
+from ximpol.core.fitsio import xBinTableHDUBase
 from ximpol.irf.base import xColDefsBase
 from ximpol.irf.base import xPrimaryHDU, update_header
-
+from ximpol.utils.matplotlib_ import pyplot as plt
 
 """TODO: clean up the header and get rid of the hard-coded stuff.
+
+We want to (loosely) model this on
+http://fermi.gsfc.nasa.gov/ssc/data/analysis/scitools/help/gtbin.txt
 """
 
-SPECTRUM_HEADER_SPECS = [
-    ('EXTNAME' , 'SPECTRUM', 'name of this binary table extension'),
-    ('HDUCLASS', 'OGIP'    , None),
-    ('HDUCLAS1', 'SPECTRUM', None),
-    ('HDUCLAS2', 'TOTAL'   , None),
-    ('HDUCLAS3', 'RATE'    , None),
-    ('CHANTYPE', 'PI'      , None),
-    ('HDUVERS' , '1.2.1'   , 'OGIP version number'),
-    ('TELESCOP', None      , None),
-    ('INSTRUME', None      , None),
-    ('DETNAM'  , None      , None),
-    ('FILTER'  , None      , None),
-    ('DATAMODE', None      , None),
-    ('DETCHANS', 256       , 'Number of channels in spectrum'),
-    ('TLMIN1'  , 0         , 'First channel number'),
-    ('EXPOSURE', 1.        , 'Exposure time'),
-    ('CORRSCAL', 1.        , 'Scaling for correction file'),
-    ('POISSERR', 'T'       , 'Is error Poisson ?'),
-    ('RESPFILE', None      , None),
-    ('ANCRFILE', None      , None),
-    ('BACKFILE', None      , None),
-    ('CORRFILE', None      , None),
-    ('SYS_ERR' , 0.        , None),
-    ('QUALITY' , 0         , None),
-    ('GROUPING', 0         , None),
-    ('AREASCAL', 1.        , None),
-    ('BACKSCAL', 1.        , None)
-]
 
+class xEventBinningBase:
 
-class xColDefsSpectrum(xColDefsBase):
-
-    """
+    """Base class for the event binning.
     """
 
-    COLUMN_SPECS = [
-        ('CHANNEL' , 'J', None),
-        ('RATE'    , 'E', 'counts/s'),
-        ('STAT_ERR', 'E', None),
+    VALID_KWARGS = [
+        'outfile'
     ]
+
+    def __init__(self, file_path, **kwargs):
+        """Constructor.
+        """
+        self.event_file = xEventFile(file_path)
+        self.event_data = self.event_file.event_data
+        self.kwargs = kwargs
+        self.check_kwargs()
+
+    def check_kwargs(self):
+        """Check the keyword arguments.
+        """
+        for key in self.kwargs.keys():
+            if not key in self.VALID_KWARGS:
+                abort('Invalid keyword argument "%s" for %s' %\
+                      (key, self.__class__.__name__))
+        if not 'outfile' in self.kwargs.keys():
+            _sfx = self.__class__.__name__.replace('xEventBinning', '').lower()
+            _in_path = self.event_file.file_path()
+            _out_path = _in_path.replace('.fits', '_%s.fits' % _sfx)
+            logger.info('outfile not specified, using %s...' % _out_path)
+            self.kwargs['outfile'] = _out_path
+
+    def bin_(self):
+        """Do the actual binning.
+        """
+        pass
+
+
+class xBinTableHDUPHA1(xBinTableHDUBase):
+
+    """Binary table for binned PHA1 data.
+    """
+
+    NAME = 'SPECTRUM'
+    HEADER_KEYWORDS = [
+        ('HDUCLASS', 'OGIP'),
+        ('HDUCLAS1', 'SPECTRUM'),
+        ('HDUCLAS2', 'TOTAL'),
+        ('HDUCLAS3', 'RATE'),
+        ('CHANTYPE', 'PI'),
+        ('HDUVERS' , '1.2.1', 'OGIP version number'),
+        ('TLMIN1'  , 0      , 'first channel number'),
+        ('CORRSCAL', 1.     , 'scaling for correction file'),
+        ('POISSERR', 'T'    , 'is error Poisson?'),
+        ('RESPFILE', None),
+        ('ANCRFILE', None),
+        ('BACKFILE', None),
+        ('CORRFILE', None),
+        ('SYS_ERR' , 0.),
+        ('AREASCAL', 1.),
+        ('BACKSCAL', 1.)
+    ]
+    DATA_SPECS = [
+        ('CHANNEL' , 'J'),
+        ('RATE'    , 'E', 'counts/s'),
+        ('STAT_ERR', 'E', 'counts/s'),
+    ]
+
+
+class xEventBinningPHA1(xEventBinningBase):
+
+    """Class for PHA1 binning.
+    """
+
+    VALID_KWARGS = xEventBinningBase.VALID_KWARGS
+
+    def check_kwargs(self):
+        """Overloaded method.
+        """
+        xEventBinningBase.check_kwargs(self)
+
+    def bin_(self):
+        """Overloaded method.
+        """
+        evt_header = self.event_file.hdu_list['PRIMARY'].header
+        num_chans = evt_header['DETCHANS']
+        good_time = self.event_file.good_time()
+        binning = numpy.linspace(-0.5, num_chans - 0.5, num_chans)
+        n, bins, patches = plt.hist(self.event_data['PHA'], bins=binning)
+        primary_hdu = xPrimaryHDU()
+        data = [numpy.arange(num_chans),
+                n/good_time,
+                numpy.sqrt(n)/good_time
+        ]
+        spec_hdu = xBinTableHDUPHA1(data)
+        keywords = [
+            ('TELESCOP', evt_header['TELESCOP']),
+            ('INSTRUME', evt_header['INSTRUME']),
+            ('DETCHANS', num_chans, 'number of channels in spectrum'),
+            ('EXPOSURE', good_time, 'exposure time'),
+        ]
+        spec_hdu.setup_header(keywords)
+        hdu_list = fits.HDUList([primary_hdu, spec_hdu])
+        hdu_list.info()
+        logger.info('Writing binned (PHA1) data to %s...' % \
+                    self.kwargs['outfile'])
+        hdu_list.writeto(self.kwargs['outfile'], clobber=True)
+        logger.info('Done.')
+
+
+class xEventBinningCMAP(xEventBinningBase):
+
+    """Class for CMAP binning.
+    """
+
+    VALID_KWARGS = xEventBinningBase.VALID_KWARGS
+
+    def check_kwargs(self):
+        """Overloaded method.
+        """
+        xEventBinningBase.check_kwargs(self)
+
+    def bin_(self):
+        """Overloaded method.
+
+        Warning
+        -------
+        This needs to be completely revised.
+        """
+        mc = False
+        nside = 256
+        side = 5./60
+        primary_header = self.event_file.hdu_list['PRIMARY'].header
+        event_data = self.event_file.hdu_list['EVENTS'].data
+        if mc:
+            ra = event_data['MC_RA']
+            dec = event_data['MC_DEC']
+        else:
+            ra = event_data['RA']
+            dec = event_data['DEC']
+        roi_ra = primary_header['ROIRA']
+        roi_dec = primary_header['ROIDEC']
+        delta = side/nside
+        binning = numpy.linspace(0, nside, nside + 1)
+        # Build the WCS object
+        w = wcs.WCS(naxis=2)
+        w.wcs.crpix = [nside, 0.]
+        w.wcs.cdelt = [-delta, delta]
+        w.wcs.crval = [roi_ra - 0.5*side, roi_dec - 0.5*side]
+        w.wcs.ctype = ["RA---TAN", "DEC--TAN"]
+        w.wcs.equinox = 2000
+        header = w.to_header()
+        pix = w.wcs_world2pix(zip(ra, dec), 1)
+        n, x, y = numpy.histogram2d(pix[:,1], pix[:,0], bins=(binning, binning))
+        hdu = fits.PrimaryHDU(n, header=header)
+        hdu.writeto(self.kwargs['outfile'], clobber=True)
+        logger.info('Writing binned (CMAP) data to %s...' %\
+                    self.kwargs['outfile'])

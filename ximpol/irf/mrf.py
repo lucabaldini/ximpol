@@ -362,12 +362,11 @@ class xModulationFactor(xInterpolatedUnivariateSplineLinear):
         """Constructor.
         """
         logger.info('Reading modulation factor data from %s...' % mrf_file_path)
-        hdu_list = fits.open(mrf_file_path)
-        hdu_list.info()
-        _data = hdu_list['MODFRESP'].data
+        self.hdu_list = fits.open(mrf_file_path)
+        self.hdu_list.info()
+        _data = self.hdu_list['MODFRESP'].data
         _x = 0.5*(_data.field('ENERG_LO') + _data.field('ENERG_HI'))
         _y = _data.field('MODFRESP')
-        hdu_list.close()
         fmt = dict(xname='Energy', xunits='keV', yname='Modulation factor',
                    optimize=True, tolerance=1e-4)
         xInterpolatedUnivariateSplineLinear.__init__(self, _x, _y, **fmt)

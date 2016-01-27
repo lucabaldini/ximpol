@@ -32,6 +32,15 @@ from ximpol import XIMPOL_IRF
 from ximpol.srcmodel.spectrum import xCountSpectrum
 
 
+class xSimulationInfo:
+
+    """Empty container to pass along all the relevant information about the
+    simulation.
+    """
+
+    pass
+
+
 def xpobssim(output_file_path, config_file_path, irf_name, duration, start_time,
              time_steps, random_seed):
     """Run the ximpol fast simulator.
@@ -57,7 +66,15 @@ def xpobssim(output_file_path, config_file_path, irf_name, duration, start_time,
     sampling_time = numpy.linspace(start_time, stop_time, time_steps)
     event_list=ROI_MODEL.rvs_event_list( aeff, psf, modf, edisp,sampling_time)
     logger.info('Done %s.' % chrono)
-    event_list.write_fits(output_file_path, gti_list, ROI_MODEL, irf_name)
+    simulation_info = xSimulationInfo()
+    simulation_info.gti_list = gti_list
+    simulation_info.roi_model = ROI_MODEL
+    simulation_info.irf_name = irf_name
+    simulation_info.aeff = aeff
+    simulation_info.psf = psf
+    simulation_info.modf = modf
+    simulation_info.edisp = edisp
+    event_list.write_fits(output_file_path, simulation_info)
     logger.info('All done %s!' % chrono)
 
 
