@@ -93,7 +93,7 @@ class xPrimaryHDU(fits.PrimaryHDU, xHDUBase):
                         'file creation date (YYYY-MM-DDThh:mm:ss UT')
 
 
-class xBinTableHDUBase(fits.BinTableHDU):
+class xBinTableHDUBase(fits.BinTableHDU, xHDUBase):
 
     """Binary table HDU class.
 
@@ -139,8 +139,8 @@ class xBinTableHDUBase(fits.BinTableHDU):
         # directly).
         for i, col in enumerate(self.columns):
             if _kwcomments.has_key(col.name):
-                self.set_header_comment('TTYPE%d' % (i + 1),
-                                        _kwcomments[col.name])
+                comment = _kwcomments[col.name]
+                self.set_keyword_comment('TTYPE%d' % (i + 1), comment)
 
     @classmethod
     def spec_names(self):
@@ -152,36 +152,7 @@ class xBinTableHDUBase(fits.BinTableHDU):
     def set_ext_name(self, name):
         """Set the extension name for the binary table.
         """
-        self.add_header_keyword('EXTNAME', name,
-                                'name of this binary table extension')
-
-    def add_header_keyword(self, key, value, comment=''):
-        """Add a keyword to the table header.
-        """
-        self.header.set(key, value, comment)
-
-    def add_header_comment(self, comment):
-        """Add a comment to the table header.
-        """
-        self.header['COMMENT'] = comment
-
-    def set_header_comment(self, keyword, comment):
-        """Set the comment for a header keyword.
-        """
-        self.header.comments[keyword] = comment
-
-    def setup_header(self, keywords=[], comments=[]):
-        """Update the table header with arbitrary additional information.
-        """
-        for item in keywords:
-            if len(item) == 3:
-                key, value, comment = item
-            elif len(item) == 2:
-                key, value = item
-                comment = ''
-            self.add_header_keyword(key, value, comment)
-        for comment in comments:
-            self.add_header_comment(comment)
+        self.add_keyword('EXTNAME', name, 'name of this binary table extension')
 
     def __str__(self):
         """String formatting.

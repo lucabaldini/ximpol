@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* Minor refactoring of the ximpol.core.fitsio module.
+  
 
 *ximpol (0.16.0) - Tue, 26 Jan 2016 18:40:11 -0800*
 
