@@ -43,8 +43,7 @@ def parse(ascii_file_name,scale=3):
         pass
     time_array=numpy.array(time_array)
     flux_array=numpy.array(flux_array)
-
-    flux_array=scipy.signal.medfilt(flux_array,scale)
+    flux_array=scipy.signal.medfilt(flux_array, scale)
     return time_array,flux_array
 
 
@@ -65,7 +64,7 @@ def C(t,emin=0.3,emax=10.):
 def dNde(e,t):
     return C(t)*numpy.power(e,-gamma(t))
 
-def polarization_degree(e,t):
+def polarization_degree(e, t):
     return 0.6*(1.0-t/time_array[-1])
 
 source1.spectrum = dNde
