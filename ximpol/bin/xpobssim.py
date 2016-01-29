@@ -61,10 +61,17 @@ def xpobssim(output_file_path, config_file_path, irf_name, duration, start_time,
     logger.info('Setting up the source model...')
     module_name = os.path.basename(config_file_path).replace('.py', '')
     ROI_MODEL = imp.load_source(module_name, config_file_path).ROI_MODEL
+    logger.info(ROI_MODEL)
+    if start_time < ROI_MODEL.min_time():
+        start_time = ROI_MODEL.min_time()
+        logger.info('Simulation start time set to %s...' % start_time)
     stop_time = start_time + duration
+    if stop_time > ROI_MODEL.max_time():
+        stop_time = ROI_MODEL.max_time()
+        logger.info('Simulation stop time set to %s...' % stop_time)
     gti_list = [(start_time, stop_time)]
     sampling_time = numpy.linspace(start_time, stop_time, time_steps)
-    event_list=ROI_MODEL.rvs_event_list( aeff, psf, modf, edisp,sampling_time)
+    event_list = ROI_MODEL.rvs_event_list(aeff, psf, modf, edisp, sampling_time)
     logger.info('Done %s.' % chrono)
     simulation_info = xSimulationInfo()
     simulation_info.gti_list = gti_list

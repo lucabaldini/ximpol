@@ -2,6 +2,8 @@ Release notes
 =============
 
 * Major refactoring of xpbin.py ongoing.
+* Minimum and maximum valid times added to the model components.
+* Configuration file for a GRB added.
 
 
 *ximpol (0.16.1) - Tue, 26 Jan 2016 18:49:19 -0800*

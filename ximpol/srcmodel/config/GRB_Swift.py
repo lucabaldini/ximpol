@@ -46,14 +46,15 @@ def parse(ascii_file_name,scale=3):
 
     flux_array=scipy.signal.medfilt(flux_array,scale)
     return time_array,flux_array
-    
+
 
 
 
 time_array,flux_array=parse(os.path.join(XIMPOL_SRCMODEL,'ascii/GRB130427_Swift.dat'),scale=11)
 
-source1 = xPointSource(name='GRB', ra=grb_ra, dec=grb_dec)
-integral_flux    = xInterpolatedUnivariateSplineLinear(time_array,flux_array,'Time','s','Flux','erg/cm^2/s')
+source1 = xPointSource(name='GRB', ra=grb_ra, dec=grb_dec,
+                       min_time=time_array[0], max_time=time_array[-1])
+integral_flux = xInterpolatedUnivariateSplineLinear(time_array,flux_array,'Time','s','Flux','erg/cm^2/s')
 erg2kev=6.242e+8
 def gamma(t):
     return 1.66
@@ -71,6 +72,8 @@ source1.spectrum = dNde
 source1.polarization_degree = polarization_degree
 source1.polarization_angle  = constant(0.0)
 ROI_MODEL.add_source(source1)
+
+
 if __name__=='__main__':
     from matplotlib import pyplot as plt
     fig=plt.figure(figsize=(10,10))

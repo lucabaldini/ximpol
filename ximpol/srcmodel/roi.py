@@ -41,11 +41,13 @@ class xModelComponentBase:
         A unique identifier of the source within a ROI model.
     """
 
-    def __init__(self, name, identifier=None):
+    def __init__(self, name, identifier=None, min_time=0., max_time=1000000.):
         """Constructor.
         """
         self.name = name
         self.identifier = identifier
+        self.min_time = min_time
+        self.max_time = max_time
 
     def rvs_sky_coordinates(self, size=1):
         """Generate random coordinates for the model component.
@@ -63,8 +65,9 @@ class xModelComponentBase:
     def __str__(self):
         """String formatting.
         """
-        return '%s %s (id = %s)' %\
-            (self.__class__.__name__, self.name, self.identifier)
+        return '%s %s (id = %s, t = [%f--%f] s)' %\
+            (self.__class__.__name__, self.name, self.identifier,
+             self.min_time, self.max_time)
 
     def rvs_event_list(self, aeff, psf, modf, edisp, sampling_time):
         count_spectrum = xCountSpectrum(self.spectrum, aeff, sampling_time)
@@ -109,10 +112,10 @@ class xPointSource(xModelComponentBase):
         The declination of the source.
     """
 
-    def __init__(self, name, ra, dec):
+    def __init__(self, name, ra, dec, min_time=0., max_time=1000000.):
         """Constructor.
         """
-        xModelComponentBase.__init__(self, name)
+        xModelComponentBase.__init__(self, name, None, min_time, max_time)
         self.ra = ra
         self.dec = dec
 
@@ -146,10 +149,10 @@ class xExtendedSource(xModelComponentBase):
         The path to the FITS file containing the image of the source.
     """
 
-    def __init__(self, name, img_file_path):
+    def __init__(self, name, img_file_path, min_time=0., max_time=1000000.):
         """Constructor.
         """
-        xModelComponentBase.__init__(self, name)
+        xModelComponentBase.__init__(self, name, None, min_time, max_time)
         self.image = xFITSImage(img_file_path)
 
     def rvs_sky_coordinates(self, size=1):
@@ -192,7 +195,16 @@ class xROIModel(OrderedDict):
         """
         source.identifier = len(self)
         self[source.name] = source
-        pass
+
+    def min_time(self):
+        """Return the minimum validity time for the ROI model.
+        """
+        return max([source.min_time for source in self.values()])
+
+    def max_time(self):
+        """Return the maximum validity time for the ROI model.
+        """
+        return min([source.max_time for source in self.values()])
 
     def __str__(self):
         """String formatting.
@@ -200,7 +212,7 @@ class xROIModel(OrderedDict):
         txt = 'ROI centered at (%.4f, %.4f):\n' % (self.ra, self.dec)
         for source in self.values():
             txt += '- %s\n' % source
-        return txt
+        return txt.strip('\n')
 
     def build_hdu(self):
         """Build a FITS HDU for the source model.
@@ -247,13 +259,14 @@ def main():
     """
     """
     model = xROIModel(0., 0.)
-    src1 = xPointSource('Source 1', 0.01, 0.01)
-    src2 = xPointSource('Source 2', -0.01, -0.01)
+    src1 = xPointSource('Source 1', 0.01, 0.01, min_time=0., max_time=100.)
+    src2 = xPointSource('Source 2', -0.01, -0.01, min_time=20., max_time=500.)
     print(src1)
     print(src2)
     model.add_source(src1)
     model.add_source(src2)
     print(model)
+    print(model.min_time(), model.max_time())
 
 
 if __name__ == '__main__':
