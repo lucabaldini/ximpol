@@ -1,7 +1,7 @@
 Release notes
 =============
 
-* Major refactoring of xpbin.py ongoing.
+* Major refactoring of xpbin.py (issue #42).
 * Minimum and maximum valid times added to the model components.
 * Configuration file for a GRB added.
 

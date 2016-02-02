@@ -243,12 +243,22 @@ class xEventFile:
         """
         return self.hdu_list['PRIMARY'].header['IRFNAME']
 
-    def good_time(self):
+    def total_good_time(self):
         """Return the sum of all the GTIs in the event file.
         """
         _start = self.hdu_list['GTI'].data['START']
         _stop = self.hdu_list['GTI'].data['STOP']
         return (_stop - _start).sum()
+
+    def min_good_time(self):
+        """Return the smaller START time for the GTIs in the event file.
+        """
+        return self.hdu_list['GTI'].data['START'].min()
+
+    def max_good_time(self):
+        """Return the largest STOP time for the GTIs in the event file.
+        """
+        return self.hdu_list['GTI'].data['STOP'].max()
 
     def source_id(self, source_name):
         """Return the source identifier for a given source name in the ROI.

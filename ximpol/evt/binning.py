@@ -62,12 +62,12 @@ class xEventBinningBase:
             if not key in self.VALID_KWARGS:
                 abort('Invalid keyword argument "%s" for %s' %\
                       (key, self.__class__.__name__))
-        if not 'outfile' in self.kwargs.keys():
-            _sfx = self.__class__.__name__.replace('xEventBinning', '').lower()
-            _in_path = self.event_file.file_path()
-            _out_path = _in_path.replace('.fits', '_%s.fits' % _sfx)
-            logger.info('outfile not specified, using %s...' % _out_path)
-            self.kwargs['outfile'] = _out_path
+        if self.kwargs.get('outfile', None) is None:
+            sfx = self.__class__.__name__.replace('xEventBinning', '').lower()
+            evfile = self.event_file.file_path()
+            outfile = evfile.replace('.fits', '_%s.fits' % sfx)
+            logger.info('outfile not specified, using %s...' % outfile)
+            self.kwargs['outfile'] = outfile
 
     def bin_(self):
         """Do the actual binning.
@@ -123,20 +123,20 @@ class xEventBinningPHA1(xEventBinningBase):
         """
         evt_header = self.event_file.hdu_list['PRIMARY'].header
         num_chans = evt_header['DETCHANS']
-        good_time = self.event_file.good_time()
+        total_time = self.event_file.total_good_time()
         binning = numpy.linspace(-0.5, num_chans - 0.5, num_chans)
         n, bins, patches = plt.hist(self.event_data['PHA'], bins=binning)
         primary_hdu = xPrimaryHDU()
         data = [numpy.arange(num_chans),
-                n/good_time,
-                numpy.sqrt(n)/good_time
+                n/total_time,
+                numpy.sqrt(n)/total_time
         ]
         spec_hdu = xBinTableHDUPHA1(data)
         keywords = [
             ('TELESCOP', evt_header['TELESCOP']),
             ('INSTRUME', evt_header['INSTRUME']),
             ('DETCHANS', num_chans, 'number of channels in spectrum'),
-            ('EXPOSURE', good_time, 'exposure time'),
+            ('EXPOSURE', total_time, 'exposure time'),
         ]
         spec_hdu.setup_header(keywords)
         hdu_list = fits.HDUList([primary_hdu, spec_hdu])
@@ -195,3 +195,60 @@ class xEventBinningCMAP(xEventBinningBase):
         hdu.writeto(self.kwargs['outfile'], clobber=True)
         logger.info('Writing binned (CMAP) data to %s...' %\
                     self.kwargs['outfile'])
+
+
+class xBinTableHDULC(xBinTableHDUBase):
+
+    """Binary table for binned LC data.
+    """
+
+    NAME = 'RATE'
+    HEADER_KEYWORDS = [
+    ]
+    DATA_SPECS = [
+        ('TIME'   , 'D', 's'     , 'time of the bin center'),
+        ('TIMEDEL', 'D', 's'     , 'bin size'),
+        ('COUNTS' , 'J', 'counts', 'photon counts'),
+        ('ERROR'  , 'E', 'counts', 'statistical errors')
+    ]
+
+
+class xEventBinningLC(xEventBinningBase):
+
+    """Class for LC binning.
+    """
+
+    VALID_KWARGS = xEventBinningBase.VALID_KWARGS
+
+    def check_kwargs(self):
+        """Overloaded method.
+        """
+        xEventBinningBase.check_kwargs(self)
+
+    def bin_(self):
+        """Overloaded method.
+        """
+        evt_header = self.event_file.hdu_list['PRIMARY'].header
+        gti_hdu = self.event_file.hdu_list['GTI']
+        min_time = self.event_file.min_good_time()
+        max_time = self.event_file.max_good_time()
+        binning = numpy.linspace(min_time, max_time, 100)
+        counts, edges = numpy.histogram(self.event_data['TIME'], bins=binning)
+        primary_hdu = xPrimaryHDU()
+        data = [0.5*(edges[:-1] + edges[1:]),
+                (edges[1:] - edges[:-1]),
+                counts,
+                numpy.sqrt(counts)
+        ]
+        rate_hdu = xBinTableHDULC(data)
+        keywords = [
+            ('TELESCOP', evt_header['TELESCOP']),
+            ('INSTRUME', evt_header['INSTRUME'])
+        ]
+        rate_hdu.setup_header(keywords)
+        hdu_list = fits.HDUList([primary_hdu, rate_hdu, gti_hdu])
+        hdu_list.info()
+        logger.info('Writing binned (LC) data to %s...' % \
+                    self.kwargs['outfile'])
+        hdu_list.writeto(self.kwargs['outfile'], clobber=True)
+        logger.info('Done.')

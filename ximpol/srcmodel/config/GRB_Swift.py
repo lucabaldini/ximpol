@@ -55,10 +55,18 @@ source1 = xPointSource(name='GRB', ra=grb_ra, dec=grb_dec,
                        min_time=time_array[0], max_time=time_array[-1])
 integral_flux = xInterpolatedUnivariateSplineLinear(time_array,flux_array,'Time','s','Flux','erg/cm^2/s')
 erg2kev=6.242e+8
+
 def gamma(t):
     return 1.66
 
-def C(t,emin=0.3,emax=10.):
+def C(t):
+    """Why do we need t[0], here, while for Nicola this seems to be
+    working without it?
+
+    Need to understand the shit we're doing internally with the arrays.
+    """
+    emin = 0.3
+    emax = 10.
     return (gamma(t)-1.)*integral_flux(t)/(numpy.power(emin,-gamma(t)+1.0)-numpy.power(emax,-gamma(t)+1.0))*erg2kev
 
 def dNde(e,t):
