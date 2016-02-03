@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.18.0) - Wed, 03 Feb 2016 15:13:52 -0800*
+
 * More work on xpbin.py (closing issues #42 and #52).
 
 
