@@ -58,7 +58,7 @@ class xModelComponentBase:
         Arguments
         ---------
         size : float
-            The nnumber of sky coordinate pairs to be generated.
+            The number of sky coordinate pairs to be generated.
         """
         pass
 
@@ -127,7 +127,7 @@ class xPointSource(xModelComponentBase):
         Arguments
         ---------
         size : float
-            The nnumber of sky coordinate pairs to be generated.
+            The number of sky coordinate pairs to be generated.
         """
         ra = numpy.zeros(size)
         ra.fill(self.ra)
@@ -168,10 +168,13 @@ class xUniformDisk(xModelComponentBase):
 
         This is returning an array of the proper length with identical values.
 
+        The algorithm is taken from
+        http://mathworld.wolfram.com/DiskPointPicking.html
+
         Arguments
         ---------
         size : float
-            The nnumber of sky coordinate pairs to be generated.
+            The number of sky coordinate pairs to be generated.
         """
         r = self.radius*numpy.sqrt(numpy.random.sample(size))
         theta = numpy.random.uniform(0, 2*numpy.pi, size)
@@ -205,7 +208,7 @@ class xExtendedSource(xModelComponentBase):
         Arguments
         ---------
         size : float
-            The nnumber of sky coordinate pairs to be generated.
+            The number of sky coordinate pairs to be generated.
         """
         return self.image.rvs_coordinates(size)
 
