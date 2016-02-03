@@ -35,8 +35,13 @@ BIN_ALG_DICT = {'PHA1': xEventBinningPHA1,
                 'LC'  : xEventBinningLC,
                 'CMAP': xEventBinningCMAP
 }
-BIN_ALGORITHMS = BIN_ALG_DICT.keys()
-BIN_ALGORITHMS.sort()
+BIN_ALGS = BIN_ALG_DICT.keys()
+BIN_ALGS.sort()
+TBIN_ALGS = ['FILE',
+             'LIN',
+             'LOG',
+             'SNR'
+]
 
 
 def xpbin(args):
@@ -48,6 +53,7 @@ def xpbin(args):
     kwargs = args.__dict__
     kwargs.pop('evfile')
     kwargs.pop('algorithm')
+    print kwargs
     BIN_ALG_DICT[algorithm](evt_file_path, **kwargs).bin_()
 
 
@@ -55,11 +61,21 @@ if __name__=='__main__':
     import argparse
     parser = argparse.ArgumentParser(description=__description__)
     parser.add_argument('--evfile', type=str,
-                        help='the path to the input event file')
-    parser.add_argument('--algorithm', choices=BIN_ALGORITHMS, required=True,
-                        help='the binning mode')
+                        help='path to the input event file')
+    parser.add_argument('--algorithm', choices=BIN_ALGS, required=True,
+                        help='the binning algorithm')
     parser.add_argument('--outfile', type=str, default=None,
-                        help='the output binned FITS file')
+                        help='path to the output binned FITS file')
+    parser.add_argument('--tbinalg', choices=TBIN_ALGS, default='LIN',
+                        help='time binning specification')
+    parser.add_argument('--tstart', type=float, default=None,
+                        help='start time for LIN/LOG time binning')
+    parser.add_argument('--tstop', type=float, default=None,
+                        help='stop time for LIN/LOG time binning')
+    parser.add_argument('--tbins', type=int, default=100,
+                        help='number of bins for LIN/LOG time binning')
+    parser.add_argument('--tbinfile', type=str, default=None,
+                        help='path to the optional time bin definition file')
     args = parser.parse_args()
     startmsg()
     xpbin(args)

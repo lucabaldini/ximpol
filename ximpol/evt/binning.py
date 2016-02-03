@@ -43,34 +43,70 @@ class xEventBinningBase:
     """Base class for the event binning.
     """
 
-    VALID_KWARGS = [
-        'outfile'
-    ]
-
     def __init__(self, file_path, **kwargs):
         """Constructor.
         """
         self.event_file = xEventFile(file_path)
         self.event_data = self.event_file.event_data
         self.kwargs = kwargs
-        self.check_kwargs()
+        self.process_kwargs()
 
-    def check_kwargs(self):
+    def get(self, key, default=None):
+        """Convenience method to address the keyword aguments.
+        """
+        return self.kwargs.get(key, default)
+
+    def set(self, key, value):
+        """Convenience method to set keyword arguments.
+        """
+        logger.info('Setting %s to %s...' % (key, value))
+        self.kwargs[key] = value
+
+    @classmethod
+    def bin_centers(self, bin_edges):
+        """Return an array of bin centers given an array of bin edges.
+
+        Arguments
+        ---------
+        bin_edges : 1-d array of length (n + 1).
+            The array with the bin edges.
+
+        Returns
+        -------
+        1-d array of length n.
+            The array with the values of the bin centers.
+        """
+        assert bin_edges.ndim == 1
+        return 0.5*(bin_edges[:-1] + bin_edges[1:])
+
+    @classmethod
+    def bin_widths(self, bin_edges):
+        """Return an array of bin widths given an array of bin edges.
+
+        Arguments
+        ---------
+        bin_edges : 1-d array of length (n + 1).
+            The array with the bin edges.
+
+        Returns
+        -------
+        1-d array of length n.
+            The array with the values of the bin widths.
+        """
+        assert bin_edges.ndim == 1
+        return (bin_edges[1:] - bin_edges[:-1])
+
+    def process_kwargs(self):
         """Check the keyword arguments.
         """
-        for key in self.kwargs.keys():
-            if not key in self.VALID_KWARGS:
-                abort('Invalid keyword argument "%s" for %s' %\
-                      (key, self.__class__.__name__))
-        if self.kwargs.get('outfile', None) is None:
-            sfx = self.__class__.__name__.replace('xEventBinning', '').lower()
+        if self.get('outfile') is None:
+            suffx = self.__class__.__name__.replace('xEventBinning', '').lower()
             evfile = self.event_file.file_path()
-            outfile = evfile.replace('.fits', '_%s.fits' % sfx)
-            logger.info('outfile not specified, using %s...' % outfile)
-            self.kwargs['outfile'] = outfile
+            outfile = evfile.replace('.fits', '_%s.fits' % suffx)
+            self.set('outfile', outfile)
 
     def bin_(self):
-        """Do the actual binning.
+        """Do-nothing method to be reimplemented in the derived classes.
         """
         pass
 
@@ -111,12 +147,10 @@ class xEventBinningPHA1(xEventBinningBase):
     """Class for PHA1 binning.
     """
 
-    VALID_KWARGS = xEventBinningBase.VALID_KWARGS
-
-    def check_kwargs(self):
+    def process_kwargs(self):
         """Overloaded method.
         """
-        xEventBinningBase.check_kwargs(self)
+        xEventBinningBase.process_kwargs(self)
 
     def bin_(self):
         """Overloaded method.
@@ -152,12 +186,10 @@ class xEventBinningCMAP(xEventBinningBase):
     """Class for CMAP binning.
     """
 
-    VALID_KWARGS = xEventBinningBase.VALID_KWARGS
-
-    def check_kwargs(self):
+    def process_kwargs(self):
         """Overloaded method.
         """
-        xEventBinningBase.check_kwargs(self)
+        xEventBinningBase.process_kwargs(self)
 
     def bin_(self):
         """Overloaded method.
@@ -218,25 +250,37 @@ class xEventBinningLC(xEventBinningBase):
     """Class for LC binning.
     """
 
-    VALID_KWARGS = xEventBinningBase.VALID_KWARGS
-
-    def check_kwargs(self):
+    def process_kwargs(self):
         """Overloaded method.
         """
-        xEventBinningBase.check_kwargs(self)
+        xEventBinningBase.process_kwargs(self)
+        if self.get('tstart') is None:
+            self.set('tstart', self.event_file.min_good_time())
+        if self.get('tstop') is None:
+            self.set('tstop', self.event_file.max_good_time())
+
+    def make_binning(self):
+        """Build the light-curve binning.
+        """
+        if self.get('tbinalg') == 'LIN':
+            return numpy.linspace(self.get('tstart'),
+                                  self.get('tstop'),
+                                  self.get('tbins') + 1)
+        if self.get('tbinalg') == 'LOG':
+            return numpy.linspace(numpy.log10(self.get('tstart')),
+                                  numpy.log10(self.get('tstop')),
+                                  self.get('tbins') + 1)
+        abort('%s not implemented yet' % self.get('tbinalg'))
 
     def bin_(self):
         """Overloaded method.
         """
         evt_header = self.event_file.hdu_list['PRIMARY'].header
-        gti_hdu = self.event_file.hdu_list['GTI']
-        min_time = self.event_file.min_good_time()
-        max_time = self.event_file.max_good_time()
-        binning = numpy.linspace(min_time, max_time, 100)
-        counts, edges = numpy.histogram(self.event_data['TIME'], bins=binning)
+        counts, edges = numpy.histogram(self.event_data['TIME'],
+                                        bins=self.make_binning())
         primary_hdu = xPrimaryHDU()
-        data = [0.5*(edges[:-1] + edges[1:]),
-                (edges[1:] - edges[:-1]),
+        data = [self.bin_centers(edges),
+                self.bin_widths(edges),
                 counts,
                 numpy.sqrt(counts)
         ]
@@ -246,9 +290,9 @@ class xEventBinningLC(xEventBinningBase):
             ('INSTRUME', evt_header['INSTRUME'])
         ]
         rate_hdu.setup_header(keywords)
+        gti_hdu = self.event_file.hdu_list['GTI']
         hdu_list = fits.HDUList([primary_hdu, rate_hdu, gti_hdu])
         hdu_list.info()
-        logger.info('Writing binned (LC) data to %s...' % \
-                    self.kwargs['outfile'])
-        hdu_list.writeto(self.kwargs['outfile'], clobber=True)
+        logger.info('Writing binned (LC) data to %s...' % self.get('outfile'))
+        hdu_list.writeto(self.get('outfile'), clobber=True)
         logger.info('Done.')
