@@ -37,15 +37,16 @@ BIN_ALG_DICT = {'PHA1': xEventBinningPHA1,
 }
 BIN_ALGS = BIN_ALG_DICT.keys()
 BIN_ALGS.sort()
-TBIN_ALGS = ['FILE',
-             'LIN',
-             'LOG',
-             'SNR'
-]
+TBIN_ALGS = ['FILE', 'LIN', 'LOG', 'SNR']
+PRJCTS = ['AIT', 'ZEA', 'ARC', 'CAR', 'GLS', 'MER', 'NCP', 'SIN', 'STG', 'TAN']
+COORD_SYS = ['CEL', 'GAL']
 
 
 def xpbin(args):
     """Application to bin the data.
+
+    We want to (loosely) model this on
+    http://fermi.gsfc.nasa.gov/ssc/data/analysis/scitools/help/gtbin.txt
     """
     evt_file_path = args.evfile
     algorithm = args.algorithm
@@ -76,6 +77,18 @@ if __name__=='__main__':
                         help='number of bins for LIN/LOG time binning')
     parser.add_argument('--tbinfile', type=str, default=None,
                         help='path to the optional time bin definition file')
+    parser.add_argument('--nxpix', type=int, default=256,
+                        help='number of horizontal pixels in the output image')
+    parser.add_argument('--nypix', type=int, default=256,
+                        help='number of vertical pizels in the output image')
+    parser.add_argument('--binsz', type=float, default=1.,
+                        help='the pixel size of the output image in arcseconds')
+    parser.add_argument('--xref', type=float, default=None,
+                        help='the horizontal position of the image center')
+    parser.add_argument('--yref', type=float, default=None,
+                        help='the vertical position of the image center')
+    parser.add_argument('--proj', choices=PRJCTS, default='TAN',
+                        help='coordinate projection')
     args = parser.parse_args()
     startmsg()
     xpbin(args)

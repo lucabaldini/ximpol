@@ -29,13 +29,6 @@ from ximpol.evt.event import xEventFile
 from ximpol.core.fitsio import xBinTableHDUBase
 from ximpol.irf.base import xColDefsBase
 from ximpol.irf.base import xPrimaryHDU, update_header
-from ximpol.utils.matplotlib_ import pyplot as plt
-
-"""TODO: clean up the header and get rid of the hard-coded stuff.
-
-We want to (loosely) model this on
-http://fermi.gsfc.nasa.gov/ssc/data/analysis/scitools/help/gtbin.txt
-"""
 
 
 class xEventBinningBase:
@@ -159,7 +152,7 @@ class xEventBinningPHA1(xEventBinningBase):
         num_chans = evt_header['DETCHANS']
         total_time = self.event_file.total_good_time()
         binning = numpy.linspace(-0.5, num_chans - 0.5, num_chans)
-        n, bins, patches = plt.hist(self.event_data['PHA'], bins=binning)
+        n, bins = numpy.histogram(self.event_data['PHA'], bins=binning)
         primary_hdu = xPrimaryHDU()
         data = [numpy.arange(num_chans),
                 n/total_time,
@@ -175,9 +168,8 @@ class xEventBinningPHA1(xEventBinningBase):
         spec_hdu.setup_header(keywords)
         hdu_list = fits.HDUList([primary_hdu, spec_hdu])
         hdu_list.info()
-        logger.info('Writing binned (PHA1) data to %s...' % \
-                    self.kwargs['outfile'])
-        hdu_list.writeto(self.kwargs['outfile'], clobber=True)
+        logger.info('Writing binned (PHA1) data to %s...' % self.get('outfile'))
+        hdu_list.writeto(self.get('outfile'), clobber=True)
         logger.info('Done.')
 
 
@@ -190,43 +182,41 @@ class xEventBinningCMAP(xEventBinningBase):
         """Overloaded method.
         """
         xEventBinningBase.process_kwargs(self)
+        primary_header = self.event_file.hdu_list['PRIMARY'].header
+        if self.get('xref') is None:
+            self.set('xref', primary_header['ROIRA'])
+        if self.get('yref') is None:
+            self.set('yref', primary_header['ROIDEC'])
 
     def bin_(self):
         """Overloaded method.
-
-        Warning
-        -------
-        This needs to be completely revised.
         """
-        mc = False
-        nside = 256
-        side = 5./60
-        primary_header = self.event_file.hdu_list['PRIMARY'].header
-        event_data = self.event_file.hdu_list['EVENTS'].data
-        if mc:
-            ra = event_data['MC_RA']
-            dec = event_data['MC_DEC']
-        else:
-            ra = event_data['RA']
-            dec = event_data['DEC']
-        roi_ra = primary_header['ROIRA']
-        roi_dec = primary_header['ROIDEC']
-        delta = side/nside
-        binning = numpy.linspace(0, nside, nside + 1)
+        ra = self.event_data['RA']
+        dec = self.event_data['DEC']
+        xref = self.get('xref')
+        yref = self.get('yref')
+        nxpix = self.get('nxpix')
+        nypix = self.get('nypix')
+        pixsize = self.get('binsz')/3600.
+        proj = self.get('proj')
+        sidex = nxpix*pixsize
+        sidey = nypix*pixsize
+        binsx = numpy.linspace(0, nxpix, nxpix + 1)
+        binsy = numpy.linspace(0, nypix, nypix + 1)
         # Build the WCS object
         w = wcs.WCS(naxis=2)
-        w.wcs.crpix = [nside, 0.]
-        w.wcs.cdelt = [-delta, delta]
-        w.wcs.crval = [roi_ra - 0.5*side, roi_dec - 0.5*side]
-        w.wcs.ctype = ["RA---TAN", "DEC--TAN"]
+        w.wcs.crpix = [nxpix, 0.]
+        w.wcs.cdelt = [-pixsize, pixsize]
+        w.wcs.crval = [xref - 0.5*sidex, yref - 0.5*sidey]
+        w.wcs.ctype = ['RA---%s' % proj, 'DEC--%s' % proj]
         w.wcs.equinox = 2000
         header = w.to_header()
         pix = w.wcs_world2pix(zip(ra, dec), 1)
-        n, x, y = numpy.histogram2d(pix[:,1], pix[:,0], bins=(binning, binning))
+        n, x, y = numpy.histogram2d(pix[:,1], pix[:,0], bins=(binsx, binsy))
         hdu = fits.PrimaryHDU(n, header=header)
-        hdu.writeto(self.kwargs['outfile'], clobber=True)
-        logger.info('Writing binned (CMAP) data to %s...' %\
-                    self.kwargs['outfile'])
+        logger.info('Writing binned (CMAP) data to %s...' % self.get('outfile'))
+        hdu.writeto(self.get('outfile'), clobber=True)
+        logger.info('Done.')
 
 
 class xBinTableHDULC(xBinTableHDUBase):
@@ -235,8 +225,7 @@ class xBinTableHDULC(xBinTableHDUBase):
     """
 
     NAME = 'RATE'
-    HEADER_KEYWORDS = [
-    ]
+    HEADER_KEYWORDS = []
     DATA_SPECS = [
         ('TIME'   , 'D', 's'     , 'time of the bin center'),
         ('TIMEDEL', 'D', 's'     , 'bin size'),

@@ -25,7 +25,7 @@ from ximpol.srcmodel.spectrum import power_law, constant
 
 ROI_MODEL = xROIModel(10., 10.)
 
-source1 = xPointSource(name='source1', ra=9.98, dec=9.99)
+source1 = xPointSource(name='source1', ra=9.9750, dec=9.9833)
 source1.spectrum = power_law(10., 2.)
 source1.polarization_degree = constant(1.0)
 source1.polarization_angle = constant(numpy.radians(65.))
