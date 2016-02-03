@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* Uniform disk implemented (issue #54).
+
 
 *ximpol (0.18.0) - Wed, 03 Feb 2016 15:13:52 -0800*
 

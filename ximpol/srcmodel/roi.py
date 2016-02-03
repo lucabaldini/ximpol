@@ -129,11 +129,55 @@ class xPointSource(xModelComponentBase):
         size : float
             The nnumber of sky coordinate pairs to be generated.
         """
-        _ra = numpy.zeros(size)
-        _ra.fill(self.ra)
-        _dec = numpy.zeros(size)
-        _dec.fill(self.dec)
-        return (_ra, _dec)
+        ra = numpy.zeros(size)
+        ra.fill(self.ra)
+        dec = numpy.zeros(size)
+        dec.fill(self.dec)
+        return (ra, dec)
+
+
+class xUniformDisk(xModelComponentBase):
+
+    """Class representing a uniform disk.
+
+    Arguments
+    ---------
+    name : string
+        The name of the source.
+
+    ra : float
+        The right ascention of the disk center.
+
+    dec : float
+        The declination of the disk center.
+
+    radius : float
+        The radius of the disk.
+    """
+
+    def __init__(self, name, ra, dec, radius, min_time=0., max_time=1000000.):
+        """Constructor.
+        """
+        xModelComponentBase.__init__(self, name, None, min_time, max_time)
+        self.ra = ra
+        self.dec = dec
+        self.radius = radius
+
+    def rvs_sky_coordinates(self, size=1):
+        """Generate random coordinates for the model component.
+
+        This is returning an array of the proper length with identical values.
+
+        Arguments
+        ---------
+        size : float
+            The nnumber of sky coordinate pairs to be generated.
+        """
+        r = self.radius*numpy.sqrt(numpy.random.sample(size))
+        theta = numpy.random.uniform(0, 2*numpy.pi, size)
+        ra = self.ra + r*numpy.cos(theta)
+        dec = self.dec + r*numpy.sin(theta)
+        return (ra, dec)
 
 
 class xExtendedSource(xModelComponentBase):
