@@ -183,6 +183,53 @@ class xUniformDisk(xModelComponentBase):
         return (ra, dec)
 
 
+class xGaussianDisk(xModelComponentBase):
+
+    """Class representing a (azimuthally simmetric) gaussian disk.
+
+    Arguments
+    ---------
+    name : string
+        The name of the source.
+
+    ra : float
+        The right ascention of the disk center.
+
+    dec : float
+        The declination of the disk center.
+
+    sigma : float
+        The root mean square of the disk.
+    """
+
+    def __init__(self, name, ra, dec, sigma, min_time=0., max_time=1000000.):
+        """Constructor.
+        """
+        xModelComponentBase.__init__(self, name, None, min_time, max_time)
+        self.ra = ra
+        self.dec = dec
+        self.sigma = sigma
+        self.__mean = [self.ra, self.dec]
+        self.__cov = [[sigma**2., 0.], [0., sigma**2.]]
+
+    def rvs_sky_coordinates(self, size=1):
+        """Generate random coordinates for the model component.
+
+        This is returning an array of the proper length with identical values.
+
+        The algorithm is taken from
+        http://mathworld.wolfram.com/DiskPointPicking.html
+
+        Arguments
+        ---------
+        size : float
+            The number of sky coordinate pairs to be generated.
+        """
+        rvs = numpy.random.multivariate_normal(self.__mean, self.__cov, size)
+        ra, dec = rvs[:,0], rvs[:,1]
+        return (ra, dec)
+
+
 class xExtendedSource(xModelComponentBase):
 
     """Class representing an extended source.

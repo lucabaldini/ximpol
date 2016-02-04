@@ -1,6 +1,9 @@
 Release notes
 =============
 
+* Gaussian disk spatial template implemented.
+* A few srcmodel config files renamed.
+
 
 *ximpol (0.19.1) - Wed, 03 Feb 2016 16:17:09 -0800*
 
