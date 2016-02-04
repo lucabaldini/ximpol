@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.21.0) - Thu, 04 Feb 2016 14:27:20 -0800*
+
 * Major refactoring and revamp of xpevtview.py
 * New class for tabulated stationary spectra.
 * New configuration file for the SgrB complex.
