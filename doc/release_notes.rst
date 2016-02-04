@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.19.0) - Wed, 03 Feb 2016 16:12:42 -0800*
+
 * Uniform disk implemented (issue #54).
 * Added command-line option to use the MC Ra/Dec for xpbin.
 
