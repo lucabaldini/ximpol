@@ -217,9 +217,6 @@ class xGaussianDisk(xModelComponentBase):
 
         This is returning an array of the proper length with identical values.
 
-        The algorithm is taken from
-        http://mathworld.wolfram.com/DiskPointPicking.html
-
         Arguments
         ---------
         size : float
