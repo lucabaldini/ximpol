@@ -54,7 +54,6 @@ def xpbin(args):
     kwargs = args.__dict__
     kwargs.pop('evfile')
     kwargs.pop('algorithm')
-    print kwargs
     BIN_ALG_DICT[algorithm](evt_file_path, **kwargs).bin_()
 
 
@@ -89,6 +88,8 @@ if __name__=='__main__':
                         help='the vertical position of the image center')
     parser.add_argument('--proj', choices=PRJCTS, default='TAN',
                         help='coordinate projection')
+    parser.add_argument('--mcradec', action='store_true', default=False,
+                        help='use Monte Carlo RA and Dec')
     args = parser.parse_args()
     startmsg()
     xpbin(args)

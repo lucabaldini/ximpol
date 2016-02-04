@@ -191,8 +191,12 @@ class xEventBinningCMAP(xEventBinningBase):
     def bin_(self):
         """Overloaded method.
         """
-        ra = self.event_data['RA']
-        dec = self.event_data['DEC']
+        if self.get('mcradec'):
+            ra = self.event_data['MC_RA']
+            dec = self.event_data['MC_DEC']
+        else:
+            ra = self.event_data['RA']
+            dec = self.event_data['DEC']
         xref = self.get('xref')
         yref = self.get('yref')
         nxpix = self.get('nxpix')
