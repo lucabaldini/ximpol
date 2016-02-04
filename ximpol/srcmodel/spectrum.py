@@ -19,6 +19,8 @@
 
 import numpy
 from ximpol.core.rand import xUnivariateGenerator, xUnivariateAuxGenerator
+from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
+
 
 def power_law(C, Gamma):
     """Photon energy spectrum as a function of energy and time.
@@ -33,6 +35,53 @@ def constant(C):
     def _function(E,t):
         return C
     return _function
+
+
+class xTabulatedStationarySpectrum(xInterpolatedUnivariateSplineLinear):
+
+    """Class describing a time-independent spectral model where the flux
+    as a function of energy is tabulated at discrete values (e.g., read from
+    a file).
+
+    This is essentially a xInterpolatedUnivariateSplineLinear whose __call__
+    method is overloaded to (i) provide a different signature, where one
+    can pass two arguments, energy and time, although the second is not
+    used; and (ii) allow to evaluate the spline on multidimensional vectors such
+    as meshgrids, which is what happens when the spectrum is folded with
+    the effective area to create the count spectrum.
+    """
+
+    def __init__(self, energy, flux, xname=None, xunits=None, yname=None,
+                 yunits=None, optimize=False, tolerance=1e-4):
+        """Constructor.
+        """
+        if xname is None:
+            xname = 'Energy'
+        if xunits is None:
+            xunits='keV'
+        if yname is None:
+            yname='Flux'
+        if yunits is None:
+            yunits='cm$^{-2}$ s$^{-1}$'
+        xInterpolatedUnivariateSplineLinear.__init__(self, energy, flux, xname,
+                                                     xunits, yname, yunits,
+                                                     optimize, tolerance)
+
+    def __call__(self, E, t):
+        """Overloaded __call__ method.
+
+        Warning
+        -------
+        This is a major interface change with respect to the underlying scipy
+        class. Also, there might be ways to be more efficient, if the only
+        use case is to evaluate the spline over meshgrids, i.e., call the thing
+        on a row and then tile the result.
+        """
+        if E.ndim > 1:
+            y = xInterpolatedUnivariateSplineLinear.__call__(self, E.flatten())
+            return numpy.reshape(y, E.shape)
+        return xInterpolatedUnivariateSplineLinear.__call__(self, E)
+
 
 class xCountSpectrum(xUnivariateAuxGenerator):
 

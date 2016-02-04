@@ -29,62 +29,73 @@ from ximpol.utils.matplotlib_ import pyplot as plt
 from ximpol.utils.matplotlib_ import context_two_by_two
 from ximpol.utils.logging_ import logger, startmsg
 from ximpol.irf.mrf import xAzimuthalResponseGenerator
+from ximpol.evt.event import xEventFile
 
 
 def xpevtview(file_path):
     """Run quick event-file viewer.
     """
-    logger.info('Opening input file %s...' % file_path)
-    hdu_list = fits.open(file_path)
-    hdu_list.info()
-    evtdata = hdu_list['EVENTS'].data
+    event_file = xEventFile(file_path)
 
     with context_two_by_two():
         fig = plt.figure()
 
     ax = plt.subplot(2, 2, 1)
-    _emin = evtdata['ENERGY'].min()
-    _emax = evtdata['ENERGY'].max()
-    _binning = numpy.logspace(numpy.log10(_emin), numpy.log10(_emax), 100)
-    plt.hist(evtdata['ENERGY'], bins=_binning, histtype='step',
-             label='Reconstructed')
-    plt.hist(evtdata['MC_ENERGY'], bins=_binning, histtype='step',
-             label='True')
-    plt.xscale('log')
+    energy = event_file.event_data['ENERGY']
+    mcenergy = event_file.event_data['MC_ENERGY']
+    emin, emax = energy.min(), energy.max()
+    nbins = 100
+    logx = False
+    if logx:
+        binning = numpy.logspace(numpy.log10(emin), numpy.log10(emax), nbins)
+    else:
+        binning = numpy.linspace(emin, emax, nbins)
+    plt.hist(energy, binning, histtype='step', label='Reconstructed E')
+    plt.hist(mcenergy, binning, histtype='step', label='True E')
+    if logx:
+        plt.xscale('log')
     plt.yscale('log')
-    plt.axis([_emin, _emax, None, None])
+    plt.axis([emin, emax, None, None])
     plt.xlabel('Energy [keV]')
+    plt.ylabel('Counts')
     plt.legend(bbox_to_anchor=(1.025, 0.99))
 
     ax = plt.subplot(2, 2, 2)
-    ra0 = 0.5*(evtdata['RA'].max() + evtdata['RA'].min())
-    dec0 = 0.5*(evtdata['DEC'].max() + evtdata['DEC'].min())
-    r0 = 75/3600.
-    nbins = 200
-    ra_bins = numpy.linspace(ra0 - r0, ra0 + r0, nbins)
-    dec_bins = numpy.linspace(dec0 - r0, dec0 + r0, nbins)
-    plt.hist2d(evtdata['RA'], evtdata['DEC'], bins=(ra_bins, dec_bins),
-               norm=matplotlib.colors.LogNorm())
+    ra0, dec0 = event_file.roi_center()
+    ra = event_file.event_data['RA']
+    dec = event_file.event_data['DEC']
+    sidex = ra.max() - ra.min()
+    sidey = dec.max() - dec.min()
+    side = 0.75*max(sidex, sidey)
+    nbins = 100
+    ra_binning = numpy.linspace(ra0 - side, ra0 + side, nbins)
+    dec_binning = numpy.linspace(dec0 - side, dec0 + side, nbins)
+    binning = (ra_binning, dec_binning)
+    plt.hist2d(ra, dec, binning, norm=matplotlib.colors.LogNorm())
     plt.xlabel('RA [deg]')
     plt.ylabel('Dec [deg]')
     plt.colorbar()
 
     ax = plt.subplot(2, 2, 3)
-    plt.plot(evtdata['TIME'], evtdata['MC_ENERGY'], 'o')
-    plt.yscale('log')
+    time_ = event_file.event_data['TIME']
+    tmin = event_file.min_good_time()
+    tmax = event_file.max_good_time()
+    nbins = 100
+    binning = numpy.linspace(tmin, tmax, nbins)
+    plt.hist(time_, binning, histtype='step')
     plt.xlabel('Time [s]')
     plt.ylabel('Energy [keV]')
-    plt.axis([None, None, _emin, _emax])
+    plt.axis([tmin, tmax, None, None])
 
     ax = plt.subplot(2, 2, 4)
-    pe_angle = evtdata['PE_ANGLE']
-    binning = numpy.linspace(0., 2*numpy.pi, 100)
+    pe_angle = event_file.event_data['PE_ANGLE']
+    nbins = 100
+    binning = numpy.linspace(0., 2*numpy.pi, nbins)
     hist = plt.hist(pe_angle, bins=binning, histtype='step')
     fit_results = xAzimuthalResponseGenerator.fit_histogram(hist)
     fit_results.plot()
     plt.xlabel('PE emission angle [deg]')
     plt.axis([0., 2*numpy.pi, 0., None])
-
 
     plt.show()
 

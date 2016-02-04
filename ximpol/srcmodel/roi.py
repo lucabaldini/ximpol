@@ -287,6 +287,12 @@ class xROIModel(OrderedDict):
         source.identifier = len(self)
         self[source.name] = source
 
+    def add_sources(self, *sources):
+        """Add an arbitrary number of sources to the ROI.
+        """
+        for source in sources:
+            self.add_source(source)
+
     def min_time(self):
         """Return the minimum validity time for the ROI model.
         """

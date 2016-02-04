@@ -1,6 +1,12 @@
 Release notes
 =============
 
+* Major refactoring and revamp of xpevtview.py
+* New class for tabulated stationary spectra.
+* New configuration file for the SgrB complex.
+* Spectral data for the SgrA and SgrB complexes.
+* New small utility (xpsrccoords.py) to search for source coordinates.
+
 
 *ximpol (0.20.0) - Thu, 04 Feb 2016 10:43:26 -0800*
 
