@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* Committed a whole bunch of files left out by mistake.
+
 
 *ximpol (0.21.0) - Thu, 04 Feb 2016 14:27:20 -0800*
 
