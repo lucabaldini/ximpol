@@ -28,3 +28,7 @@ pulsar.polarization_degree = constant(0.0)
 pulsar.polarization_angle = constant(0.0)
 
 ROI_MODEL.add_source(pulsar)
+
+
+if __name__ == '__main__':
+    print(ROI_MODEL)

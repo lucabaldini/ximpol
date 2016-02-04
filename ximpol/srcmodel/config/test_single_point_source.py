@@ -30,3 +30,7 @@ source1.polarization_degree = constant(0.5)
 source1.polarization_angle = constant(numpy.radians(65.))
 
 ROI_MODEL.add_source(source1)
+
+
+if __name__ == '__main__':
+    print(ROI_MODEL)

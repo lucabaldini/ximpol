@@ -55,3 +55,7 @@ SgrB2.polarization_degree = constant(0.455)
 SgrB2.polarization_angle = constant(numpy.radians(84.4))
 
 ROI_MODEL.add_sources(SgrB1, SgrB2)
+
+
+if __name__ == '__main__':
+    print(ROI_MODEL)

@@ -35,5 +35,8 @@ source2.spectrum = power_law(15., 3.)
 source2.polarization_degree = constant(0.0)
 source2.polarization_angle = constant(numpy.radians(0))
 
-ROI_MODEL.add_source(source1)
-ROI_MODEL.add_source(source2)
+ROI_MODEL.add_sources(source1, source2)
+
+
+if __name__ == '__main__':
+    print(ROI_MODEL)
