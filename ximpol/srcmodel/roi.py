@@ -65,9 +65,13 @@ class xModelComponentBase:
     def __str__(self):
         """String formatting.
         """
-        return '%s %s (id = %s, t = [%f--%f] s)' %\
-            (self.__class__.__name__, self.name, self.identifier,
-             self.min_time, self.max_time)
+        text = '%s %s (id = %s)'%\
+               (self.__class__.__name__, self.name, self.identifier)
+        text += '\n    Validity time: [%f--%f]'  %\
+                (self.min_time, self.max_time)
+        text += '\n    Position: RA = %s deg, Dec = %s deg' %\
+                (self.ra, self.dec)
+        return text
 
     def rvs_event_list(self, aeff, psf, modf, edisp, sampling_time):
         count_spectrum = xCountSpectrum(self.spectrum, aeff, sampling_time)
@@ -182,6 +186,13 @@ class xUniformDisk(xModelComponentBase):
         dec = self.dec + r*numpy.sin(theta)
         return (ra, dec)
 
+    def __str__(self):
+        """String formatting.
+        """
+        text = xModelComponentBase.__str__(self)
+        text += '\n    Radius: %s deg' % self.radius
+        return text
+
 
 class xGaussianDisk(xModelComponentBase):
 
@@ -225,6 +236,13 @@ class xGaussianDisk(xModelComponentBase):
         rvs = numpy.random.multivariate_normal(self.__mean, self.__cov, size)
         ra, dec = rvs[:,0], rvs[:,1]
         return (ra, dec)
+
+    def __str__(self):
+        """String formatting.
+        """
+        text = xModelComponentBase.__str__(self)
+        text += '\n    Sigma: %s deg' % self.sigma
+        return text
 
 
 class xExtendedSource(xModelComponentBase):

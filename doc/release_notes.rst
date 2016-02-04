@@ -1,6 +1,9 @@
 Release notes
 =============
 
+* Source model string formatting improved.
+* A few minor changes.
+
 
 *ximpol (0.21.1) - Thu, 04 Feb 2016 14:28:43 -0800*
 
