@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.19.1) - Wed, 03 Feb 2016 16:17:09 -0800*
+
 * Updated documentation.
 
 
