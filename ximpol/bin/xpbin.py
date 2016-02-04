@@ -80,7 +80,7 @@ if __name__=='__main__':
                         help='number of horizontal pixels in the output image')
     parser.add_argument('--nypix', type=int, default=256,
                         help='number of vertical pizels in the output image')
-    parser.add_argument('--binsz', type=float, default=1.,
+    parser.add_argument('--binsz', type=float, default=3.,
                         help='the pixel size of the output image in arcseconds')
     parser.add_argument('--xref', type=float, default=None,
                         help='the horizontal position of the image center')

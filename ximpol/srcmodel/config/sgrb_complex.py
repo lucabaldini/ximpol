@@ -42,7 +42,7 @@ def parse_spectral_model(file_name):
     return xTabulatedStationarySpectrum(energy, flux)
 
 
-ROI_MODEL = xROIModel(266.8, -28.44)
+ROI_MODEL = xROIModel(266.8, -28.46)
 
 SgrB1 = xUniformDisk('Sgr B1', 266.75833, -28.5325, angular_radius(6.))
 SgrB1.spectrum = parse_spectral_model('spec_model_SgrB1.txt')

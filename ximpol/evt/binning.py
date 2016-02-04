@@ -205,6 +205,8 @@ class xEventBinningCMAP(xEventBinningBase):
         proj = self.get('proj')
         sidex = nxpix*pixsize
         sidey = nypix*pixsize
+        logger.info('Output image dimensions are %.1f x %.1f arcmin.' %\
+                    (sidex*60, sidey*60))
         binsx = numpy.linspace(0, nxpix, nxpix + 1)
         binsy = numpy.linspace(0, nypix, nypix + 1)
         # Build the WCS object
