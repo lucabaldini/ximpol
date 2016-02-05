@@ -314,7 +314,7 @@ class xBinTableHDUMCUBE(xBinTableHDUBase):
     def add_phi_spec(self, phibins):
         """Add the specification for the PHIHIST field.
         """
-        phi_specs = ('PHIHIST', '%dI' % phibins)
+        phi_specs = ('PHI_HIST', '%dI' % phibins)
         self.DATA_SPECS.append(phi_specs)
 
 
@@ -374,3 +374,49 @@ class xEventBinningMCUBE(xEventBinningBase):
         logger.info('Writing binned MCUBE data to %s...' % self.get('outfile'))
         hdu_list.writeto(self.get('outfile'), clobber=True)
         logger.info('Done.')
+
+
+class xModulationCube:
+
+    """Read-mode interface to a MCUBE FITS file.
+    """
+
+    def __init__(self, file_path):
+        """Constructor.
+        """
+        assert(file_path.endswith('.fits'))
+        logger.info('Opening input event file %s...' % file_path)
+        self.hdu_list = fits.open(file_path)
+        self.hdu_list.info()
+        self.data = self.hdu_list['MODULATION'].data
+        self.emin = self.data['ENERGY_LO']
+        self.emax = self.data['ENERGY_HI']
+        self.emean = self.data['ENERGY_MEAN']
+        self.phi_y = self.data['PHI_HIST']
+        nbins = self.phi_y.shape[1]
+        self.phi_binning = numpy.linspace(0, 2*numpy.pi, nbins + 1)
+        self.phi_x = self.phi_binning[:-1] + 2*numpy.pi/nbins
+
+    def plot_ebin(self, i, fit=True, show=True):
+        """Plot the azimuthal distribution for the i-th energy slice.
+        """
+        from ximpol.utils.matplotlib_ import pyplot as plt
+        plt.errorbar(self.phi_x, self.phi_y[i], yerr=numpy.sqrt(self.phi_y[i]),
+                     fmt='o')
+        if fit:
+            from ximpol.irf.mrf import xAzimuthalResponseGenerator
+            hist = (self.phi_y[i], self.phi_binning, None)
+            fit_results = xAzimuthalResponseGenerator.fit_histogram(hist)
+            logger.info(fit_results)
+            fit_results.plot()
+        if show:
+            plt.axis([0., 2*numpy.pi, 0., None])
+            plt.xlabel('$\\phi$ [rad]')
+            plt.ylabel('Counts')
+            plt.show()
+
+
+
+if __name__ == '__main__':
+    c = xModulationCube('test_single_point_source_mcube.fits')
+    c.plot_ebin(2)
