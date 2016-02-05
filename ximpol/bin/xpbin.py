@@ -29,15 +29,19 @@ from ximpol.utils.logging_ import logger, startmsg, abort
 from ximpol.evt.binning import xEventBinningPHA1
 from ximpol.evt.binning import xEventBinningLC
 from ximpol.evt.binning import xEventBinningCMAP
+from ximpol.evt.binning import xEventBinningMCUBE
 
 
-BIN_ALG_DICT = {'PHA1': xEventBinningPHA1,
-                'LC'  : xEventBinningLC,
-                'CMAP': xEventBinningCMAP
+BIN_ALG_DICT = {
+    'PHA1' : xEventBinningPHA1,
+    'LC'   : xEventBinningLC,
+    'CMAP' : xEventBinningCMAP,
+    'MCUBE': xEventBinningMCUBE
 }
 BIN_ALGS = BIN_ALG_DICT.keys()
 BIN_ALGS.sort()
 TBIN_ALGS = ['FILE', 'LIN', 'LOG', 'SNR']
+EBIN_ALGS = ['FILE', 'LIN', 'LOG']
 PRJCTS = ['AIT', 'ZEA', 'ARC', 'CAR', 'GLS', 'MER', 'NCP', 'SIN', 'STG', 'TAN']
 COORD_SYS = ['CEL', 'GAL']
 
@@ -88,8 +92,20 @@ if __name__=='__main__':
                         help='the vertical position of the image center')
     parser.add_argument('--proj', choices=PRJCTS, default='TAN',
                         help='coordinate projection')
-    parser.add_argument('--mcradec', action='store_true', default=False,
-                        help='use Monte Carlo RA and Dec')
+    parser.add_argument('--mc', action='store_true', default=False,
+                        help='use Monte Carlo information for binning')
+    parser.add_argument('--ebinalg', choices=EBIN_ALGS, default='LIN',
+                        help='energy binning specification')
+    parser.add_argument('--emin', type=float, default=1.,
+                        help='minimum energy for LIN/LOG energy binning')
+    parser.add_argument('--emax', type=float, default=10.,
+                        help='maximum energy for LIN/LOG energy binning')
+    parser.add_argument('--ebins', type=int, default=5,
+                        help='number of bins for LIN/LOG energy binning')
+    parser.add_argument('--ebinfile', type=str, default=None,
+                        help='path to the optional energy bin definition file')
+    parser.add_argument('--phibins', type=int, default=75,
+                        help='number of bins for LIN/LOG phi binning')
     args = parser.parse_args()
     startmsg()
     xpbin(args)

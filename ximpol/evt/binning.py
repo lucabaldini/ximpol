@@ -168,7 +168,7 @@ class xEventBinningPHA1(xEventBinningBase):
         spec_hdu.setup_header(keywords)
         hdu_list = fits.HDUList([primary_hdu, spec_hdu])
         hdu_list.info()
-        logger.info('Writing binned (PHA1) data to %s...' % self.get('outfile'))
+        logger.info('Writing binned PHA1 data to %s...' % self.get('outfile'))
         hdu_list.writeto(self.get('outfile'), clobber=True)
         logger.info('Done.')
 
@@ -191,7 +191,7 @@ class xEventBinningCMAP(xEventBinningBase):
     def bin_(self):
         """Overloaded method.
         """
-        if self.get('mcradec'):
+        if self.get('mc'):
             ra = self.event_data['MC_RA']
             dec = self.event_data['MC_DEC']
         else:
@@ -220,7 +220,7 @@ class xEventBinningCMAP(xEventBinningBase):
         pix = w.wcs_world2pix(zip(ra, dec), 1)
         n, x, y = numpy.histogram2d(pix[:,1], pix[:,0], bins=(binsx, binsy))
         hdu = fits.PrimaryHDU(n, header=header)
-        logger.info('Writing binned (CMAP) data to %s...' % self.get('outfile'))
+        logger.info('Writing binned CMAP data to %s...' % self.get('outfile'))
         hdu.writeto(self.get('outfile'), clobber=True)
         logger.info('Done.')
 
@@ -288,6 +288,89 @@ class xEventBinningLC(xEventBinningBase):
         gti_hdu = self.event_file.hdu_list['GTI']
         hdu_list = fits.HDUList([primary_hdu, rate_hdu, gti_hdu])
         hdu_list.info()
-        logger.info('Writing binned (LC) data to %s...' % self.get('outfile'))
+        logger.info('Writing binned LC data to %s...' % self.get('outfile'))
+        hdu_list.writeto(self.get('outfile'), clobber=True)
+        logger.info('Done.')
+
+
+class xBinTableHDUMCUBE(xBinTableHDUBase):
+
+    """Binary table for binned MCUBE data.
+
+    Mind the field for the actual phi distribution depends on the binning,
+    which is specified at run time, and therefore the corresponding data specs
+    must be set dinamically.
+    """
+
+    NAME = 'MODULATION'
+    HEADER_KEYWORDS = []
+    DATA_SPECS = [
+        ('ENERGY_LO'  , 'E', 'keV'),
+        ('ENERGY_HI'  , 'E', 'keV'),
+        ('ENERGY_MEAN', 'E', 'keV')
+    ]
+
+    @classmethod
+    def add_phi_spec(self, phibins):
+        """Add the specification for the PHIHIST field.
+        """
+        phi_specs = ('PHIHIST', '%dI' % phibins)
+        self.DATA_SPECS.append(phi_specs)
+
+
+class xEventBinningMCUBE(xEventBinningBase):
+
+    """Class for MCUBE binning.
+    """
+
+    def process_kwargs(self):
+        """Overloaded method.
+        """
+        xEventBinningBase.process_kwargs(self)
+
+    def make_binning(self):
+        """Build the modulation cube binning.
+        """
+        if self.get('ebinalg') == 'LIN':
+            ebinning = numpy.linspace(self.get('emin'),
+                                      self.get('emax'),
+                                      self.get('ebins') + 1)
+        elif self.get('ebinalg') == 'LOG':
+            ebinning = numpy.linspace(numpy.log10(self.get('emin')),
+                                      numpy.log10(self.get('emax')),
+                                      self.get('ebins') + 1)
+        else:
+            abort('%s not implemented yet' % self.get('ebinalg'))
+        phibinning = numpy.linspace(0, 2*numpy.pi, self.get('phibins') + 1)
+        return (ebinning, phibinning)
+
+    def bin_(self):
+        """Overloaded method.
+        """
+        evt_header = self.event_file.hdu_list['PRIMARY'].header
+        if self.get('mc'):
+            energy = self.event_data['MC_ENERGY']
+        else:
+            energy = self.event_data['ENERGY']
+        phi = self.event_data['PE_ANGLE']
+        counts, xedges, yedges = numpy.histogram2d(energy, phi,
+                                                   bins=self.make_binning())
+        primary_hdu = xPrimaryHDU()
+        emin, emax = xedges[:-1], xedges[1:]
+        emean = []
+        for _emin, _emax in zip(emin, emax):
+            emean.append(numpy.mean(energy[(energy > _emin)*(energy < _emax)]))
+        data = [emin, emax, emean, counts]
+        xBinTableHDUMCUBE.add_phi_spec(self.get('phibins'))
+        mcube_hdu = xBinTableHDUMCUBE(data)
+        keywords = [
+            ('TELESCOP', evt_header['TELESCOP']),
+            ('INSTRUME', evt_header['INSTRUME'])
+        ]
+        mcube_hdu.setup_header(keywords)
+        gti_hdu = self.event_file.hdu_list['GTI']
+        hdu_list = fits.HDUList([primary_hdu, mcube_hdu, gti_hdu])
+        hdu_list.info()
+        logger.info('Writing binned MCUBE data to %s...' % self.get('outfile'))
         hdu_list.writeto(self.get('outfile'), clobber=True)
         logger.info('Done.')
