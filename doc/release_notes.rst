@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.22.0) - Fri, 05 Feb 2016 13:56:10 -0800*
+
 * MCUBE mode implemented in xpbin.py
 
 
