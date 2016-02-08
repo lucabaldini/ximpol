@@ -418,23 +418,38 @@ class xModulationCube:
             self.plot_bin(i, fit, False)
         plt.show()
 
-    def analyze(self, interactive=True):
+    def quick_analysis(self, interactive=True):
         """Run a quick analysis on the modulation cube.
-
-        TODO: the IRF name must be propagated to the binned files.
         """
         from ximpol.irf import load_mrf
-        modf = load_mrf('xipe_baseline')
+        irf_name = self.hdu_list['PRIMARY'].header['IRFNAME']
+        modf = load_mrf(irf_name)
+        fit_results = []
         for i, _emean in enumerate(self.emean):
             fig = plt.figure()
-            fit_results = self.fit_bin(i)
-            print fit_results.visibility/modf(_emean)
+            _res = self.fit_bin(i)
             self.plot_bin(i, False, False)
-            fit_results.plot()
+            _res.plot()
+            fit_results.append(_res)
+        fig = plt.figure()
+        _x = self.emean
+        _y = numpy.array([_res.visibility for _res in fit_results])
+        _y /= modf(_x)
+        _dy = numpy.array([_res.visibility_error for _res in fit_results])
+        _dy /= modf(_x)
+        plt.errorbar(_x, _y, _dy, fmt='o')
+        plt.xlabel('Energy [keV]')
+        plt.ylabel('Polarization degree')
+        fig = plt.figure()
+        _y = [numpy.degrees(_res.phase) for _res in fit_results]
+        _dy = [numpy.degrees(_res.phase_error) for _res in fit_results]
+        plt.errorbar(_x, _y, _dy, fmt='o')
+        plt.xlabel('Energy [keV]')
+        plt.ylabel('Polarization angle [$^\circ$]')
         plt.show()
 
 
 
 if __name__ == '__main__':
     c = xModulationCube('test_single_point_source_mcube.fits')
-    c.analyze()
+    c.quick_analysis()
