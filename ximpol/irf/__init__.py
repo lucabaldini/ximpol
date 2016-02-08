@@ -38,7 +38,7 @@ def load_psf(irf_name, folder_path=None):
     """
     if folder_path is None:
         folder_path = os.path.join(XIMPOL_IRF,'fits')
-    return xModulationFactor(os.path.join(folder_path, '%s.mrf' % irf_name))
+    return xPointSpreadFunction(os.path.join(folder_path, '%s.psf' % irf_name))
 
 def load_mrf(irf_name, folder_path=None):
     """Facility to load the modulation factor for a given IRF set.
