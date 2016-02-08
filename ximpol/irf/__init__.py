@@ -26,14 +26,40 @@ from ximpol.irf.mrf import xModulationFactor
 from ximpol.irf.rmf import xEnergyDispersion
 
 
+def load_arf(irf_name, folder_path=None):
+    """Facility to load the effective area for a given IRF set.
+    """
+    if folder_path is None:
+        folder_path = os.path.join(XIMPOL_IRF,'fits')
+    return xEffectiveArea(os.path.join(folder_path, '%s.arf' % irf_name))
+
+def load_psf(irf_name, folder_path=None):
+    """Facility to load the point-spread function for a given IRF set.
+    """
+    if folder_path is None:
+        folder_path = os.path.join(XIMPOL_IRF,'fits')
+    return xModulationFactor(os.path.join(folder_path, '%s.mrf' % irf_name))
+
+def load_mrf(irf_name, folder_path=None):
+    """Facility to load the modulation factor for a given IRF set.
+    """
+    if folder_path is None:
+        folder_path = os.path.join(XIMPOL_IRF,'fits')
+    return xModulationFactor(os.path.join(folder_path, '%s.mrf' % irf_name))
+
+def load_rmf(irf_name, folder_path=None):
+    """Facility to load the modulation factor for a given IRF set.
+    """
+    if folder_path is None:
+        folder_path = os.path.join(XIMPOL_IRF,'fits')
+    return xEnergyDispersion(os.path.join(folder_path, '%s.rmf' % irf_name))
+
 def load_irfs(irf_name, folder_path=None):
     """Facility to load all the instrument response functions corresponding
     to a given set.
     """
-    if folder_path is None:
-        folder_path = os.path.join(XIMPOL_IRF,'fits')
-    aeff = xEffectiveArea(os.path.join(folder_path, '%s.arf' % irf_name))
-    psf = xPointSpreadFunction(os.path.join(folder_path, '%s.psf' % irf_name))
-    modf = xModulationFactor(os.path.join(folder_path, '%s.mrf' % irf_name))
-    edisp = xEnergyDispersion(os.path.join(folder_path, '%s.rmf' % irf_name))
+    aeff = load_arf(irf_name, folder_path)
+    psf = load_psf(irf_name, folder_path)
+    modf = load_mrf(irf_name, folder_path)
+    edisp = load_rmf(irf_name, folder_path)
     return aeff, psf, modf, edisp

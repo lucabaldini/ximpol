@@ -220,6 +220,21 @@ class xEventFile:
         """
         return self.hdu_list.filename()
 
+    def primary_keywords(self):
+        """Return a list of all the relevant keywords in the
+        PRIMARY header.
+
+        This is used, e.g.,  to propagate all the necessary information (such as
+        the ROI and the IRFs used) from the event files to the binned
+        data files that are created from them.
+        """
+        _header = self.hdu_list['PRIMARY'].header
+        keywords = []
+        for key in ['ROIRA', 'ROIDEC', 'EQUINOX', 'IRFNAME', 'TELESCOP',
+                    'INSTRUME', 'DETCHANS']:
+            keywords.append((key, _header[key], _header.comments[key]))
+        return keywords
+
     def build_roi_table(self):
         """Rebuild the ROI table based in the information in the ROITABLE
         extension of the event file.
@@ -264,13 +279,3 @@ class xEventFile:
         """Return the source identifier for a given source name in the ROI.
         """
         return self.roi_table[source_name]
-
-
-def main():
-    """
-    """
-    pass
-
-
-if __name__ == '__main__':
-    main()

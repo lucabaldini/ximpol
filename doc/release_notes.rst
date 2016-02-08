@@ -1,6 +1,10 @@
 Release notes
 =============
 
+* More refactoring of the binning classes.
+* Detector, ROI and IR information propagated from the event to the binned
+  files (issue #57).
+
 
 *ximpol (0.22.0) - Fri, 05 Feb 2016 13:56:10 -0800*
 

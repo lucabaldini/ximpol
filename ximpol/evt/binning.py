@@ -26,9 +26,9 @@ from astropy import wcs
 
 from ximpol.utils.logging_ import logger, abort
 from ximpol.evt.event import xEventFile
-from ximpol.core.fitsio import xBinTableHDUBase
-from ximpol.irf.base import xColDefsBase
-from ximpol.irf.base import xPrimaryHDU, update_header
+from ximpol.core.fitsio import xPrimaryHDU, xBinTableHDUBase
+from ximpol.irf.mrf import xAzimuthalResponseGenerator
+from ximpol.utils.matplotlib_ import pyplot as plt
 
 
 class xEventBinningBase:
@@ -154,17 +154,14 @@ class xEventBinningPHA1(xEventBinningBase):
         binning = numpy.linspace(-0.5, num_chans - 0.5, num_chans)
         n, bins = numpy.histogram(self.event_data['PHA'], bins=binning)
         primary_hdu = xPrimaryHDU()
+        primary_hdu.setup_header(self.event_file.primary_keywords())
         data = [numpy.arange(num_chans),
                 n/total_time,
                 numpy.sqrt(n)/total_time
         ]
         spec_hdu = xBinTableHDUPHA1(data)
-        keywords = [
-            ('TELESCOP', evt_header['TELESCOP']),
-            ('INSTRUME', evt_header['INSTRUME']),
-            ('DETCHANS', num_chans, 'number of channels in spectrum'),
-            ('EXPOSURE', total_time, 'exposure time'),
-        ]
+        spec_hdu.setup_header(self.event_file.primary_keywords())
+        keywords = [('EXPOSURE', total_time, 'exposure time')]
         spec_hdu.setup_header(keywords)
         hdu_list = fits.HDUList([primary_hdu, spec_hdu])
         hdu_list.info()
@@ -274,17 +271,14 @@ class xEventBinningLC(xEventBinningBase):
         counts, edges = numpy.histogram(self.event_data['TIME'],
                                         bins=self.make_binning())
         primary_hdu = xPrimaryHDU()
+        primary_hdu.setup_header(self.event_file.primary_keywords())
         data = [self.bin_centers(edges),
                 self.bin_widths(edges),
                 counts,
                 numpy.sqrt(counts)
         ]
         rate_hdu = xBinTableHDULC(data)
-        keywords = [
-            ('TELESCOP', evt_header['TELESCOP']),
-            ('INSTRUME', evt_header['INSTRUME'])
-        ]
-        rate_hdu.setup_header(keywords)
+        rate_hdu.setup_header(self.event_file.primary_keywords())
         gti_hdu = self.event_file.hdu_list['GTI']
         hdu_list = fits.HDUList([primary_hdu, rate_hdu, gti_hdu])
         hdu_list.info()
@@ -356,6 +350,7 @@ class xEventBinningMCUBE(xEventBinningBase):
         counts, xedges, yedges = numpy.histogram2d(energy, phi,
                                                    bins=self.make_binning())
         primary_hdu = xPrimaryHDU()
+        primary_hdu.setup_header(self.event_file.primary_keywords())
         emin, emax = xedges[:-1], xedges[1:]
         emean = []
         for _emin, _emax in zip(emin, emax):
@@ -363,11 +358,7 @@ class xEventBinningMCUBE(xEventBinningBase):
         data = [emin, emax, emean, counts]
         xBinTableHDUMCUBE.add_phi_spec(self.get('phibins'))
         mcube_hdu = xBinTableHDUMCUBE(data)
-        keywords = [
-            ('TELESCOP', evt_header['TELESCOP']),
-            ('INSTRUME', evt_header['INSTRUME'])
-        ]
-        mcube_hdu.setup_header(keywords)
+        mcube_hdu.setup_header(self.event_file.primary_keywords())
         gti_hdu = self.event_file.hdu_list['GTI']
         hdu_list = fits.HDUList([primary_hdu, mcube_hdu, gti_hdu])
         hdu_list.info()
@@ -393,30 +384,57 @@ class xModulationCube:
         self.emax = self.data['ENERGY_HI']
         self.emean = self.data['ENERGY_MEAN']
         self.phi_y = self.data['PHI_HIST']
-        nbins = self.phi_y.shape[1]
-        self.phi_binning = numpy.linspace(0, 2*numpy.pi, nbins + 1)
-        self.phi_x = self.phi_binning[:-1] + 2*numpy.pi/nbins
+        phibins = self.phi_y.shape[1]
+        self.phi_binning = numpy.linspace(0, 2*numpy.pi, phibins + 1)
+        self.phi_x = self.phi_binning[:-1] + 2*numpy.pi/phibins
 
-    def plot_ebin(self, i, fit=True, show=True):
+    def fit_bin(self, i):
+        """Fit the azimuthal distribution for the i-th energy slice.
+        """
+        hist = (self.phi_y[i], self.phi_binning, None)
+        fit_results = xAzimuthalResponseGenerator.fit_histogram(hist)
+        logger.info(fit_results)
+        return fit_results
+
+    def plot_bin(self, i, fit=True, show=True):
         """Plot the azimuthal distribution for the i-th energy slice.
         """
-        from ximpol.utils.matplotlib_ import pyplot as plt
         plt.errorbar(self.phi_x, self.phi_y[i], yerr=numpy.sqrt(self.phi_y[i]),
                      fmt='o')
         if fit:
-            from ximpol.irf.mrf import xAzimuthalResponseGenerator
-            hist = (self.phi_y[i], self.phi_binning, None)
-            fit_results = xAzimuthalResponseGenerator.fit_histogram(hist)
-            logger.info(fit_results)
+            fit_results = self.fit_bin(i)
             fit_results.plot()
+        plt.axis([0., 2*numpy.pi, 0., None])
+        plt.xlabel('$\\phi$ [rad]')
+        plt.ylabel('Counts')
         if show:
-            plt.axis([0., 2*numpy.pi, 0., None])
-            plt.xlabel('$\\phi$ [rad]')
-            plt.ylabel('Counts')
             plt.show()
+
+    def plot(self, fit=True, show=True):
+        """Plot the azimuthal distributions for all the energy bins.
+        """
+        for i, _emean in enumerate(self.emean):
+            fig = plt.figure()
+            self.plot_bin(i, fit, False)
+        plt.show()
+
+    def analyze(self, interactive=True):
+        """Run a quick analysis on the modulation cube.
+
+        TODO: the IRF name must be propagated to the binned files.
+        """
+        from ximpol.irf import load_mrf
+        modf = load_mrf('xipe_baseline')
+        for i, _emean in enumerate(self.emean):
+            fig = plt.figure()
+            fit_results = self.fit_bin(i)
+            print fit_results.visibility/modf(_emean)
+            self.plot_bin(i, False, False)
+            fit_results.plot()
+        plt.show()
 
 
 
 if __name__ == '__main__':
     c = xModulationCube('test_single_point_source_mcube.fits')
-    c.plot_ebin(2)
+    c.analyze()
