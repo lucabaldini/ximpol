@@ -2,6 +2,7 @@ Release notes
 =============
 
 * Quick polarization analysis routine in place.
+* Bug fix in the new code reading the IRFs.
 
 
 *ximpol (0.22.1) - Mon, 08 Feb 2016 15:11:38 -0800*
