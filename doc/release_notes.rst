@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* Fix for issue #59.
+
 
 *ximpol (0.22.3) - Mon, 08 Feb 2016 16:25:59 -0800*
 

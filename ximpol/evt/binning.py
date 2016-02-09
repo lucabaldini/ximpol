@@ -386,7 +386,7 @@ class xModulationCube:
         self.phi_y = self.data['PHI_HIST']
         phibins = self.phi_y.shape[1]
         self.phi_binning = numpy.linspace(0, 2*numpy.pi, phibins + 1)
-        self.phi_x = self.phi_binning[:-1] + 2*numpy.pi/phibins
+        self.phi_x = 0.5*(self.phi_binning[:-1] + self.phi_binning[1:])
 
     def fit_bin(self, i):
         """Fit the azimuthal distribution for the i-th energy slice.
