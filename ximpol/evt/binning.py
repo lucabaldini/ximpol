@@ -308,7 +308,7 @@ class xBinTableHDUMCUBE(xBinTableHDUBase):
     def add_phi_spec(self, phibins):
         """Add the specification for the PHIHIST field.
         """
-        phi_specs = ('PHI_HIST', '%dI' % phibins)
+        phi_specs = ('PHI_HIST', '%dJ' % phibins)
         self.DATA_SPECS.append(phi_specs)
 
 
