@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* More information added to the IRF primary headers (issue #49).
+
 
 *ximpol (0.23.0) - Thu, 18 Feb 2016 14:56:15 -0800*
 

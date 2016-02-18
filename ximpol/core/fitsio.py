@@ -81,7 +81,7 @@ class xPrimaryHDU(fits.PrimaryHDU, xHDUBase):
        the ximpol tag is automatically added.)
     """
 
-    def __init__(self, creator='ximpol'):
+    def __init__(self, creator='ximpol', keywords=[], comments=[]):
         """Constructor.
         """
         fits.PrimaryHDU.__init__(self)
@@ -91,6 +91,7 @@ class xPrimaryHDU(fits.PrimaryHDU, xHDUBase):
         self.header.set('DATE',
                         time.strftime('%Y-%m-%dT%H:%M:%S', time.gmtime()),
                         'file creation date (YYYY-MM-DDThh:mm:ss UT')
+        self.setup_header(keywords, comments)
 
 
 class xBinTableHDUBase(fits.BinTableHDU, xHDUBase):

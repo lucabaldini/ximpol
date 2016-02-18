@@ -102,7 +102,7 @@ def make_arf(aeff_file_path, qeff_file_path, irf_name):
     aeff = opt_aeff*gpd_eff
     specresp = aeff(ENERGY_CENTER)
     logger.info('Creating PRIMARY HDU...')
-    primary_hdu = xPrimaryHDU()
+    primary_hdu = xPrimaryHDU('ximpol', XIPE_KEYWORDS, XIPE_COMMENTS)
     print(repr(primary_hdu.header))
     logger.info('Creating SPECRESP HDU...')
     data = [ENERGY_LO, ENERGY_HI, specresp]
@@ -129,7 +129,7 @@ def make_mrf(modf_file_path, irf_name):
     logger.info('Filling in arrays...')
     modfresp = modf(ENERGY_CENTER)
     logger.info('Creating PRIMARY HDU...')
-    primary_hdu = xPrimaryHDU()
+    primary_hdu = xPrimaryHDU('ximpol', XIPE_KEYWORDS, XIPE_COMMENTS)
     print(repr(primary_hdu.header))
     logger.info('Creating MODFRESP HDU...')
     data = [ENERGY_LO, ENERGY_HI, modfresp]
@@ -151,7 +151,7 @@ def make_psf(irf_name):
     if os.path.exists(output_file_path):
         rm(output_file_path)
     logger.info('Creating PRIMARY HDU...')
-    primary_hdu = xPrimaryHDU()
+    primary_hdu = xPrimaryHDU('ximpol', XIPE_KEYWORDS, XIPE_COMMENTS)
     print(repr(primary_hdu.header))
     logger.info('Creating PSF HDU...')
     data = PSF_PARAMETERS
@@ -178,7 +178,7 @@ def make_rmf(eres_file_path, irf_name):
     _x, _y = numpy.loadtxt(eres_file_path, unpack=True)
     edisp_fwhm = xInterpolatedUnivariateSplineLinear(_x, _y)
     logger.info('Creating PRIMARY HDU...')
-    primary_hdu = xPrimaryHDU()
+    primary_hdu = xPrimaryHDU('ximpol', XIPE_KEYWORDS, XIPE_COMMENTS)
     print(repr(primary_hdu.header))
     keyword = ('DETCHANS', NUM_CHANNELS, 'Total number of detector channels')
     rmf_header_keywords = XIPE_KEYWORDS + [keyword]
