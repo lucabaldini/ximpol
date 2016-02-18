@@ -20,26 +20,22 @@
 from astropy.io import fits
 
 from ximpol.utils.logging_ import logger
-from ximpol.irf.base import xColDefsBase, OGIP_HEADER_SPECS
+from ximpol.irf.base import OGIP_HEADER_SPECS
+from ximpol.core.fitsio import xBinTableHDUBase
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
 
 
-"""Header specifications for the SPECRESP extension of .arf FITS files.
-"""
-SPECRESP_HEADER_SPECS = [
-    ('EXTNAME' , 'SPECRESP', 'name of this binary table extension'),
-    ('HDUCLAS1', 'RESPONSE', 'dataset relates to spectral response'),
-    ('HDUCLAS2', 'SPECRESP', 'dataset contains spectral response')
-] + OGIP_HEADER_SPECS
+class xBinTableHDUSPECRESP(xBinTableHDUBase):
 
-
-class xColDefsSPECRESP(xColDefsBase):
-
-    """ximpol.irf.base.xColDefsBase subclass for the SPECRESP extension
-    of .arf FITS files.
+    """Binary table for the SPECRESP extension of a arf file.
     """
 
-    COLUMN_SPECS = [
+    NAME = 'SPECRESP'
+    HEADER_KEYWORDS = [
+        ('HDUCLAS1', 'RESPONSE', 'dataset relates to spectral response'),
+        ('HDUCLAS2', 'SPECRESP', 'dataset contains spectral response')
+    ] + OGIP_HEADER_SPECS
+    DATA_SPECS = [
         ('ENERG_LO', 'E', 'keV'),
         ('ENERG_HI', 'E', 'keV'),
         ('SPECRESP', 'E', 'cm**2')

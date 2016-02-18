@@ -21,31 +21,27 @@ import numpy
 from astropy.io import fits
 
 from ximpol.utils.logging_ import logger
-from ximpol.irf.base import xColDefsBase, OGIP_HEADER_SPECS
+from ximpol.irf.base import OGIP_HEADER_SPECS
+from ximpol.core.fitsio import xBinTableHDUBase
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
 from ximpol.core.rand import xUnivariateAuxGenerator
 from ximpol.core.spline import optimize_grid_linear
 
 
-"""Header specifications for the MODFRESP extension of .mrf FITS files.
-"""
-MODFRESP_HEADER_SPECS = [
-    ('EXTNAME' , 'MODFRESP', 'name of this binary table extension'),
-    ('HDUCLAS1', 'RESPONSE', 'dataset relates to spectral response'),
-    ('HDUCLAS2', 'MODFRESP', 'dataset contains modulation response')
-] + OGIP_HEADER_SPECS
+class xBinTableHDUMODFRESP(xBinTableHDUBase):
 
-
-class xColDefsMODFRESP(xColDefsBase):
-
-    """ximpol.irf.base.xColDefsBase subclass for the MODFRESP extension
-    of .mrf FITS files.
+    """Binary table for the MODFRESP extension of a mrf file.
     """
 
-    COLUMN_SPECS = [
+    NAME = 'MODFRESP'
+    HEADER_KEYWORDS = [
+        ('HDUCLAS1', 'RESPONSE', 'dataset relates to spectral response'),
+        ('HDUCLAS2', 'MODFRESP', 'dataset contains spectral response')
+    ] + OGIP_HEADER_SPECS
+    DATA_SPECS = [
         ('ENERG_LO', 'E', 'keV'),
         ('ENERG_HI', 'E', 'keV'),
-        ('MODFRESP', 'E', None)
+        ('MODFRESP', 'E')
     ]
 
 

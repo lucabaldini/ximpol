@@ -21,57 +21,54 @@ import numpy
 from astropy.io import fits
 
 from ximpol.utils.logging_ import logger
-from ximpol.irf.base import xColDefsBase, OGIP_HEADER_SPECS
+from ximpol.irf.base import OGIP_HEADER_SPECS
+from ximpol.core.fitsio import xBinTableHDUBase
 from ximpol.core.spline import xInterpolatedBivariateSplineLinear
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
 from ximpol.core.rand import xUnivariateAuxGenerator
 
 
-"""Header specifications for the MATRIX extension of .rmf FITS files.
-"""
-MATRIX_HEADER_SPECS = [
-    ('EXTNAME' , 'MATRIX'    , 'name of this binary table extension'),
-    ('HDUCLAS1', 'RESPONSE'  , 'dataset relates to spectral response'),
-    ('HDUCLAS2', 'RSP_MATRIX', 'dataset is a spectral response matrix'),
-    ('CHANTYPE', 'PI '       , 'Detector Channel Type in use (PHA or PI)')
-] + OGIP_HEADER_SPECS
+class xBinTableHDUMATRIX(xBinTableHDUBase):
 
-
-"""Header specifications for the EBOUNDS extension of .rmf FITS files.
-"""
-EBOUNDS_HEADER_SPECS = [
-    ('EXTNAME' , 'EBOUNDS '  , 'Name of this binary table extension'),
-    ('CHANTYPE', 'PI'        , 'Channel type'),
-    ('CONTENT' , 'Response Matrix', 'File content'),
-    ('HDUCLAS1', 'RESPONSE'  , 'Extension contains response data  '),
-    ('HDUCLAS2', 'EBOUNDS '  , 'Extension contains EBOUNDS')
-] + OGIP_HEADER_SPECS
-
-
-
-class xColDefsMATRIX(xColDefsBase):
-
-    """ximpol.irf.base.xColDefsBase subclass for the MATRIX extension
-    of .rmf FITS files.
+    """Binary table for the MATRIX extension of a rmf file.
     """
 
-    COLUMN_SPECS = [
+    NAME = 'MATRIX'
+    HEADER_KEYWORDS = [
+        ('HDUCLAS1', 'RESPONSE'  , 'dataset relates to spectral response'),
+        ('HDUCLAS2', 'RSP_MATRIX', 'dataset is a spectral response matrix'),
+        ('CHANTYPE', 'PI '       , 'Detector Channel Type in use (PHA or PI)')
+    ] + OGIP_HEADER_SPECS
+    DATA_SPECS = [
         ('ENERG_LO', 'E', 'keV'),
         ('ENERG_HI', 'E', 'keV'),
-        ('N_GRP'   , 'I', None),
-        ('F_CHAN'  , 'I', None),
-        ('N_CHAN'  , 'I', None)
+        ('N_GRP'   , 'I'),
+        ('F_CHAN'  , 'I'),
+        ('N_CHAN'  , 'I'),
+        ('MATRIX'  , None) #Mind this field is set at creation time
     ]
 
+    def __init__(self, num_chans, data=None, keywords=[], comments=[]):
+        """Overloaded constructor.
+        """
+        self.DATA_SPECS[-1] = ('MATRIX', '%dE' % num_chans)
+        xBinTableHDUBase.__init__(self, data, keywords, comments)
 
-class xColDefsEBOUNDS(xColDefsBase):
 
-    """ximpol.irf.base.xColDefsBase subclass for the EBOUNDS extension
-    of .rmf FITS files.
+class xBinTableHDUEBOUNDS(xBinTableHDUBase):
+
+    """Binary table for the MATRIX extension of a rmf file.
     """
 
-    COLUMN_SPECS = [
-        ('CHANNEL', 'I', None),
+    NAME = 'EBOUNDS'
+    HEADER_KEYWORDS = [
+        ('CHANTYPE', 'PI'        , 'Channel type'),
+        ('CONTENT' , 'Response Matrix', 'File content'),
+        ('HDUCLAS1', 'RESPONSE'  , 'Extension contains response data  '),
+        ('HDUCLAS2', 'EBOUNDS '  , 'Extension contains EBOUNDS')
+    ] + OGIP_HEADER_SPECS
+    DATA_SPECS = [
+        ('CHANNEL', 'I'),
         ('E_MIN'  , 'E', 'keV'),
         ('E_MAX'  , 'E', 'keV')
     ]

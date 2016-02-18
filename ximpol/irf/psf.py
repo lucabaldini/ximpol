@@ -21,27 +21,23 @@ import numpy
 from astropy.io import fits
 
 from ximpol.utils.logging_ import logger
-from ximpol.irf.base import xColDefsBase, OGIP_HEADER_SPECS
+from ximpol.irf.base import OGIP_HEADER_SPECS
+from ximpol.core.fitsio import xBinTableHDUBase
 from ximpol.core.rand import xUnivariateGenerator
 
 
-PSF_HEADER_SPECS = [
-    ('EXTNAME' , 'PSF', 'name of this binary table extension')
-]
+class xBinTableHDUPSF(xBinTableHDUBase):
 
-
-class xColDefsPSF(xColDefsBase):
-
-    """ximpol.irf.base.xColDefsBase subclass for the PSF extension
-    of .psf FITS files.
+    """Binary table for the PSF extension of a psf file.
     """
 
-    COLUMN_SPECS = [
+    NAME = 'PSF'
+    DATA_SPECS = [
         ('W'    , 'E', '1/sr'),
         ('SIGMA', 'E', 'arcsec'),
         ('N'    , 'E', '1/sr'),
         ('R_C'  , 'E', 'arcsec'),
-        ('ETA'  , 'E', None)
+        ('ETA'  , 'E')
     ]
 
 

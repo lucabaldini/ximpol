@@ -1,6 +1,13 @@
 Release notes
 =============
 
+* Major refactoring of ximpol/detector/xipe.py to use the new classes
+  (issue #49).
+* New optics aeff files provided by Fabio committed (but only the on-axis
+  values used for the time being).
+* XIPE baseline and goal response functions created (only the effective areas
+  differ for the time being).
+
 
 *ximpol (0.22.4) - Mon, 08 Feb 2016 16:34:11 -0800*
 

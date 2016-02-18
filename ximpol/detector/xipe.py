@@ -27,32 +27,15 @@ from ximpol import XIMPOL_DETECTOR, XIMPOL_IRF
 from ximpol.utils.logging_ import logger
 from ximpol.utils.os_ import rm
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
-from ximpol.irf.base import xPrimaryHDU, update_header
-from ximpol.irf.arf import SPECRESP_HEADER_SPECS, xColDefsSPECRESP
-from ximpol.irf.mrf import MODFRESP_HEADER_SPECS, xColDefsMODFRESP
-from ximpol.irf.psf import PSF_HEADER_SPECS, xColDefsPSF
-from ximpol.irf.rmf import EBOUNDS_HEADER_SPECS, MATRIX_HEADER_SPECS,\
-    xColDefsMATRIX, xColDefsEBOUNDS
+from ximpol.core.fitsio import xPrimaryHDU
+from ximpol.irf.arf import xBinTableHDUSPECRESP
+from ximpol.irf.mrf import xBinTableHDUMODFRESP
+from ximpol.irf.psf import xBinTableHDUPSF
+from ximpol.irf.rmf import xBinTableHDUMATRIX, xBinTableHDUEBOUNDS
 
-
-
-"""Basic configuration file with the XIPE characteristics, as listed in the
-proposal to ESA.
-"""
-
-IRF_NAME = 'xipe_baseline'
-
-"""Paths to the relevant IRF text files.
-"""
-BASE_FOLDER = os.path.join(XIMPOL_DETECTOR, 'data')
 
 def _full_path(file_name):
-    return os.path.join(BASE_FOLDER, file_name)
-
-OPT_AEFF_FILE_PATH = _full_path('aeff_optics_xipe_m4_x3.asc')
-GPD_QEFF_FILE_PATH = _full_path('eff_hedme8020_1atm_1cm_cuts80p_be50um_p_x.asc')
-GPD_ERES_FILE_PATH = _full_path('eres_fwhm_hedme8020_1atm_1cm.asc')
-GPD_MODF_FILE_PATH = _full_path('modfact_hedme8020_1atm_1cm_mng.asc')
+    return os.path.join(XIMPOL_DETECTOR, 'data', file_name)
 
 """Energy bounds and sampling for the actual IRFs.
 """
@@ -82,32 +65,18 @@ Taken directly from http://arxiv.org/abs/1403.7200, table 2, @4.51 keV.
 PSF_PARAMETERS = [numpy.array([_x]) for _x in \
                   [2.79e-4, 10.61, 3.289e-3, 6.06, 1.481]]
 
-
-
-
 """XIPE-specific fields for the FITS headers. (These will be added to the
 generic headers defined for the various extensions in the irf modules.)
 """
-XIPE_HEADER_SPEC = [
+XIPE_KEYWORDS = [
     ('TELESCOP', 'XIPE' , 'mission/satellite name'),
     ('INSTRUME', 'GPD'  , 'instrument/detector name'),
     ('DETNAM'  , 'ALL'  , 'specific detector name in use')
 ]
 
-NUM_CHANS_HEADER_SPECS = [
-    ('DETCHANS', NUM_CHANNELS, 'Total number of detector channels')
-]
-
-SPECRESP_HEADER_SPECS += XIPE_HEADER_SPEC
-MODFRESP_HEADER_SPECS += XIPE_HEADER_SPEC
-EBOUNDS_HEADER_SPECS += XIPE_HEADER_SPEC + NUM_CHANS_HEADER_SPECS
-MATRIX_HEADER_SPECS += XIPE_HEADER_SPEC + NUM_CHANS_HEADER_SPECS
-xColDefsMATRIX.COLUMN_SPECS.append(('MATRIX', '%dE' % NUM_CHANNELS, None))
-
-
 """Comments fields for the FITS headers.
 """
-RESP_HEADER_COMMENTS = [
+XIPE_COMMENTS = [
     'Gas mixture: %s' % GAS_MIXTURE,
     'Pressure: %.3f Atm' % GAS_PRESSURE,
     'Absorption gap: %.3f cm' % ABS_GAP_THICKNESS,
@@ -116,19 +85,19 @@ RESP_HEADER_COMMENTS = [
 ]
 
 
-def make_arf():
+def make_arf(aeff_file_path, qeff_file_path, irf_name):
     """Write the XIPE effective area response function.
     """
     logger.info('Creating XIPE effective area fits file...')
-    output_file_name = '%s.arf' % IRF_NAME
+    output_file_name = '%s.arf' % irf_name
     output_file_path = os.path.join(XIMPOL_IRF, 'fits', output_file_name)
     if os.path.exists(output_file_path):
         rm(output_file_path)
-    logger.info('Loading mirror effective area from %s...' % OPT_AEFF_FILE_PATH)
-    _x, _y = numpy.loadtxt(OPT_AEFF_FILE_PATH, unpack=True)
+    logger.info('Loading mirror effective area from %s...' % aeff_file_path)
+    _x, _y = numpy.loadtxt(aeff_file_path, unpack=True)
     opt_aeff = xInterpolatedUnivariateSplineLinear(_x, _y)
-    logger.info('Loading quantum efficiency from %s...' % GPD_QEFF_FILE_PATH)
-    _x, _y = numpy.loadtxt(GPD_QEFF_FILE_PATH, unpack=True)
+    logger.info('Loading quantum efficiency from %s...' % qeff_file_path)
+    _x, _y = numpy.loadtxt(qeff_file_path, unpack=True)
     gpd_eff = xInterpolatedUnivariateSplineLinear(_x, _y)
     aeff = opt_aeff*gpd_eff
     specresp = aeff(ENERGY_CENTER)
@@ -136,9 +105,8 @@ def make_arf():
     primary_hdu = xPrimaryHDU()
     print(repr(primary_hdu.header))
     logger.info('Creating SPECRESP HDU...')
-    cols = xColDefsSPECRESP([ENERGY_LO, ENERGY_HI, specresp])
-    specresp_hdu = fits.BinTableHDU.from_columns(cols)
-    update_header(specresp_hdu, SPECRESP_HEADER_SPECS, RESP_HEADER_COMMENTS)
+    data = [ENERGY_LO, ENERGY_HI, specresp]
+    specresp_hdu = xBinTableHDUSPECRESP(data, XIPE_KEYWORDS, XIPE_COMMENTS)
     print(repr(specresp_hdu.header))
     logger.info('Writing output file %s...' % output_file_path)
     hdulist = fits.HDUList([primary_hdu, specresp_hdu])
@@ -147,16 +115,16 @@ def make_arf():
     logger.info('Done.')
 
 
-def make_mrf():
+def make_mrf(modf_file_path, irf_name):
     """Write the XIPE modulation factor response function.
     """
     logger.info('Creating XIPE effective area fits file...')
-    output_file_name = '%s.mrf' % IRF_NAME
+    output_file_name = '%s.mrf' % irf_name
     output_file_path = os.path.join(XIMPOL_IRF, 'fits', output_file_name)
     if os.path.exists(output_file_path):
         rm(output_file_path)
-    logger.info('Loading modulation factor from %s...' % GPD_MODF_FILE_PATH)
-    _x, _y = numpy.loadtxt(GPD_MODF_FILE_PATH, unpack=True)
+    logger.info('Loading modulation factor from %s...' % modf_file_path)
+    _x, _y = numpy.loadtxt(modf_file_path, unpack=True)
     modf = xInterpolatedUnivariateSplineLinear(_x, _y)
     logger.info('Filling in arrays...')
     modfresp = modf(ENERGY_CENTER)
@@ -164,9 +132,8 @@ def make_mrf():
     primary_hdu = xPrimaryHDU()
     print(repr(primary_hdu.header))
     logger.info('Creating MODFRESP HDU...')
-    cols = xColDefsMODFRESP([ENERGY_LO, ENERGY_HI, modfresp])
-    modfresp_hdu = fits.BinTableHDU.from_columns(cols)
-    update_header(modfresp_hdu, MODFRESP_HEADER_SPECS, RESP_HEADER_COMMENTS)
+    data = [ENERGY_LO, ENERGY_HI, modfresp]
+    modfresp_hdu = xBinTableHDUMODFRESP(data, XIPE_KEYWORDS, XIPE_COMMENTS)
     print(repr(modfresp_hdu.header))
     logger.info('Writing output file %s...' % output_file_path)
     hdulist = fits.HDUList([primary_hdu, modfresp_hdu])
@@ -175,11 +142,11 @@ def make_mrf():
     logger.info('Done.')
 
 
-def make_psf():
+def make_psf(irf_name):
     """Write the XIPE PSF parameters.
     """
     logger.info('Creating XIPE effective area fits file...')
-    output_file_name = '%s.psf' % IRF_NAME
+    output_file_name = '%s.psf' % irf_name
     output_file_path = os.path.join(XIMPOL_IRF, 'fits', output_file_name)
     if os.path.exists(output_file_path):
         rm(output_file_path)
@@ -187,9 +154,8 @@ def make_psf():
     primary_hdu = xPrimaryHDU()
     print(repr(primary_hdu.header))
     logger.info('Creating PSF HDU...')
-    cols = xColDefsPSF(PSF_PARAMETERS)
-    psf_hdu = fits.BinTableHDU.from_columns(cols)
-    update_header(psf_hdu, PSF_HEADER_SPECS, RESP_HEADER_COMMENTS)
+    data = PSF_PARAMETERS
+    psf_hdu = xBinTableHDUPSF(data, [], XIPE_COMMENTS)
     print(repr(psf_hdu.header))
     logger.info('Writing output file %s...' % output_file_path)
     hdulist = fits.HDUList([primary_hdu, psf_hdu])
@@ -198,22 +164,24 @@ def make_psf():
     logger.info('Done.')
 
 
-def make_rmf():
+def make_rmf(eres_file_path, irf_name):
     """Write the XIPE edisp response function.
 
     The specifications are describes at page ~15 of the following document:
     ftp://legacy.gsfc.nasa.gov/caldb/docs/memos/cal_gen_92_002/cal_gen_92_002.ps
     """
-    output_file_name = '%s.rmf' % IRF_NAME
+    output_file_name = '%s.rmf' % irf_name
     output_file_path = os.path.join(XIMPOL_IRF, 'fits', output_file_name)
     if os.path.exists(output_file_path):
         rm(output_file_path)
-    logger.info('Loading energy dispersion from %s...' % GPD_ERES_FILE_PATH)
-    _x, _y = numpy.loadtxt(GPD_ERES_FILE_PATH, unpack=True)
+    logger.info('Loading energy dispersion from %s...' % eres_file_path)
+    _x, _y = numpy.loadtxt(eres_file_path, unpack=True)
     edisp_fwhm = xInterpolatedUnivariateSplineLinear(_x, _y)
     logger.info('Creating PRIMARY HDU...')
     primary_hdu = xPrimaryHDU()
     print(repr(primary_hdu.header))
+    keyword = ('DETCHANS', NUM_CHANNELS, 'Total number of detector channels')
+    rmf_header_keywords = XIPE_KEYWORDS + [keyword]
     logger.info('Creating MATRIX HDU...')
     nrows = len(ENERGY_LO)
     ngrp = numpy.ones(nrows)
@@ -226,17 +194,16 @@ def make_rmf():
         rms_chan = rms/E_CHAN_SLOPE
         rv = stats.norm(loc=mean_chan, scale=rms_chan)
         matrix = numpy.vstack([matrix, rv.pdf(ch)])
-    cols = xColDefsMATRIX([ENERGY_LO, ENERGY_HI, ngrp, fchan, nchan, matrix])
-    matrix_hdu = fits.BinTableHDU.from_columns(cols)
-    update_header(matrix_hdu, MATRIX_HEADER_SPECS, RESP_HEADER_COMMENTS)
+    data = [ENERGY_LO, ENERGY_HI, ngrp, fchan, nchan, matrix]
+    matrix_hdu = xBinTableHDUMATRIX(NUM_CHANNELS, data, rmf_header_keywords,
+                                    XIPE_COMMENTS)
     print(repr(matrix_hdu.header))
     logger.info('Creating EBOUNDS HDU...')
     ch = numpy.arange(NUM_CHANNELS)
     emin = ch*E_CHAN_SLOPE + E_CHAN_OFFSET
     emax = (ch + 1)*E_CHAN_SLOPE + E_CHAN_OFFSET
-    cols = xColDefsEBOUNDS([ch, emin, emax])
-    ebounds_hdu = fits.BinTableHDU.from_columns(cols)
-    update_header(ebounds_hdu, EBOUNDS_HEADER_SPECS, RESP_HEADER_COMMENTS)
+    data = [ch, emin, emax]
+    ebounds_hdu = xBinTableHDUEBOUNDS(data, rmf_header_keywords, XIPE_COMMENTS)
     print(repr(ebounds_hdu.header))
     logger.info('Writing output file %s...' % output_file_path)
     hdulist = fits.HDUList([primary_hdu, matrix_hdu, ebounds_hdu])
@@ -248,10 +215,23 @@ def make_rmf():
 def make_all():
     """Create all the XIPE response functions.
     """
-    make_arf()
-    make_mrf()
-    make_psf()
-    make_rmf()
+    # Effective area.
+    aeff_file_path = _full_path('Area_XIPE_201602b_x3.asc')
+    qeff_file_path = _full_path('eff_hedme8020_1atm_1cm_cuts80p_be50um_p_x.asc')
+    make_arf(aeff_file_path, qeff_file_path, 'xipe_baseline')
+    aeff_file_path = _full_path('Area_XIPE_201602g_x3.asc')
+    make_arf(aeff_file_path, qeff_file_path, 'xipe_goal')
+    # Energy dispersion.
+    eres_file_path = _full_path('eres_fwhm_hedme8020_1atm_1cm.asc')
+    make_rmf(eres_file_path, 'xipe_baseline')
+    make_rmf(eres_file_path, 'xipe_goal')
+    # Modulation factor.
+    modf_file_path = _full_path('modfact_hedme8020_1atm_1cm_mng.asc')
+    make_mrf(modf_file_path, 'xipe_baseline')
+    make_mrf(modf_file_path, 'xipe_goal')
+    # Point-spread function.
+    make_psf('xipe_baseline')
+    make_psf('xipe_goal')
 
 
 if __name__ == '__main__':
