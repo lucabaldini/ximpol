@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.23.0) - Thu, 18 Feb 2016 14:56:15 -0800*
+
 * Major refactoring of ximpol/detector/xipe.py to use the new classes
   (issue #49).
 * New optics aeff files provided by Fabio committed (but only the on-axis
