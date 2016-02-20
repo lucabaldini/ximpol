@@ -100,7 +100,7 @@ def startmsg():
     from ximpol.__version__ import TAG, BUILD_DATE
     print('\n    Welcome to ximple version %s (built on %s).\n' %\
               (TAG, BUILD_DATE))
-    print('    Copyright (C) 2015, the ximpol team.\n\n    ximple comes with ABSOLUTELY NO WARRANTY.\n    This is free software, and you are welcome to redistribute it under certain\n    conditions. See the LICENSE file for details.\n\n    Visit https://github.com/lucabaldini/ximpol for more information.\n')
+    print('    Copyright (C) 2015--2016, the ximpol team.\n\n    ximple comes with ABSOLUTELY NO WARRANTY.\n    This is free software, and you are welcome to redistribute it under certain\n    conditions. See the LICENSE file for details.\n\n    Visit https://github.com/lucabaldini/ximpol for more information.\n')
 
 
 
