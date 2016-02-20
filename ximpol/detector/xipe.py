@@ -28,7 +28,7 @@ from ximpol.utils.logging_ import logger
 from ximpol.utils.os_ import rm
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
 from ximpol.core.fitsio import xPrimaryHDU
-from ximpol.irf.arf import xBinTableHDUSPECRESP
+from ximpol.irf.arf import xBinTableHDUSPECRESP, xBinTableHDUVIGNETTING
 from ximpol.irf.mrf import xBinTableHDUMODFRESP
 from ximpol.irf.psf import xBinTableHDUPSF
 from ximpol.irf.rmf import xBinTableHDUMATRIX, xBinTableHDUEBOUNDS
@@ -85,7 +85,7 @@ XIPE_COMMENTS = [
 ]
 
 
-def make_arf(aeff_file_path, qeff_file_path, irf_name):
+def make_arf(aeff_file_path, qeff_file_path, irf_name, off_axis_data=None):
     """Write the XIPE effective area response function.
     """
     logger.info('Creating XIPE effective area fits file...')
@@ -108,8 +108,23 @@ def make_arf(aeff_file_path, qeff_file_path, irf_name):
     data = [ENERGY_LO, ENERGY_HI, specresp]
     specresp_hdu = xBinTableHDUSPECRESP(data, XIPE_KEYWORDS, XIPE_COMMENTS)
     print(repr(specresp_hdu.header))
+    logger.info('Processing off-axis data...')
+    energy = numpy.linspace(ENERGY_MIN, ENERGY_MAX, 100)
+    theta = [0]
+    vignetting = [[1.]*len(energy)]
+    for r, file_path in off_axis_data:
+        logger.info('Reading %s (at %.2f arcsec)...' % (file_path, r))
+        theta.append(r)
+        _x, _y = numpy.loadtxt(file_path, unpack=True)
+        _aeff = xInterpolatedUnivariateSplineLinear(_x, _y)
+        ratio = _aeff/opt_aeff
+        vignetting.append(ratio(energy))
+    theta = numpy.array(theta)
+    vignetting = numpy.array(vignetting).transpose()
+    data = [energy, theta, vignetting]
+    vignetting_hdu = xBinTableHDUVIGNETTING(data)
     logger.info('Writing output file %s...' % output_file_path)
-    hdulist = fits.HDUList([primary_hdu, specresp_hdu])
+    hdulist = fits.HDUList([primary_hdu, specresp_hdu, vignetting_hdu])
     hdulist.info()
     hdulist.writeto(output_file_path)
     logger.info('Done.')
@@ -217,10 +232,18 @@ def make_all():
     """
     # Effective area.
     aeff_file_path = _full_path('Area_XIPE_201602b_x3.asc')
+    off_axis_data = [(4., _full_path('Area_XIPE_201602b_x3_4arcmin.asc')),
+                     (7., _full_path('Area_XIPE_201602b_x3_7arcmin.asc')),
+                     (10., _full_path('Area_XIPE_201602b_x3_10arcmin.asc'))
+    ]
     qeff_file_path = _full_path('eff_hedme8020_1atm_1cm_cuts80p_be50um_p_x.asc')
-    make_arf(aeff_file_path, qeff_file_path, 'xipe_baseline')
+    make_arf(aeff_file_path, qeff_file_path, 'xipe_baseline', off_axis_data)
     aeff_file_path = _full_path('Area_XIPE_201602g_x3.asc')
-    make_arf(aeff_file_path, qeff_file_path, 'xipe_goal')
+    off_axis_data = [(4., _full_path('Area_XIPE_201602g_x3_4arcmin.asc')),
+                     (7., _full_path('Area_XIPE_201602g_x3_7arcmin.asc')),
+                     (10., _full_path('Area_XIPE_201602g_x3_10arcmin.asc'))
+    ]
+    make_arf(aeff_file_path, qeff_file_path, 'xipe_goal', off_axis_data)
     # Energy dispersion.
     eres_file_path = _full_path('eres_fwhm_hedme8020_1atm_1cm.asc')
     make_rmf(eres_file_path, 'xipe_baseline')

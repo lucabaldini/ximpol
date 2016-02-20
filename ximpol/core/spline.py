@@ -156,6 +156,15 @@ class xUnivariateSplineBase:
         _y = self(_x)*other(_x)
         return self.__class__(_x, _y)
 
+    def __div__(self, other):
+        """Overloaded division operator.
+        """
+        assert(self.__class__.__name__ == other.__class__.__name__)
+        _x = numpy.union1d(self.x, other.x)
+        _x = _x[other(_x) != 0]
+        _y = self(_x)/other(_x)
+        return self.__class__(_x, _y)
+
     def __add__(self, other):
         """Overloaded sum operator.
         """

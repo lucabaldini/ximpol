@@ -22,7 +22,8 @@ from astropy.io import fits
 from ximpol.utils.logging_ import logger
 from ximpol.irf.base import OGIP_HEADER_SPECS
 from ximpol.core.fitsio import xBinTableHDUBase
-from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
+from ximpol.core.spline import xInterpolatedUnivariateSplineLinear,\
+    xInterpolatedBivariateSplineLinear
 
 
 class xBinTableHDUSPECRESP(xBinTableHDUBase):
@@ -40,6 +41,37 @@ class xBinTableHDUSPECRESP(xBinTableHDUBase):
         ('ENERG_HI', 'E', 'keV'),
         ('SPECRESP', 'E', 'cm**2')
     ]
+
+
+class xBinTableHDUVIGNETTING(xBinTableHDUBase):
+
+    """Binary table for the VIGNETTING extension of a arf file.
+    """
+
+    NAME = 'VIGNETTING'
+    HEADER_KEYWORDS = []
+    DATA_SPECS = []
+
+    def __init__(self, data, keywords=[], comments=[]):
+        """Overloaded constructor.
+        """
+        energy, theta, vignetting = data
+        ne = len(energy)
+        nt = len(theta)
+        assert vignetting.shape == (ne, nt)
+        data = [energy.reshape((1, ne)),
+                theta.reshape((1, nt)),
+                vignetting.reshape((1, ne*nt))
+                ]
+        self.DATA_SPECS = [
+            ('ENERGY'    , '%dE' % ne, 'keV'),
+            ('THETA'     , '%dE' % nt, 'arcmin'),
+            ('VIGNETTING', '%dE' % (ne*nt))
+        ]
+        self.HEADER_KEYWORDS = [
+            ('TDIM3'     , '(%d, %d)' % (nt, ne))
+        ]
+        xBinTableHDUBase.__init__(self, data, keywords, comments)
 
 
 class xEffectiveArea(xInterpolatedUnivariateSplineLinear):
@@ -79,6 +111,32 @@ class xEffectiveArea(xInterpolatedUnivariateSplineLinear):
         fmt = dict(xname='Energy', xunits='keV', yname='Effective area',
                    yunits='cm$^2$')
         xInterpolatedUnivariateSplineLinear.__init__(self, _x, _y, **fmt)
+        _x = self.hdu_list['VIGNETTING'].data['ENERGY'][0]
+        _y = self.hdu_list['VIGNETTING'].data['THETA'][0]
+        _z = self.hdu_list['VIGNETTING'].data['VIGNETTING'][0]
+        fmt = dict(xname='Energy', xunits='keV', yname='Off-axis angle',
+                   yunits='arcmin')
+        self.vignetting = xInterpolatedBivariateSplineLinear(_x, _y, _z, **fmt)
+
+    def eval_(self, energy, theta):
+        """Return the effective area at a given energy and off-axis angle.
+        """
+        return self(energy)*self.vignetting(energy, theta)
+
+    def plot(self, off_axis_angle = 10., show=True):
+        """Plot the effective area.
+        """
+        from ximpol.utils.matplotlib_ import pyplot as plt
+        plt.figure('Effective area')
+        xInterpolatedUnivariateSplineLinear.plot(self, show=False,
+                                                 label='On axis')
+        plt.plot(self.x, self.eval_(self.x, off_axis_angle),
+                 label='%s arcmin off-axis' % off_axis_angle)
+        plt.legend(bbox_to_anchor=(0.85, 0.75))
+        plt.figure('Vignetting')
+        self.vignetting.plot(show=False)
+        if show:
+            plt.show()
 
 
 def main():
