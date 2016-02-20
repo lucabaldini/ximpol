@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.24.0) - Fri, 19 Feb 2016 16:14:36 -0800*
+
 * Vignetting now into the effective area tables (but not used in the
   simulation, yet).
 
