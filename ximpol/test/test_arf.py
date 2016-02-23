@@ -24,8 +24,14 @@ import unittest
 import os
 import numpy
 
-from ximpol.irf.arf import *
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
+from ximpol.detector.xipe import _full_path
+from ximpol.irf import load_arf
+
+
+IRF_NAME = 'xipe_baseline'
+OPT_AEFF_FILE_PATH = _full_path('Area_XIPE_201602b_x3.asc')
+GPD_QEFF_FILE_PATH = _full_path('eff_hedme8020_1atm_1cm_cuts80p_be50um_p_x.asc')
 
 
 class TestXipeArf(unittest.TestCase):
@@ -41,15 +47,11 @@ class TestXipeArf(unittest.TestCase):
         is created from, and finally testing that the actual values from the
         two methods are close enough over the entire energy range.
         """
-        from ximpol import XIMPOL_IRF
-        from ximpol.detector.xipe import OPT_AEFF_FILE_PATH,\
-            GPD_QEFF_FILE_PATH, IRF_NAME
-        arf_file_path = os.path.join(XIMPOL_IRF, 'fits', '%s.arf' % IRF_NAME)
         _x, _y = numpy.loadtxt(OPT_AEFF_FILE_PATH, unpack=True)
         opt_aeff = xInterpolatedUnivariateSplineLinear(_x, _y)
         _x, _y = numpy.loadtxt(GPD_QEFF_FILE_PATH, unpack=True)
         gpd_eff = xInterpolatedUnivariateSplineLinear(_x, _y)
-        aeff = xEffectiveArea(arf_file_path)
+        aeff = load_arf(IRF_NAME)
         _x = numpy.linspace(aeff.xmin(), aeff.xmax(), 100)
         # Remove the data points where the effective area is 0.
         _x = _x[aeff(_x) > 0.]

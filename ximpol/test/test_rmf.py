@@ -24,10 +24,13 @@ import unittest
 import os
 import numpy
 
-from ximpol.irf.rmf import *
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
-from ximpol import XIMPOL_IRF
-from ximpol.detector.xipe import GPD_ERES_FILE_PATH, IRF_NAME
+from ximpol.detector.xipe import _full_path
+from ximpol.irf import load_rmf
+
+
+IRF_NAME = 'xipe_baseline'
+GPD_ERES_FILE_PATH = _full_path('eres_fwhm_hedme8020_1atm_1cm.asc')
 
 
 class TestXipeRmf(unittest.TestCase):
@@ -41,8 +44,7 @@ class TestXipeRmf(unittest.TestCase):
 
         Create a few objects to be used for testing.
         """
-        rmf_file_path = os.path.join(XIMPOL_IRF, 'fits', '%s.rmf' % IRF_NAME)
-        self.edisp = xEnergyDispersion(rmf_file_path)
+        self.edisp = load_rmf(IRF_NAME)
 
     def test_xipe_rmf_matrix_norm(self):
         """Test the XIPE energy dispersion normalization.

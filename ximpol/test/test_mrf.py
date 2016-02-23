@@ -24,8 +24,13 @@ import unittest
 import os
 import numpy
 
-from ximpol.irf.mrf import *
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
+from ximpol.detector.xipe import _full_path
+from ximpol.irf import load_mrf
+
+
+IRF_NAME = 'xipe_baseline'
+GPD_MODF_FILE_PATH = _full_path('modfact_hedme8020_1atm_1cm_mng.asc')
 
 
 class TestXipeMrf(unittest.TestCase):
@@ -41,11 +46,8 @@ class TestXipeMrf(unittest.TestCase):
         functions are created from and makes sure that the two are close
         enough.
         """
-        from ximpol import XIMPOL_IRF
-        from ximpol.detector.xipe import GPD_MODF_FILE_PATH, IRF_NAME
-        mrf_file_path = os.path.join(XIMPOL_IRF, 'fits', '%s.mrf' % IRF_NAME)
         _x, _y = numpy.loadtxt(GPD_MODF_FILE_PATH, unpack=True)
-        modf = xModulationFactor(mrf_file_path)
+        modf = load_mrf(IRF_NAME)
         _mask = _y > 0.
         _x = _x[_mask]
         _y = _y[_mask]

@@ -26,11 +26,17 @@ import unittest
 import sys
 
 from ximpol import XIMPOL_IRF
-from ximpol.detector.xipe import GPD_ERES_FILE_PATH, IRF_NAME
 from ximpol.irf.rmf import xEnergyDispersion
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
 from ximpol.utils.matplotlib_ import pyplot as plt
 from ximpol.utils.matplotlib_ import overlay_tag, save_current_figure
+from ximpol.detector.xipe import _full_path
+from ximpol.irf import load_rmf
+
+
+IRF_NAME = 'xipe_baseline'
+GPD_ERES_FILE_PATH = _full_path('eres_fwhm_hedme8020_1atm_1cm.asc')
+
 
 
 class TestEnergyDispersion(unittest.TestCase):
@@ -43,8 +49,7 @@ class TestEnergyDispersion(unittest.TestCase):
         """Setup---here we essentially create the modulation factor.
         """
         self.measx, self.measy = numpy.loadtxt(GPD_ERES_FILE_PATH, unpack=True)
-        file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.rmf')
-        self.edisp = xEnergyDispersion(file_path)
+        self.edisp = load_rmf(IRF_NAME)
         self.interactive = sys.flags.interactive
 
     def test_rvs(self, num_events=100000):

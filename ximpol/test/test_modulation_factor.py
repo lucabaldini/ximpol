@@ -26,12 +26,17 @@ import unittest
 import sys
 
 from ximpol import XIMPOL_IRF
-from ximpol.detector.xipe import GPD_MODF_FILE_PATH, IRF_NAME
 from ximpol.irf.mrf import xModulationFactor
 from ximpol.irf.mrf import xAzimuthalResponseGenerator
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
 from ximpol.utils.matplotlib_ import pyplot as plt
 from ximpol.utils.matplotlib_ import overlay_tag, save_current_figure
+from ximpol.detector.xipe import _full_path
+from ximpol.irf import load_mrf
+
+
+IRF_NAME = 'xipe_baseline'
+GPD_MODF_FILE_PATH = _full_path('modfact_hedme8020_1atm_1cm_mng.asc')
 
 
 """We explictely set the random seed to have reproducible results.
@@ -49,8 +54,7 @@ class TestModulationFactor(unittest.TestCase):
         """Setup---here we essentially create the modulation factor.
         """
         self.measx, self.measy = numpy.loadtxt(GPD_MODF_FILE_PATH, unpack=True)
-        file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.mrf')
-        self.modf = xModulationFactor(file_path)
+        self.modf = load_mrf(IRF_NAME)
         self.interactive = sys.flags.interactive
 
     def test_constant(self, num_events=1000000, polarization_degree=1.,
