@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.24.1) - Tue, 23 Feb 2016 15:55:06 -0800*
+
 * Fixed unit tests.
 
 
