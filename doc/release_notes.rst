@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.26.0) - Tue, 23 Feb 2016 16:42:27 -0800*
+
 * FILE mode implemented for tbinalg (issue #53).
 
 
