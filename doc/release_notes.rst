@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* ebinalgs FILE and EQP implemented (issue #56).
+
 
 *ximpol (0.24.1) - Tue, 23 Feb 2016 15:55:06 -0800*
 

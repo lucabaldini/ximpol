@@ -41,7 +41,7 @@ BIN_ALG_DICT = {
 BIN_ALGS = BIN_ALG_DICT.keys()
 BIN_ALGS.sort()
 TBIN_ALGS = ['FILE', 'LIN', 'LOG', 'SNR']
-EBIN_ALGS = ['FILE', 'LIN', 'LOG']
+EBIN_ALGS = ['FILE', 'LIN', 'LOG', 'EQP']
 PRJCTS = ['AIT', 'ZEA', 'ARC', 'CAR', 'GLS', 'MER', 'NCP', 'SIN', 'STG', 'TAN']
 COORD_SYS = ['CEL', 'GAL']
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2015, the ximpol team.
+# Copyright (C) 2015--2016, the ximpol team.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU GengReral Public License as published by
@@ -54,6 +54,12 @@ class xEventBinningBase:
         """
         logger.info('Setting %s to %s...' % (key, value))
         self.kwargs[key] = value
+
+    @classmethod
+    def read_binning(self, file_path):
+        """Read a custom binning from file and return a numpy array.
+        """
+        return numpy.loadtxt(file_path)
 
     @classmethod
     def bin_centers(self, bin_edges):
@@ -325,14 +331,33 @@ class xEventBinningMCUBE(xEventBinningBase):
     def make_binning(self):
         """Build the modulation cube binning.
         """
-        if self.get('ebinalg') == 'LIN':
-            ebinning = numpy.linspace(self.get('emin'),
-                                      self.get('emax'),
-                                      self.get('ebins') + 1)
-        elif self.get('ebinalg') == 'LOG':
-            ebinning = numpy.linspace(numpy.log10(self.get('emin')),
-                                      numpy.log10(self.get('emax')),
-                                      self.get('ebins') + 1)
+        ebinalg = self.get('ebinalg')
+        emin = self.get('emin')
+        emax = self.get('emax')
+        ebins = self.get('ebins')
+        if ebinalg == 'LIN':
+            ebinning = numpy.linspace(emin, emax, ebins + 1)
+        elif ebinalg == 'LOG':
+            ebinning = numpy.linspace(numpy.log10(emin), numpy.log10(emax),
+                                      ebins + 1)
+        elif ebinalg == 'EQP':
+            if self.get('mc'):
+                energy = numpy.copy(self.event_data['MC_ENERGY'])
+            else:
+                energy = numpy.copy(self.event_data['ENERGY'])
+            mask = (energy > self.get('emin'))*(energy < self.get('emax'))
+            energy = energy[mask]
+            energy.sort()
+            ebinning = [emin]
+            for i in range(1, ebins):
+                index = int(i*len(energy)/float(ebins))
+                ebinning.append(energy[index])
+            ebinning.append(emax)
+            ebinning = numpy.array(ebinning)
+        elif ebinalg == 'FILE':
+            ebinfile = self.get('ebinfile')
+            assert ebinfile is not None
+            ebinning = self.read_binning(ebinfile)
         else:
             abort('%s not implemented yet' % self.get('ebinalg'))
         phibinning = numpy.linspace(0, 2*numpy.pi, self.get('phibins') + 1)
