@@ -260,15 +260,20 @@ class xEventBinningLC(xEventBinningBase):
     def make_binning(self):
         """Build the light-curve binning.
         """
-        if self.get('tbinalg') == 'LIN':
-            return numpy.linspace(self.get('tstart'),
-                                  self.get('tstop'),
-                                  self.get('tbins') + 1)
-        if self.get('tbinalg') == 'LOG':
-            return numpy.linspace(numpy.log10(self.get('tstart')),
-                                  numpy.log10(self.get('tstop')),
-                                  self.get('tbins') + 1)
-        abort('%s not implemented yet' % self.get('tbinalg'))
+        tbinalg = self.get('tbinalg')
+        tstart = self.get('tstart')
+        tstop = self.get('tstop')
+        tbins = self.get('tbins')
+        if tbinalg == 'LIN':
+            return numpy.linspace(tstart, tstop, tbins + 1)
+        elif tbinalg == 'LOG':
+            return numpy.linspace(numpy.log10(tstart), numpy.log10(tstop),
+                                  tbins + 1)
+        elif tbinalg == 'FILE':
+            tbinfile = self.get('tbinfile')
+            assert tbinfile is not None
+            return self.read_binning(tbinfile)
+        abort('tbinalg %s not implemented yet' % tbinalg)
 
     def bin_(self):
         """Overloaded method.
@@ -359,7 +364,7 @@ class xEventBinningMCUBE(xEventBinningBase):
             assert ebinfile is not None
             ebinning = self.read_binning(ebinfile)
         else:
-            abort('%s not implemented yet' % self.get('ebinalg'))
+            abort('ebinalg %s not implemented yet' % ebinalg)
         phibinning = numpy.linspace(0, 2*numpy.pi, self.get('phibins') + 1)
         return (ebinning, phibinning)
 
