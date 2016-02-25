@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2015, the ximpol team.
+# Copyright (C) 2015--2016, the ximpol team.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU GengReral Public License as published by
@@ -25,17 +25,19 @@ from ximpol.srcmodel.spectrum import power_law, constant
 
 ROI_MODEL = xROIModel(10., 10.)
 
-source1 = xPointSource(name='source1', ra=9.9750, dec=9.9833)
-source1.spectrum = power_law(10., 2.)
-source1.polarization_degree = constant(1.0)
-source1.polarization_angle = constant(numpy.radians(65.))
+energy_spectrum1 = power_law(10., 2.)
+polarization_degree1 = constant(1.0)
+polarization_angle1 = constant(numpy.radians(65.))
+src1 = xPointSource('Point source 1', 9.9750, 9.9833, energy_spectrum1,
+                    polarization_degree1, polarization_angle1)
 
-source2 = xPointSource(name='source2', ra=10., dec=10.)
-source2.spectrum = power_law(15., 3.)
-source2.polarization_degree = constant(0.0)
-source2.polarization_angle = constant(numpy.radians(0))
+energy_spectrum2 = power_law(15., 3.)
+polarization_degree2 = constant(0.0)
+polarization_angle2 = constant(numpy.radians(0))
+src2 = xPointSource('Point source 2', 10., 10., energy_spectrum2,
+                    polarization_degree2, polarization_angle2)
 
-ROI_MODEL.add_sources(source1, source2)
+ROI_MODEL.add_sources(src1, src2)
 
 
 if __name__ == '__main__':

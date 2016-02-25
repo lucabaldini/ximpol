@@ -1,6 +1,17 @@
 Release notes
 =============
 
+* Work started toward the implementation of periodic sources (issue #43).
+* New xEphemeris class in ximpol.srcmodel.roi.py
+* New xPeriodicPointSource class in ximpol.srcmodel.roi.py
+* Some significant refactoring of the spline and rand classes to allow for
+  more flexibility.
+* Major change to the source model interface---the energy spectrum and
+  polarization degree and angle are now passed to the constructor.
+* A whole bunch of obsolete stuff removed from ximpol.srcmodel.spectrum
+  (issue #64).
+* All configuration files reworked according to the new interfaces.
+
 
 *ximpol (0.26.0) - Tue, 23 Feb 2016 16:42:27 -0800*
 

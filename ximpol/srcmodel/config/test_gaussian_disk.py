@@ -24,12 +24,14 @@ from ximpol.srcmodel.spectrum import power_law, constant
 
 ROI_MODEL = xROIModel(10., 15.)
 
-source1 = xGaussianDisk(name='source1', ra=10., dec=15., sigma=0.005)
-source1.spectrum = power_law(10., 2.)
-source1.polarization_degree = constant(0.5)
-source1.polarization_angle = constant(numpy.radians(65.))
+energy_spectrum = power_law(10., 2.)
+polarization_degree = constant(0.5)
+polarization_angle = constant(numpy.radians(65.))
 
-ROI_MODEL.add_source(source1)
+src = xGaussianDisk('Gaussian disk', 10., 15., 0.005, energy_spectrum,
+                    polarization_degree, polarization_angle)
+
+ROI_MODEL.add_source(src)
 
 
 if __name__ == '__main__':

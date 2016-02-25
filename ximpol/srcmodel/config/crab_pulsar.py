@@ -29,61 +29,95 @@ nudddot (10^-20 Hz s^-2): 1.18
 
 import numpy
 import scipy.signal
+from scipy.optimize import curve_fit
 import os
 
 from ximpol import XIMPOL_SRCMODEL
 from ximpol.core.rand import xUnivariateGenerator
 from ximpol.core.spline import xInterpolatedUnivariateSpline
 from ximpol.srcmodel.roi import xPeriodicPointSource, xEphemeris, xROIModel
-from ximpol.srcmodel.spectrum import power_law, xSourceSpectrum, constant
+from ximpol.srcmodel.spectrum import power_law
 
 
 def _full_path(file_name):
-    """
+    """Convenience function to retrieve the relevant files.
     """
     return os.path.join(XIMPOL_SRCMODEL, 'ascii', file_name)
 
+# Grab all the relevant files.
 SPEC_FILE_PATH = _full_path('Crab_PhaseResolvedSpectrum.txt')
 PDEG_FILE_PATH = _full_path('Crab_Polarization_Degree.txt')
 PANG_FILE_PATH = _full_path('Crab_Polarization_Angle.txt')
 
-_phi0, _phi1, _idx, _idx_err, _norm, _norm_err = numpy.loadtxt(SPEC_FILE_PATH,
-                                                               unpack=True)
+# Read the file with the phase-resolved spectral parameters.
+_phi0, _phi1, _index, _index_err, _norm,\
+    _norm_err = numpy.loadtxt(SPEC_FILE_PATH, unpack=True)
 _phi = 0.5*(_phi0 + _phi1)
-pl_normalization = xInterpolatedUnivariateSpline(_phi, _norm, k=3)
-pl_index = xInterpolatedUnivariateSpline(_phi, _idx, k=2)
 
+# Build the PL normalization as a function of the phase.
+fmt = dict(xname=r'$\phi$', yname='PL normalization',
+           yunits='cm$^{-2}$ s$^{-1}$ keV$^{-1}$')
+pl_normalization = xInterpolatedUnivariateSpline(_phi, _norm, k=3, **fmt)
+
+# Fit the PL index as a function of the phase with a sinusoid.
+def ffit(x, *pars):
+    """Fit function for the PL index as function of the phase.
+    """
+    return pars[0] + pars[1]*numpy.cos(pars[2]*x + pars[3])
+
+p0 = [1., 1., 1., 1.]
+popt, pcov = curve_fit(ffit, _phi, _index, p0, _index_err)
+
+# And use tho best-fit parameters to build a proper spline.
+fmt = dict(xname=r'$\phi$', yname='PL index')
+pl_index = xInterpolatedUnivariateSpline(_phi, ffit(_phi, *popt), k=2, **fmt)
+
+# Build the actual energy spectrum.
+energy_spectrum = power_law(pl_normalization, pl_index)
+
+# Build the polarization angle as a function of the phase.
 _phi, _pol_angle = numpy.loadtxt(PANG_FILE_PATH, unpack=True)
 _pol_angle = numpy.deg2rad(_pol_angle)
+# Filter the data points to reduce the noise.
+_pol_angle = scipy.signal.wiener(_pol_angle, 7)
 fmt = dict(xname=r'$\phi$', yname='Polarization angle [rad]')
 pol_angle = xInterpolatedUnivariateSpline(_phi, _pol_angle, k=1, **fmt)
 
-_phi, _pol_degree = numpy.loadtxt(PDEG_FILE_PATH, unpack=True)
-_pol_degree /= 100.
-fmt = dict(xname=r'$\phi$', yname='Polarization degree')
-pol_degree = xInterpolatedUnivariateSpline(_phi, _pol_degree, k=1, **fmt)
-
+# Mind that you have to wrap this into a function to be used.
+# This could be done in a more general way with some sort of library function.
 def polarization_degree(E, t):
     return pol_degree(t)
 
+# Build the polarization degree as a function of the phase.
+_phi, _pol_degree = numpy.loadtxt(PDEG_FILE_PATH, unpack=True)
+_pol_degree /= 100.
+# Filter the data points to reduce the noise.
+_pol_degree = scipy.signal.wiener(_pol_degree, 5)
+fmt = dict(xname=r'$\phi$', yname='Polarization degree')
+pol_degree = xInterpolatedUnivariateSpline(_phi, _pol_degree, k=1, **fmt)
+
+# And, again, this needs to be wrapped into a function.
 def polarization_angle(E, t):
     return pol_angle(t)
 
 
 ROI_MODEL = xROIModel(83.633083, 22.014500)
-
 crab_ephemeris = xEphemeris(0., 29.8003951530036, -3.73414e-10, 1.18e-20)
 crab_pulsar = xPeriodicPointSource('Crab pulsar', ROI_MODEL.ra, ROI_MODEL.dec,
-                                   crab_ephemeris)
-E = numpy.linspace(1, 10, 100)
-t = numpy.linspace(0, 1, 100)
-crab_pulsar.spectrum = power_law(pl_normalization, pl_index)
-crab_pulsar.polarization_degree = polarization_degree
-crab_pulsar.polarization_angle = polarization_angle
-
+                                   energy_spectrum, polarization_degree,
+                                   polarization_angle, crab_ephemeris)
 ROI_MODEL.add_source(crab_pulsar)
 
 
 if __name__ == '__main__':
     print(ROI_MODEL)
-    crab_pulsar.plot()
+    from ximpol.utils.matplotlib_ import pyplot as plt
+    plt.figure()
+    pl_index.plot(show=False)
+    plt.figure()
+    pl_normalization.plot(show=False)
+    plt.figure()
+    pol_angle.plot(show=False)
+    plt.figure()
+    pol_degree.plot(show=False)
+    plt.show()

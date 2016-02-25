@@ -22,18 +22,19 @@ import os
 
 from ximpol.srcmodel.roi import xExtendedSource, xROIModel
 from ximpol.srcmodel.spectrum import power_law, constant
-
 from ximpol import XIMPOL_SRCMODEL
+
 
 ROI_MODEL = xROIModel(83.633083, 22.014500)
 
 img_file_path = os.path.join(XIMPOL_SRCMODEL, 'fits', 'crab_0p3_10p0_keV.fits')
-source = xExtendedSource('Crab nebula', img_file_path)
-source.spectrum = power_law(10., 2.)
-source.polarization_degree = constant(0.157)
-source.polarization_angle = constant(numpy.radians(161.1))
+energy_spectrum = power_law(10., 2.)
+polarization_degree = constant(0.157)
+polarization_angle = constant(numpy.radians(161.1))
+crab_nebula = xExtendedSource('Crab nebula', img_file_path, energy_spectrum,
+                              polarization_angle, polarization_degree)
 
-ROI_MODEL.add_source(source)
+ROI_MODEL.add_source(crab_nebula)
 
 
 if __name__ == '__main__':

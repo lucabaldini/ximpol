@@ -64,6 +64,7 @@ class xBinTableHDUMonteCarloEvents(xBinTableHDUBase):
 
     NAME = xBinTableHDUEvents.NAME
     DATA_SPECS = xBinTableHDUEvents.DATA_SPECS + [
+        ('PHASE'    , 'E', None     , 'Event phase (for periodic sources)'),
         ('MC_ENERGY', 'E', 'keV'    , 'Monte Carlo event energy'),
         ('MC_RA'    , 'E', 'degrees', 'Monte Carlo right ascension'),
         ('MC_DEC'   , 'E', 'degrees', 'Monte Carlo declination'),

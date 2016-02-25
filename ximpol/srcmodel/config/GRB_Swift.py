@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2015, the ximpol team.
+# Copyright (C) 2015--2016, the ximpol team.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU GengReral Public Licensese as published by
@@ -51,8 +51,7 @@ def parse(ascii_file_name,scale=3):
 
 time_array,flux_array=parse(os.path.join(XIMPOL_SRCMODEL,'ascii/GRB130427_Swift.dat'),scale=11)
 
-source1 = xPointSource(name='GRB', ra=grb_ra, dec=grb_dec,
-                       min_time=time_array[0], max_time=time_array[-1])
+
 integral_flux = xInterpolatedUnivariateSplineLinear(time_array,flux_array,'Time','s','Flux','erg/cm^2/s')
 erg2kev=6.242e+8
 
@@ -75,10 +74,15 @@ def dNde(e,t):
 def polarization_degree(e, t):
     return 0.6*(1.0-t/time_array[-1])
 
-source1.spectrum = dNde
-source1.polarization_degree = polarization_degree
-source1.polarization_angle  = constant(0.0)
-ROI_MODEL.add_source(source1)
+energy_spectrum = dNde
+polarization_degree = polarization_degree
+polarization_angle = constant(0.0)
+grb = xPointSource('GRB', grb_ra, grb_dec, energy_spectrum, polarization_degree,
+                   polarization_angle, min_validity_time=time_array[0],
+                   max_validity_time=time_array[-1])
+
+
+ROI_MODEL.add_source(grb)
 
 
 if __name__=='__main__':

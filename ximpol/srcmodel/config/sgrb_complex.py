@@ -21,8 +21,9 @@ import numpy
 import os
 
 from ximpol import XIMPOL_SRCMODEL
-from ximpol.srcmodel.roi import xUniformDisk, xPointSource, xROIModel
-from ximpol.srcmodel.spectrum import constant, xTabulatedStationarySpectrum
+from ximpol.srcmodel.roi import xUniformDisk, xROIModel
+from ximpol.srcmodel.spectrum import constant
+from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
 
 
 def angular_radius(physical_radius):
@@ -39,23 +40,45 @@ def parse_spectral_model(file_name):
     file_path = os.path.join(XIMPOL_SRCMODEL, 'ascii', file_name)
     data = numpy.loadtxt(file_path, unpack=True)
     energy, flux = data[0], data[2]
-    return xTabulatedStationarySpectrum(energy, flux)
+    return xInterpolatedUnivariateSplineLinear(energy, flux)
 
 
 ROI_MODEL = xROIModel(266.8, -28.46)
 
-SgrB1 = xUniformDisk('Sgr B1', 266.75833, -28.5325, angular_radius(6.))
-SgrB1.spectrum = parse_spectral_model('spec_model_SgrB1.txt')
-SgrB1.polarization_degree = constant(0.405)
-SgrB1.polarization_angle = constant(numpy.radians(88.3))
+spectral_model_b1 = parse_spectral_model('spec_model_SgrB1.txt')
 
-SgrB2 = xUniformDisk('Sgr B2', 266.835, -28.38528, angular_radius(5.))
-SgrB2.spectrum = parse_spectral_model('spec_model_SgrB2.txt')
-SgrB2.polarization_degree = constant(0.455)
-SgrB2.polarization_angle = constant(numpy.radians(84.4))
+def energy_spectrum_b1(E, t):
+    """
+    """
+    return spectral_model_b1(E)
+
+polarization_degree_b1 = constant(0.405)
+polarization_angle_b1 = constant(numpy.radians(88.3))
+SgrB1 = xUniformDisk('Sgr B1', 266.75833, -28.5325, angular_radius(6.),
+                     energy_spectrum_b1, polarization_degree_b1,
+                     polarization_angle_b1)
+
+spectral_model_b2 = parse_spectral_model('spec_model_SgrB2.txt')
+
+def energy_spectrum_b2(E, t):
+    """
+    """
+    return spectral_model_b2(E)
+
+polarization_degree_b2 = constant(0.455)
+polarization_angle_b2 = constant(numpy.radians(84.4))
+SgrB2 = xUniformDisk('Sgr B2', 266.835, -28.38528, angular_radius(5.),
+                     energy_spectrum_b2, polarization_degree_b2,
+                     polarization_angle_b2)
 
 ROI_MODEL.add_sources(SgrB1, SgrB2)
 
 
 if __name__ == '__main__':
     print(ROI_MODEL)
+    from ximpol.utils.matplotlib_ import pyplot as plt
+    plt.figure()
+    energy_spectrum_b1.plot(show=False)
+    plt.figure()
+    energy_spectrum_b2.plot(show=False)
+    plt.show()

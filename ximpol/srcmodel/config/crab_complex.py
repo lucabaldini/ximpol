@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2015, the ximpol team.
+# Copyright (C) 2015--2016, the ximpol team.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU GengReral Public License as published by
@@ -17,17 +17,11 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-import numpy
-from ximpol.srcmodel.roi import xPointSource
-from ximpol.srcmodel.config.crab_nebula import ROI_MODEL
-from ximpol.srcmodel.spectrum import power_law, constant
 
-pulsar = xPointSource('Crab pulsar', ROI_MODEL.ra, ROI_MODEL.dec)
-pulsar.spectrum = power_law(2., 2.)
-pulsar.polarization_degree = constant(0.0)
-pulsar.polarization_angle = constant(0.0)
+from ximpol.srcmodel.config.crab_nebula import ROI_MODEL as NEBULA_ROI_MODEL
+from ximpol.srcmodel.config.crab_pulsar import ROI_MODEL as PULSAR_ROI_MODEL
 
-ROI_MODEL.add_source(pulsar)
+ROI_MODEL = NEBULA_ROI_MODEL + PULSAR_ROI_MODEL
 
 
 if __name__ == '__main__':

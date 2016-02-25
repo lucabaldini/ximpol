@@ -39,15 +39,65 @@ class xModelComponentBase:
 
     identifier : int
         A unique identifier of the source within a ROI model.
+
+    energy_spectrum : function
+        The function object representing the energy spectrum.
+
+    polarization_degree : function
+        The function object representing the polarization degree.
+
+    polarization_angle : function
+        The function object representing the polarization angle.
     """
 
-    def __init__(self, name, identifier=None, min_time=0., max_time=1000000.):
+    def __init__(self, name, energy_spectrum, polarization_degree,
+                 polarization_angle, identifier=None, min_validity_time=0.,
+                 max_validity_time=1000000.):
         """Constructor.
         """
         self.name = name
+        self.setup(energy_spectrum, polarization_degree, polarization_angle)
         self.identifier = identifier
-        self.min_time = min_time
-        self.max_time = max_time
+        self.min_validity_time = min_validity_time
+        self.max_validity_time = max_validity_time
+
+    def set_energy_spectrum(self, energy_spectrum):
+        """Set the energy spectrum for the model component.
+
+        Arguments
+        ---------
+        energy_spectrum : function
+            The function object representing the energy spectrum.
+        """
+        self.energy_spectrum = energy_spectrum
+
+    def set_polarization_degree(self, polarization_degree):
+        """Set the polarization degree for the model component.
+
+        Arguments
+        ---------
+        polarization_degree : function
+            The function object representing the polarization degree.
+        """
+        self.polarization_degree = polarization_degree
+
+    def set_polarization_angle(self, polarization_angle):
+        """Set the polarization angle for the model component.
+
+        Arguments
+        ---------
+        polarization_angle : function
+            The function object representing the polarization angle.
+        """
+        self.polarization_angle = polarization_angle
+
+    def setup(self, energy_spectrum, polarization_degree, polarization_angle):
+        """Setup the model component in terms of energy spectrum and
+        polarization degree and angle.
+        """
+        self.set_energy_spectrum(energy_spectrum)
+        self.set_polarization_degree(polarization_degree)
+        self.set_polarization_angle(polarization_angle)
 
     def rvs_sky_coordinates(self, size=1):
         """Generate random coordinates for the model component.
@@ -68,35 +118,47 @@ class xModelComponentBase:
         text = '%s %s (id = %s)'%\
                (self.__class__.__name__, self.name, self.identifier)
         text += '\n    Validity time: [%f--%f]'  %\
-                (self.min_time, self.max_time)
+                (self.min_validity_time, self.max_validity_time)
         text += '\n    Position: RA = %s deg, Dec = %s deg' %\
                 (self.ra, self.dec)
         return text
 
     def rvs_event_list(self, aeff, psf, modf, edisp, sampling_time):
-        count_spectrum = xCountSpectrum(self.spectrum, aeff, sampling_time)
+        """Extract a random event list for the model component.
+        """
+        # Create the event list and the count spectrum.
+        event_list = xMonteCarloEventList()
+        count_spectrum = xCountSpectrum(self.energy_spectrum, aeff,
+                                        sampling_time)
+        # Extract the number of events to be generated based on the integral
+        # of the light curve over the simulation time.
         num_events = numpy.random.poisson(count_spectrum.light_curve.norm())
+        # Extract the event times and sort them.
         col_time = count_spectrum.light_curve.rvs(num_events)
         col_time.sort()
-        event_list = xMonteCarloEventList()
         event_list.set_column('TIME', col_time)
+        # Extract the MC energies and smear them with the energy dispersion.
         col_mc_energy = count_spectrum.rvs(col_time)
         event_list.set_column('MC_ENERGY', col_mc_energy)
         col_pha = edisp.matrix.rvs(col_mc_energy)
         event_list.set_column('PHA', col_pha)
         event_list.set_column('ENERGY', edisp.ebounds(col_pha))
+        # Extract the MC sky positions and smear them with the PSF.
         col_mc_ra, col_mc_dec = self.rvs_sky_coordinates(num_events)
         event_list.set_column('MC_RA', col_mc_ra)
         event_list.set_column('MC_DEC', col_mc_dec)
         col_ra, col_dec = psf.smear(col_mc_ra, col_mc_dec)
         event_list.set_column('RA', col_ra)
         event_list.set_column('DEC', col_dec)
-        polarization_degree = self.polarization_degree(col_mc_energy, col_time)
-        polarization_angle = self.polarization_angle(col_mc_energy, col_time)
-        col_pe_angle = modf.rvs_phi(col_mc_energy, polarization_degree,
-                                    polarization_angle)
+        # Extract the photoelectron emission directions.
+        pol_degree = self.polarization_degree(col_mc_energy, col_time)
+        pol_angle = self.polarization_angle(col_mc_energy, col_time)
+        col_pe_angle = modf.rvs_phi(col_mc_energy, pol_degree, pol_angle)
         event_list.set_column('PE_ANGLE', col_pe_angle)
+        # Set the source ID.
         event_list.set_column('MC_SRC_ID', self.identifier)
+        # Set the phase to -1 for all non-periodic sources.
+        event_list.set_column('PHASE', -1)
         return event_list
 
 
@@ -116,10 +178,14 @@ class xPointSource(xModelComponentBase):
         The declination of the source.
     """
 
-    def __init__(self, name, ra, dec, min_time=0., max_time=1000000.):
+    def __init__(self, name, ra, dec, energy_spectrum, polarization_degree,
+                 polarization_angle, min_validity_time=0.,
+                 max_validity_time=1000000.):
         """Constructor.
         """
-        xModelComponentBase.__init__(self, name, None, min_time, max_time)
+        xModelComponentBase.__init__(self, name, energy_spectrum,
+                                     polarization_degree, polarization_angle,
+                                     None, min_validity_time, max_validity_time)
         self.ra = ra
         self.dec = dec
 
@@ -145,23 +211,28 @@ class xEphemeris:
     """Convenience class encapsulating a pulsar ephemeris.
     """
 
-    def __init__(self, t0, nu0, nudot=0., nuddot=0., min_time=0.,
-                 max_time=1000000.):
+    def __init__(self, t0, nu0, nudot=0., nuddot=0., min_validity_time=0.,
+                 max_validity_time=1000000.):
         """Constructor.
         """
         self.t0 = t0
         self.nu0 = nu0
         self.nudot = nudot
         self.nuddot = nuddot
-        self.min_time = min_time
-        self.max_time = max_time
+        self.min_validity_time = min_validity_time
+        self.max_validity_time = max_validity_time
 
     def nu(self, t):
-        """Return the inverse of the period at a given time.
+        """Return the source frequency at a given time.
         """
-        assert (t >= self.min_time) and (t <= self.max_time)
+        assert (t >= self.min_validity_time) and (t <= self.max_validity_time)
         dt = (t - self.t0)
         return self.nu0 + self.nudot*dt + 0.5*self.nuddot*numpy.power(dt, 2.)
+
+    def period(self, t):
+        """Return the source period at a given time.
+        """
+        return 1./self.nu(t)
 
     def __str__(self):
         """String formatting.
@@ -175,12 +246,69 @@ class xPeriodicPointSource(xPointSource):
     """Class representing a periodic point source (e.g., a pulsar).
     """
 
-    def __init__(self, name, ra, dec, ephemeris):
+    def __init__(self, name, ra, dec, energy_spectrum, polarization_degree,
+                 polarization_angle, ephemeris):
         """Constructor.
         """
-        xPointSource.__init__(self, name, ra, dec, ephemeris.min_time,
-                              ephemeris.max_time)
+        xPointSource.__init__(self, name, ra, dec, energy_spectrum,
+                              polarization_degree, polarization_angle,
+                              ephemeris.min_validity_time,
+                              ephemeris.max_validity_time)
         self.ephemeris = ephemeris
+
+    def rvs_event_list(self, aeff, psf, modf, edisp, sampling_time):
+        """Extract a random event list for the model component.
+
+        TODO: here we should pass the sampling phase, instead?
+
+        TODO: properly take into account the derivatives in the ephemeris.
+        """
+        # Create the event list and the count spectrum.
+        event_list = xMonteCarloEventList()
+        # Mind the count spectrum is made in phase!
+        sampling_phase = numpy.linspace(0, 1, 100)
+        count_spectrum = xCountSpectrum(self.energy_spectrum, aeff,
+                                        sampling_phase)
+        # All this is not properly taking into account the ephemeris.
+        min_time = sampling_time[0]
+        max_time = sampling_time[-1]
+        delta_time = (max_time - min_time)
+        period = self.ephemeris.period(min_time)
+        # This is not accurate, as we are effectively discarding the last
+        # fractional period. Need to think about it.
+        num_periods = int(delta_time/period)
+        num_expected_events = delta_time*count_spectrum.light_curve.norm()
+        # Extract the number of events to be generated based on the integral
+        # of the light curve over the simulation time.
+        num_events = numpy.random.poisson(num_expected_events)
+        # Extract the event phases and sort them.
+        col_phase = count_spectrum.light_curve.rvs(num_events)
+        event_list.set_column('PHASE', col_phase)
+        col_period = numpy.random.randint(0, num_periods, num_events)
+        col_time = (col_period + col_phase)*period
+        event_list.set_column('TIME', col_time)
+        # Extract the MC energies and smear them with the energy dispersion.
+        col_mc_energy = count_spectrum.rvs(col_phase)
+        event_list.set_column('MC_ENERGY', col_mc_energy)
+        col_pha = edisp.matrix.rvs(col_mc_energy)
+        event_list.set_column('PHA', col_pha)
+        event_list.set_column('ENERGY', edisp.ebounds(col_pha))
+        # Extract the MC sky positions and smear them with the PSF.
+        col_mc_ra, col_mc_dec = self.rvs_sky_coordinates(num_events)
+        event_list.set_column('MC_RA', col_mc_ra)
+        event_list.set_column('MC_DEC', col_mc_dec)
+        col_ra, col_dec = psf.smear(col_mc_ra, col_mc_dec)
+        event_list.set_column('RA', col_ra)
+        event_list.set_column('DEC', col_dec)
+        # Extract the photoelectron emission directions.
+        pol_degree = self.polarization_degree(col_mc_energy, col_phase)
+        pol_angle = self.polarization_angle(col_mc_energy, col_phase)
+        col_pe_angle = modf.rvs_phi(col_mc_energy, pol_degree, pol_angle)
+        event_list.set_column('PE_ANGLE', col_pe_angle)
+        # Set the source ID.
+        event_list.set_column('MC_SRC_ID', self.identifier)
+        event_list.sort()
+        return event_list
 
     def __str__(self):
         """String formatting.
@@ -188,21 +316,6 @@ class xPeriodicPointSource(xPointSource):
         text = xPointSource.__str__(self)
         text += '\n    Ephemeris: %s' % self.ephemeris
         return text
-
-    def plot(self):
-        """Plot the model component.
-        """
-        from ximpol.utils.matplotlib_ import pyplot as plt
-        _x = numpy.linspace(0, 1, 100)
-        figure = plt.figure(figsize=(10, 20))
-        plt.subplots_adjust(hspace=0.01)
-        ax = figure.add_subplot(3, 1, 1)
-        #plt.plot(_x, self.spectrum.light_curve())
-        ax = figure.add_subplot(3, 1, 2)
-        plt.plot(_x, self.polarization_degree(1., _x))
-        ax = figure.add_subplot(3, 1, 3)
-        plt.plot(_x, self.polarization_angle(1., _x))
-        plt.show()
 
 
 class xUniformDisk(xModelComponentBase):
@@ -224,10 +337,14 @@ class xUniformDisk(xModelComponentBase):
         The radius of the disk.
     """
 
-    def __init__(self, name, ra, dec, radius, min_time=0., max_time=1000000.):
+    def __init__(self, name, ra, dec, radius, energy_spectrum,
+                 polarization_degree, polarization_angle, min_validity_time=0.,
+                 max_validity_time=1000000.):
         """Constructor.
         """
-        xModelComponentBase.__init__(self, name, None, min_time, max_time)
+        xModelComponentBase.__init__(self, name, energy_spectrum,
+                                     polarization_degree, polarization_angle,
+                                     None, min_validity_time, max_validity_time)
         self.ra = ra
         self.dec = dec
         self.radius = radius
@@ -278,10 +395,14 @@ class xGaussianDisk(xModelComponentBase):
         The root mean square of the disk.
     """
 
-    def __init__(self, name, ra, dec, sigma, min_time=0., max_time=1000000.):
+    def __init__(self, name, ra, dec, sigma, energy_spectrum,
+                 polarization_degree, polarization_angle, min_validity_time=0.,
+                 max_validity_time=1000000.):
         """Constructor.
         """
-        xModelComponentBase.__init__(self, name, None, min_time, max_time)
+        xModelComponentBase.__init__(self, name, energy_spectrum,
+                                     polarization_degree, polarization_angle,
+                                     None, min_validity_time, max_validity_time)
         self.ra = ra
         self.dec = dec
         self.sigma = sigma
@@ -323,10 +444,14 @@ class xExtendedSource(xModelComponentBase):
         The path to the FITS file containing the image of the source.
     """
 
-    def __init__(self, name, img_file_path, min_time=0., max_time=1000000.):
+    def __init__(self, name, img_file_path, energy_spectrum,
+                 polarization_degree, polarization_angle, min_validity_time=0.,
+                 max_validity_time=1000000.):
         """Constructor.
         """
-        xModelComponentBase.__init__(self, name, None, min_time, max_time)
+        xModelComponentBase.__init__(self, name, energy_spectrum,
+                                     polarization_degree, polarization_angle,
+                                     None, min_validity_time, max_validity_time)
         self.image = xFITSImage(img_file_path)
 
     def rvs_sky_coordinates(self, size=1):
@@ -338,6 +463,15 @@ class xExtendedSource(xModelComponentBase):
             The number of sky coordinate pairs to be generated.
         """
         return self.image.rvs_coordinates(size)
+
+    def __str__(self):
+        """String formatting.
+        """
+        text = '%s %s (id = %s)'%\
+               (self.__class__.__name__, self.name, self.identifier)
+        text += '\n    Validity time: [%f--%f]'  %\
+                (self.min_validity_time, self.max_validity_time)
+        return text
 
 
 class xROIModel(OrderedDict):
@@ -376,15 +510,26 @@ class xROIModel(OrderedDict):
         for source in sources:
             self.add_source(source)
 
-    def min_time(self):
+    def __add__(self, other):
+        """Combine different ROI models.
+        """
+        assert self.__class__.__name__ == other.__class__.__name__
+        roi_model = xROIModel(self.ra, self.dec)
+        for source in self.values():
+            roi_model.add_source(source)
+        for source in other.values():
+            roi_model.add_source(source)
+        return roi_model
+
+    def min_validity_time(self):
         """Return the minimum validity time for the ROI model.
         """
-        return max([source.min_time for source in self.values()])
+        return max([source.min_validity_time for source in self.values()])
 
-    def max_time(self):
+    def max_validity_time(self):
         """Return the maximum validity time for the ROI model.
         """
-        return min([source.max_time for source in self.values()])
+        return min([source.max_validity_time for source in self.values()])
 
     def __str__(self):
         """String formatting.
@@ -433,21 +578,3 @@ class xROIModel(OrderedDict):
                                                 sampling_time)
         event_list.sort()
         return event_list
-
-
-def main():
-    """
-    """
-    model = xROIModel(0., 0.)
-    src1 = xPointSource('Source 1', 0.01, 0.01, min_time=0., max_time=100.)
-    src2 = xPointSource('Source 2', -0.01, -0.01, min_time=20., max_time=500.)
-    print(src1)
-    print(src2)
-    model.add_source(src1)
-    model.add_source(src2)
-    print(model)
-    print(model.min_time(), model.max_time())
-
-
-if __name__ == '__main__':
-    main()
