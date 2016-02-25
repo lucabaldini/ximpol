@@ -28,6 +28,7 @@ from ximpol.utils.matplotlib_ import pyplot as plt
 from ximpol.utils.logging_ import logger, startmsg, abort
 from ximpol.evt.binning import xEventBinningPHA1
 from ximpol.evt.binning import xEventBinningLC
+from ximpol.evt.binning import xEventBinningPHASG
 from ximpol.evt.binning import xEventBinningCMAP
 from ximpol.evt.binning import xEventBinningMCUBE
 
@@ -35,6 +36,7 @@ from ximpol.evt.binning import xEventBinningMCUBE
 BIN_ALG_DICT = {
     'PHA1' : xEventBinningPHA1,
     'LC'   : xEventBinningLC,
+    'PHASG': xEventBinningPHASG,
     'CMAP' : xEventBinningCMAP,
     'MCUBE': xEventBinningMCUBE
 }
@@ -56,7 +58,6 @@ def xpbin(args):
     algorithm = args.algorithm
     assert(evt_file_path.endswith('.fits'))
     kwargs = args.__dict__
-    kwargs.pop('evfile')
     kwargs.pop('algorithm')
     BIN_ALG_DICT[algorithm](evt_file_path, **kwargs).bin_()
 
@@ -64,7 +65,7 @@ def xpbin(args):
 if __name__=='__main__':
     import argparse
     parser = argparse.ArgumentParser(description=__description__)
-    parser.add_argument('--evfile', type=str,
+    parser.add_argument('evfile', type=str,
                         help='path to the input event file')
     parser.add_argument('--algorithm', choices=BIN_ALGS, required=True,
                         help='the binning algorithm')
@@ -80,6 +81,8 @@ if __name__=='__main__':
                         help='number of bins for LIN/LOG time binning')
     parser.add_argument('--tbinfile', type=str, default=None,
                         help='path to the optional time bin definition file')
+    parser.add_argument('--phasgbins', type=int, default=50,
+                        help='number of bins for phase binning')
     parser.add_argument('--nxpix', type=int, default=256,
                         help='number of horizontal pixels in the output image')
     parser.add_argument('--nypix', type=int, default=256,

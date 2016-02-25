@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* Phaseograms implemented in xpbin.py (issue #67).
+
 
 *ximpol (0.27.0) - Thu, 25 Feb 2016 15:31:53 -0800*
 

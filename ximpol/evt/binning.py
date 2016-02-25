@@ -298,6 +298,60 @@ class xEventBinningLC(xEventBinningBase):
         logger.info('Done.')
 
 
+class xBinTableHDUPHASG(xBinTableHDUBase):
+
+    """Binary table for binned PHASG data.
+    """
+
+    NAME = 'RATE'
+    HEADER_KEYWORDS = []
+    DATA_SPECS = [
+        ('PHASE'   , 'D', 's'     , 'phase of the bin center'),
+        ('PHASEDEL', 'D', 's'     , 'phase bin size'),
+        ('COUNTS'  , 'J', 'counts', 'photon counts'),
+        ('ERROR'   , 'E', 'counts', 'statistical errors')
+    ]
+
+
+class xEventBinningPHASG(xEventBinningBase):
+
+    """Class for LC binning.
+    """
+
+    def process_kwargs(self):
+        """Overloaded method.
+        """
+        xEventBinningBase.process_kwargs(self)
+
+    def make_binning(self):
+        """Build the light-curve binning.
+        """
+        phasgbins = self.get('phasgbins')
+        return numpy.linspace(0., 1., phasgbins + 1)
+
+    def bin_(self):
+        """Overloaded method.
+        """
+        evt_header = self.event_file.hdu_list['PRIMARY'].header
+        counts, edges = numpy.histogram(self.event_data['PHASE'],
+                                        bins=self.make_binning())
+        primary_hdu = xPrimaryHDU()
+        primary_hdu.setup_header(self.event_file.primary_keywords())
+        data = [self.bin_centers(edges),
+                self.bin_widths(edges),
+                counts,
+                numpy.sqrt(counts)
+        ]
+        rate_hdu = xBinTableHDUPHASG(data)
+        rate_hdu.setup_header(self.event_file.primary_keywords())
+        gti_hdu = self.event_file.hdu_list['GTI']
+        hdu_list = fits.HDUList([primary_hdu, rate_hdu, gti_hdu])
+        hdu_list.info()
+        logger.info('Writing binned PHASG data to %s...' % self.get('outfile'))
+        hdu_list.writeto(self.get('outfile'), clobber=True)
+        logger.info('Done.')
+
+
 class xBinTableHDUMCUBE(xBinTableHDUBase):
 
     """Binary table for binned MCUBE data.
