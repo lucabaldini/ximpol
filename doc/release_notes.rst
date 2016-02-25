@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.27.0) - Thu, 25 Feb 2016 15:31:53 -0800*
+
 * Work started toward the implementation of periodic sources (issue #43).
 * New xEphemeris class in ximpol.srcmodel.roi.py
 * New xPeriodicPointSource class in ximpol.srcmodel.roi.py
