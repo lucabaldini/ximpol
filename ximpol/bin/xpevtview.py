@@ -92,8 +92,8 @@ def xpevtview(file_path):
     nbins = 100
     binning = numpy.linspace(0., 2*numpy.pi, nbins)
     hist = plt.hist(pe_angle, bins=binning, histtype='step')
-    fit_results = xAzimuthalResponseGenerator.fit_histogram(hist)
-    fit_results.plot()
+    #fit_results = xAzimuthalResponseGenerator.fit_histogram(hist)
+    #fit_results.plot()
     plt.xlabel('PE emission angle [deg]')
     plt.axis([0., 2*numpy.pi, 0., None])
 

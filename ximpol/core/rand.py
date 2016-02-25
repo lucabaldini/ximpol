@@ -23,11 +23,11 @@
 
 import numpy
 
-from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
+from ximpol.core.spline import xInterpolatedUnivariateSpline
 from ximpol.core.spline import xInterpolatedBivariateSplineLinear
 
 
-class xUnivariateGenerator(xInterpolatedUnivariateSplineLinear):
+class xUnivariateGenerator(xInterpolatedUnivariateSpline):
 
     """Univariate random number generator based on a linear interpolated
     spline.
@@ -53,14 +53,15 @@ class xUnivariateGenerator(xInterpolatedUnivariateSplineLinear):
         The units for the pdf.
     """
 
-    def __init__(self, rv, pdf, rvname=None, rvunits=None, pdfname='pdf',
-                 pdfunits=None):
+    def __init__(self, rv, pdf, w=None, bbox=[None, None], k=1, rvname=None,
+                 rvunits=None, pdfname='pdf', pdfunits=None):
         """ Constructor.
         """
         if pdfunits is None and rvunits is not None:
             pdfunits = '1/%s' % rvunits
-        xInterpolatedUnivariateSplineLinear.__init__(self, rv, pdf, rvname,
-                                                     rvunits, pdfname, pdfunits)
+        xInterpolatedUnivariateSpline.__init__(self, rv, pdf, w, bbox, k,
+                                               rvname, rvunits, pdfname,
+                                               pdfunits)
         self.ppf = self.build_ppf()
 
     def pdf(self, rv):
@@ -72,6 +73,18 @@ class xUnivariateGenerator(xInterpolatedUnivariateSplineLinear):
         """Return random variates of arbitrary size.
         """
         return self.ppf(numpy.random.sample(size))
+
+
+class xUnivariateGeneratorLinear(xUnivariateGenerator):
+
+    """
+    """
+    def __init__(self, rv, pdf, rvname=None, rvunits=None, pdfname='pdf',
+                 pdfunits=None):
+        """ Constructor.
+        """
+        xUnivariateGenerator.__init__(self, rv, pdf, None, [None, None], 1.,
+                                      rvname, rvunits, pdfname, pdfunits)
 
 
 class xUnivariateAuxGenerator(xInterpolatedBivariateSplineLinear):

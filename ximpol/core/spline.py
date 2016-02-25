@@ -420,7 +420,6 @@ class xBivariateSplineBase:
         """
         self.x = x
         self.y = y
-        self.z = z
         self.xname = xname
         self.xunits = xunits
         self.yname = yname
@@ -474,6 +473,9 @@ class xInterpolatedBivariateSplineLinear(xBivariateSplineBase,
                  yunits=None, zname=None, zunits=None):
         """Constructor.
         """
+        if hasattr(z, '__call__'):
+            _x, _y = numpy.meshgrid(y, x)
+            z = z(_x, _y)
         xBivariateSplineBase.__init__(self, x, y, z, xname, xunits, yname,
                                       yunits, zname, zunits)
         RectBivariateSpline.__init__(self, x, y, z,

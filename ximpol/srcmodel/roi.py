@@ -140,6 +140,71 @@ class xPointSource(xModelComponentBase):
         return (ra, dec)
 
 
+class xEphemeris:
+
+    """Convenience class encapsulating a pulsar ephemeris.
+    """
+
+    def __init__(self, t0, nu0, nudot=0., nuddot=0., min_time=0.,
+                 max_time=1000000.):
+        """Constructor.
+        """
+        self.t0 = t0
+        self.nu0 = nu0
+        self.nudot = nudot
+        self.nuddot = nuddot
+        self.min_time = min_time
+        self.max_time = max_time
+
+    def nu(self, t):
+        """Return the inverse of the period at a given time.
+        """
+        assert (t >= self.min_time) and (t <= self.max_time)
+        dt = (t - self.t0)
+        return self.nu0 + self.nudot*dt + 0.5*self.nuddot*numpy.power(dt, 2.)
+
+    def __str__(self):
+        """String formatting.
+        """
+        return 't0 = %s s, nu0 = %s Hz, nudot = %s Hz/s, nuddot = %s Hz/s^2' %\
+            (self.t0, self.nu0, self.nudot, self.nuddot)
+
+
+class xPeriodicPointSource(xPointSource):
+
+    """Class representing a periodic point source (e.g., a pulsar).
+    """
+
+    def __init__(self, name, ra, dec, ephemeris):
+        """Constructor.
+        """
+        xPointSource.__init__(self, name, ra, dec, ephemeris.min_time,
+                              ephemeris.max_time)
+        self.ephemeris = ephemeris
+
+    def __str__(self):
+        """String formatting.
+        """
+        text = xPointSource.__str__(self)
+        text += '\n    Ephemeris: %s' % self.ephemeris
+        return text
+
+    def plot(self):
+        """Plot the model component.
+        """
+        from ximpol.utils.matplotlib_ import pyplot as plt
+        _x = numpy.linspace(0, 1, 100)
+        figure = plt.figure(figsize=(10, 20))
+        plt.subplots_adjust(hspace=0.01)
+        ax = figure.add_subplot(3, 1, 1)
+        #plt.plot(_x, self.spectrum.light_curve())
+        ax = figure.add_subplot(3, 1, 2)
+        plt.plot(_x, self.polarization_degree(1., _x))
+        ax = figure.add_subplot(3, 1, 3)
+        plt.plot(_x, self.polarization_angle(1., _x))
+        plt.show()
+
+
 class xUniformDisk(xModelComponentBase):
 
     """Class representing a uniform disk.

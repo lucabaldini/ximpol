@@ -20,13 +20,47 @@
 import numpy
 from ximpol.core.rand import xUnivariateGenerator, xUnivariateAuxGenerator
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
+from ximpol.core.spline import xInterpolatedBivariateSplineLinear
+
+
+class xSourceSpectrum(xInterpolatedBivariateSplineLinear):
+
+    """Class representing a count spectrum, i.e., the convolution of the
+    source photon spectrum and the detector effective area.
+    """
+
+    def __init__(self, dNdE, E, t):
+        """Constructor.
+        """
+        fmt = dict(xname='Time', xunits='s', yname='Energy',
+                   yunits='keV',  zname='dN/dE',
+                   zunits='cm$^{-2}$ s$^{-1}$ keV$^{-1}$')
+        self.dNdE = dNdE
+        xInterpolatedBivariateSplineLinear.__init__(self, t, E, dNdE, **fmt)
+        self.light_curve = self.build_light_curve()
+
+    def build_light_curve(self):
+        """Build the light curve, i.e., a linear spline of the integral
+        flux values as a function of time.
+        """
+        fmt = dict(rvname=self.xname, rvunits=self.xunits,
+                   pdfname='Light curve', pdfunits='cm$^{-2}$ s$^{-1}$')
+        _f = numpy.array([self.vslice(_t).norm() for _t in self.x])
+        return xUnivariateGenerator(self.x, _f, **fmt)
 
 
 def power_law(C, Gamma):
     """Photon energy spectrum as a function of energy and time.
+
+    If C and Gamma are callable, we assume that the argument of the __call__
+    function is the time, and this is how we treat them internally.
     """
-    def _function(E, t):
-        return C*numpy.power(E, -Gamma)
+    if hasattr(C, '__call__') and hasattr(Gamma, '__call__'):
+        def _function(E, t):
+            return C(t)*numpy.power(E, -Gamma(t))
+    else:
+        def _function(E, t):
+            return C*numpy.power(E, -Gamma)
     return _function
 
 def constant(C):
@@ -110,7 +144,7 @@ class xCountSpectrum(xUnivariateAuxGenerator):
         flux values as a function of time.
         """
         fmt = dict(rvname=self.xname, rvunits=self.xunits,
-                   pdfname='Light curve', pdfunits='cm$^{-2}$ s$^{-1}$')
+                   pdfname='Light curve', pdfunits='s$^{-1}$')
         _f = numpy.array([self.slice(_t).norm() for _t in self.x])
         return xUnivariateGenerator(self.x, _f, **fmt)
 
