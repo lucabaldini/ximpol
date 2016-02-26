@@ -35,20 +35,53 @@ the following ``import`` statements with no errors.
 long run you probably want to have them.) If any of the required packages
 fails to import, take a deep breath and fix the issue before you move on.
 
+Using anaconda
+--------------
+
+Since the all the python third-party packages that we use are under active
+development (and for some of them there have been some non-trivial
+interface changes across the most recent version), you do care about the
+package versions that you have installed. For instance, we do need the
+ability to evaluate spline on multidimensional arrays that was added in
+SciPy 0.16 but was not there in SciPy 0.14. The bottomline is that, depending
+on the exact version of the packages that you have installed on your system,
+ximpol might or might not work correctly.
+
+One possible OS-independent way to get a fully fledged ecosystem in which
+ximpol can work is to use `anaconda <https://www.continuum.io/downloads>`_.
+You should be able to get up and running, in terms of the pre-requisites to
+run ximpol, in a matter of minutes following the instructions in there.
+
+Note that the default anaconda installer does not come with all the packages
+that you need (most notably, aplpy is missing), but you can easily install
+whetever you need after the fact, e.g.,
+
+.. code-block:: bash
+                
+    pip install aplpy 
+
+If you are uncertain on what to do, you might want to try anaconda first,
+as this might be the less painful solution.
+
+For XSPEC and the corresponding Python bindings, refer to the
+`HEASOFT download page <http://heasarc.nasa.gov/lheasoft/download.html>`_.
+
+
+More OS-specific resources
+--------------------------
+
+There are obviously other ways to install the prerequisites, e.g., by
+doing everything manually or use a package manager that your OS makes available.
+
 .. warning:: We need to add specific information for different platforms
              (e.g., Windows and Mac) and GNU/Linux distros. Any help from
              anybody is appreciated!
 
-How you actually go about making sure that all the packages are correctly
-installed depends on the operating system you're using. For GNU/Linux
-in the Fedora flavor, for instance, you would do something like
+For GNU/Linux in the Fedora flavor, for instance, you would do something like
 
 .. code-block:: bash
 
     yum install numpy scipy python-matplotlib python-astropy APLpy
-
-For XSPEC and the corresponding Python bindings, refer to the
-`HEASOFT download page <http://heasarc.nasa.gov/lheasoft/download.html>`_.
 
 
 Downloading the code
