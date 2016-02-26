@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* Source model for Cas A added.
+
 
 *ximpol (0.28.1) - Thu, 25 Feb 2016 16:48:43 -0800*
 
