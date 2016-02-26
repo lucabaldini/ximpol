@@ -216,6 +216,11 @@ class xEventFile:
         self.event_data = self.hdu_list['EVENTS'].data
         self.roi_table = self.build_roi_table()
 
+    def num_events(self):
+        """Return the total number of events in the event file.
+        """
+        return len(self.event_data)
+
     def file_path(self):
         """Return the path to the underlying file.
         """

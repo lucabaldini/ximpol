@@ -20,11 +20,6 @@
 __description__ = 'Bin event data in different flavors'
 
 
-import os
-import numpy
-from astropy.io import fits
-
-from ximpol.utils.matplotlib_ import pyplot as plt
 from ximpol.utils.logging_ import logger, startmsg, abort
 from ximpol.evt.binning import xEventBinningPHA1
 from ximpol.evt.binning import xEventBinningLC
