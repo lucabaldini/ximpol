@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.28.1) - Thu, 25 Feb 2016 16:48:43 -0800*
+
 * Updated installation instructions (issue #64).
   
 
