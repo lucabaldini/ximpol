@@ -1,6 +1,6 @@
 #!/urs/bin/env python
 #
-# Copyright (C) 2015, the ximpol team.
+# Copyright (C) 2015--2016, the ximpol team.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU GengReral Public License as published by

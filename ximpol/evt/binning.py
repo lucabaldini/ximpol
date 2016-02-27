@@ -214,9 +214,9 @@ class xEventBinningCMAP(xEventBinningBase):
         binsy = numpy.linspace(0, nypix, nypix + 1)
         # Build the WCS object
         w = wcs.WCS(naxis=2)
-        w.wcs.crpix = [nxpix, 0.]
+        w.wcs.crpix = [0.5*nxpix, 0.5*nypix]
         w.wcs.cdelt = [-pixsize, pixsize]
-        w.wcs.crval = [xref - 0.5*sidex, yref - 0.5*sidey]
+        w.wcs.crval = [xref, yref]
         w.wcs.ctype = ['RA---%s' % proj, 'DEC--%s' % proj]
         w.wcs.equinox = 2000.
         w.wcs.radesys = 'ICRS'

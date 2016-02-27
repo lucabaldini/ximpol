@@ -3,6 +3,7 @@ Release notes
 
 * Source model for Cas A added.
 * First xpselect implementation (issue #51).
+* Subtle bug fix in the CMAP binning (issue #70).
 
 
 *ximpol (0.28.1) - Thu, 25 Feb 2016 16:48:43 -0800*
