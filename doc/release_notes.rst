@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* Closed issue #63.
+
 
 *ximpol (0.30.0) - Sat, 27 Feb 2016 06:55:48 -0800*
 
