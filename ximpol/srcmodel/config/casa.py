@@ -25,7 +25,7 @@ from ximpol.srcmodel.spectrum import power_law, constant
 from ximpol import XIMPOL_SRCMODEL
 
 
-ROI_MODEL = xROIModel(350.78, 58.815)
+ROI_MODEL = xROIModel(350.8664167, 58.8117778)
 
 img_file_path = os.path.join(XIMPOL_SRCMODEL, 'fits', 'casa_1p5_3p0_keV.fits')
 

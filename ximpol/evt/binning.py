@@ -218,7 +218,8 @@ class xEventBinningCMAP(xEventBinningBase):
         w.wcs.cdelt = [-pixsize, pixsize]
         w.wcs.crval = [xref - 0.5*sidex, yref - 0.5*sidey]
         w.wcs.ctype = ['RA---%s' % proj, 'DEC--%s' % proj]
-        w.wcs.equinox = 2000
+        w.wcs.equinox = 2000.
+        w.wcs.radesys = 'ICRS'
         header = w.to_header()
         pix = w.wcs_world2pix(zip(ra, dec), 1)
         n, x, y = numpy.histogram2d(pix[:,1], pix[:,0], bins=(binsx, binsy))
