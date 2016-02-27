@@ -28,11 +28,25 @@
 import os
 import shutil
 
-from ximpol.utils.logging_ import logger
+from ximpol.utils.logging_ import logger, abort
+
+
+def check_input_file(file_path, extension=None):
+    """Make sure that an input file exists (and, optionally, has the right
+    extension).
+
+    Note that we abort the execution with no mercy if anything fails.
+    """
+    if not os.path.exists(file_path):
+        abort('Input file %s does not exists' % file_path)
+    if not os.path.isfile(file_path):
+        abort('Input file %s is not a file' % file_path)
+    if extension is not None and not file_path.endswith('.%s' % extension):
+        abort('Input file %s is not a .%s file' % (file_path, extension))
 
 
 def mkdir(dir_path):
-    """ Create a directory (unless it already exists).
+    """Create a directory (unless it already exists).
 
     Return 0 upon succesfull operation, 1 otherwise.
     """

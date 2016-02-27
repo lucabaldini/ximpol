@@ -25,54 +25,44 @@ from ximpol.irf.psf import xPointSpreadFunction
 from ximpol.irf.mrf import xModulationFactor
 from ximpol.irf.rmf import xEnergyDispersion
 from ximpol.utils.logging_ import logger
+from ximpol.utils.os_ import check_input_file
+
 
 def load_arf(irf_name, folder_path=None):
     """Facility to load the effective area for a given IRF set.
     """
     if folder_path is None:
         folder_path = os.path.join(XIMPOL_IRF,'fits')
-    fpath = os.path.join(folder_path, '%s.arf' % irf_name)
-    if not os.path.isfile(fpath):
-        logger.critical("Cannot find effective area file for IRF: "+\
-                        "%s (file %s not found). Exiting!" % (irf_name, fpath))
-        sys.exit(1)
-    return xEffectiveArea(fpath)
+    file_path = os.path.join(folder_path, '%s.arf' % irf_name)
+    check_input_file(file_path, 'arf')
+    return xEffectiveArea(file_path)
 
 def load_psf(irf_name, folder_path=None):
     """Facility to load the point-spread function for a given IRF set.
     """
     if folder_path is None:
         folder_path = os.path.join(XIMPOL_IRF,'fits')
-    fpath = os.path.join(folder_path, '%s.psf' % irf_name)
-    if not os.path.isfile(fpath):
-        logger.critical("Cannot find point-spread function file for IRF: "+\
-                        "%s (file %s not found). Exiting!" % (irf_name, fpath))
-        sys.exit(1)
-    return xPointSpreadFunction(fpath)
+    file_path = os.path.join(folder_path, '%s.psf' % irf_name)
+    check_input_file(file_path, 'psf')
+    return xPointSpreadFunction(file_path)
 
 def load_mrf(irf_name, folder_path=None):
     """Facility to load the modulation factor for a given IRF set.
     """
     if folder_path is None:
         folder_path = os.path.join(XIMPOL_IRF,'fits')
-    fpath = os.path.join(folder_path, '%s.mrf' % irf_name)
-    if not os.path.isfile(fpath):
-        logger.critical("Cannot find modulation factor file for IRF: "+\
-                        "%s (file %s not found). Exiting!" % (irf_name, fpath))
-        sys.exit(1)
-    return xModulationFactor(fpath)
+    file_path = os.path.join(folder_path, '%s.mrf' % irf_name)
+    check_input_file(file_path, 'mrf')
+    return xModulationFactor(file_path)
 
 def load_rmf(irf_name, folder_path=None):
     """Facility to load the energy dispersion for a given IRF set.
     """
     if folder_path is None:
         folder_path = os.path.join(XIMPOL_IRF,'fits')
-    fpath = os.path.join(folder_path, '%s.rmf' % irf_name)
-    if not os.path.isfile(fpath):
-        logger.critical("Cannot find energy dispersion file for IRF: "+\
-                        "%s (file %s not found). Exiting!" % (irf_name, fpath))
-        sys.exit(1)
-    return xEnergyDispersion(fpath)
+    file_path = os.path.join(folder_path, '%s.rmf' % irf_name)
+    check_input_file(file_path, 'rmf')
+    return xEnergyDispersion(file_path)
 
 def load_irfs(irf_name, folder_path=None):
     """Facility to load all the instrument response functions corresponding
