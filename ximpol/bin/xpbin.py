@@ -50,11 +50,8 @@ def xpbin(args):
     http://fermi.gsfc.nasa.gov/ssc/data/analysis/scitools/help/gtbin.txt
     """
     evt_file_path = args.evfile
-    algorithm = args.algorithm
     assert(evt_file_path.endswith('.fits'))
-    kwargs = args.__dict__
-    kwargs.pop('algorithm')
-    BIN_ALG_DICT[algorithm](evt_file_path, **kwargs).bin_()
+    BIN_ALG_DICT[args.algorithm](evt_file_path, **args.__dict__).bin_()
 
 
 if __name__=='__main__':

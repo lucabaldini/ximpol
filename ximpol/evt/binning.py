@@ -55,6 +55,17 @@ class xEventBinningBase:
         logger.info('Setting %s to %s...' % (key, value))
         self.kwargs[key] = value
 
+    def build_primary_hdu(self):
+        """Build the primary HDU for the output file.
+        """
+        primary_hdu = xPrimaryHDU()
+        primary_hdu.setup_header(self.event_file.primary_keywords())
+        primary_hdu.add_keyword('BINALG', self.get('algorithm'),
+                                'the binning algorithm used')
+        primary_hdu.add_comment('%s run with kwargs %s' %\
+                                (self.__class__.__name__, self.kwargs))
+        return primary_hdu
+
     @classmethod
     def read_binning(self, file_path):
         """Read a custom binning from file and return a numpy array.
@@ -159,8 +170,7 @@ class xEventBinningPHA1(xEventBinningBase):
         total_time = self.event_file.total_good_time()
         binning = numpy.linspace(-0.5, num_chans - 0.5, num_chans)
         n, bins = numpy.histogram(self.event_data['PHA'], bins=binning)
-        primary_hdu = xPrimaryHDU()
-        primary_hdu.setup_header(self.event_file.primary_keywords())
+        primary_hdu = self.build_primary_hdu()
         data = [numpy.arange(num_chans),
                 n/total_time,
                 numpy.sqrt(n)/total_time
@@ -221,6 +231,15 @@ class xEventBinningCMAP(xEventBinningBase):
         w.wcs.equinox = 2000.
         w.wcs.radesys = 'ICRS'
         header = w.to_header()
+        # And here we need to tweak the header by hand to replicate what we
+        # do in xEventBinningBase.build_primary_hdu() for the other binning
+        # algorithms.
+        header.set('BINALG', self.get('algorithm'),'the binning algorithm used')
+        for key, val, comment in self.event_file.primary_keywords():
+            header.set(key, val, comment)
+        header['COMMENT'] = '%s run with kwargs %s' %\
+                            (self.__class__.__name__, self.kwargs)
+        # Ready to go!
         pix = w.wcs_world2pix(zip(ra, dec), 1)
         n, x, y = numpy.histogram2d(pix[:,1], pix[:,0], bins=(binsx, binsy))
         hdu = fits.PrimaryHDU(n, header=header)
@@ -282,8 +301,7 @@ class xEventBinningLC(xEventBinningBase):
         evt_header = self.event_file.hdu_list['PRIMARY'].header
         counts, edges = numpy.histogram(self.event_data['TIME'],
                                         bins=self.make_binning())
-        primary_hdu = xPrimaryHDU()
-        primary_hdu.setup_header(self.event_file.primary_keywords())
+        primary_hdu = self.build_primary_hdu()
         data = [self.bin_centers(edges),
                 self.bin_widths(edges),
                 counts,
@@ -336,8 +354,7 @@ class xEventBinningPHASG(xEventBinningBase):
         evt_header = self.event_file.hdu_list['PRIMARY'].header
         counts, edges = numpy.histogram(self.event_data['PHASE'],
                                         bins=self.make_binning())
-        primary_hdu = xPrimaryHDU()
-        primary_hdu.setup_header(self.event_file.primary_keywords())
+        primary_hdu = self.build_primary_hdu()
         data = [self.bin_centers(edges),
                 self.bin_widths(edges),
                 counts,
@@ -434,8 +451,7 @@ class xEventBinningMCUBE(xEventBinningBase):
         phi = self.event_data['PE_ANGLE']
         counts, xedges, yedges = numpy.histogram2d(energy, phi,
                                                    bins=self.make_binning())
-        primary_hdu = xPrimaryHDU()
-        primary_hdu.setup_header(self.event_file.primary_keywords())
+        primary_hdu = self.build_primary_hdu()
         emin, emax = xedges[:-1], xedges[1:]
         emean = []
         for _emin, _emax in zip(emin, emax):

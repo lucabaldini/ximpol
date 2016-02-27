@@ -2,7 +2,8 @@ Release notes
 =============
 
 * A couple of command-line switches added to xpselect (issue #51).
-
+* xpbin options propagated to the output files (issue #60).
+  
 
 *ximpol (0.29.0) - Fri, 26 Feb 2016 18:41:42 -0800*
 
