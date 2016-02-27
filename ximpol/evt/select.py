@@ -69,19 +69,25 @@ class xEventSelect:
         """Select the events and write the output file.
         """
         logger.info('Running event selection with kwargs %s...' % self.kwargs)
+        if self.get('mc'):
+            evt_ra = self.event_data['MC_RA']
+            evt_dec = self.event_data['MC_DEC']
+            evt_energy = self.event_data['MC_ENERGY']
+        else:
+            evt_ra = self.event_data['RA']
+            evt_dec = self.event_data['DEC']
+            evt_energy = self.event_data['ENERGY']
         num_events = self.event_file.num_events()
         mask = numpy.ones(num_events, 'bool')
         if self.get('rad') is not None:
-            evt_ra = self.event_data['RA']
-            evt_dec = self.event_data['DEC']
             evt_skycoord = SkyCoord(evt_ra, evt_dec, unit='deg')
             ref_skyccord = SkyCoord(self.get('ra'), self.get('dec'), unit='deg')
             separation = evt_skycoord.separation(ref_skyccord).arcmin
             mask *= (separation < self.get('rad'))
         if self.get('emin') is not None:
-            mask *= (self.event_data['ENERGY'] > self.get('emin'))
+            mask *= (evt_energy > self.get('emin'))
         if self.get('emax') is not None:
-            mask *= (self.event_data['ENERGY'] < self.get('emax'))
+            mask *= (evt_energy < self.get('emax'))
         if self.get('tmin') is not None:
             mask *= (self.event_data['TIME'] > self.get('tmin'))
         if self.get('tmax') is not None:
@@ -90,6 +96,8 @@ class xEventSelect:
             mask *= (self.event_data['PHASE'] > self.get('phasemin'))
         if self.get('phasemax') is not None:
             mask *= (self.event_data['PHASE'] < self.get('phasemax'))
+        for srcid in self.get('mcsrcid'):
+            mask *= (self.event_data['MC_SRC_ID'] == srcid)
         events_hdu = self.event_file.hdu_list['EVENTS']
         events_hdu.data = events_hdu.data[mask]
         logger.info('Done, %d out of %d remaining...' %\

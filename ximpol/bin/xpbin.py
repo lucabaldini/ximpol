@@ -76,7 +76,7 @@ if __name__=='__main__':
                         help='number of bins for LIN/LOG time binning')
     parser.add_argument('--tbinfile', type=str, default=None,
                         help='path to the optional time bin definition file')
-    parser.add_argument('--phasgbins', type=int, default=50,
+    parser.add_argument('--phasebins', type=int, default=50,
                         help='number of bins for phase binning')
     parser.add_argument('--nxpix', type=int, default=256,
                         help='number of horizontal pixels in the output image')
@@ -90,8 +90,6 @@ if __name__=='__main__':
                         help='the vertical position of the image center')
     parser.add_argument('--proj', choices=PRJCTS, default='TAN',
                         help='coordinate projection')
-    parser.add_argument('--mc', action='store_true', default=False,
-                        help='use Monte Carlo information for binning')
     parser.add_argument('--ebinalg', choices=EBIN_ALGS, default='LIN',
                         help='energy binning specification')
     parser.add_argument('--emin', type=float, default=1.,
@@ -104,6 +102,8 @@ if __name__=='__main__':
                         help='path to the optional energy bin definition file')
     parser.add_argument('--phibins', type=int, default=75,
                         help='number of bins for LIN/LOG phi binning')
+    parser.add_argument('--mc', action='store_true', default=False,
+                        help='use Monte Carlo information for binning')
     args = parser.parse_args()
     startmsg()
     xpbin(args)

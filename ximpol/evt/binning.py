@@ -327,8 +327,8 @@ class xEventBinningPHASG(xEventBinningBase):
     def make_binning(self):
         """Build the light-curve binning.
         """
-        phasgbins = self.get('phasgbins')
-        return numpy.linspace(0., 1., phasgbins + 1)
+        phasebins = self.get('phasebins')
+        return numpy.linspace(0., 1., phasebins + 1)
 
     def bin_(self):
         """Overloaded method.

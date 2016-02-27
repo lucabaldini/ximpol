@@ -57,8 +57,6 @@ if __name__=='__main__':
                         help='minimum phase')
     parser.add_argument('--phasemax', type=float, default=None,
                         help='maximum phase')
-    #parser.add_argument('--mc', action='store_true', default=False,
-    #                    help='use Monte Carlo information for selecting')
     parser.add_argument('--emin', type=float, default=None,
                         help='minimum energy')
     parser.add_argument('--emax', type=float, default=None,
@@ -67,7 +65,10 @@ if __name__=='__main__':
                         help='minimum azimuthal angle')
     parser.add_argument('--phimax', type=float, default=None,
                         help='maximum azimuthal angle')
-
+    parser.add_argument('--mcsrcid', action='append', type=int, default=[],
+                        help='the Monte Carlo source ID to select')
+    parser.add_argument('--mc', action='store_true', default=False,
+                        help='use Monte Carlo information for the selection')
     args = parser.parse_args()
     startmsg()
     xpselect(args)
