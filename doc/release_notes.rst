@@ -1,7 +1,7 @@
 Release notes
 =============
 
-* A couple of command-line switches added to xpselect.
+* A couple of command-line switches added to xpselect (issue #51).
 
 
 *ximpol (0.29.0) - Fri, 26 Feb 2016 18:41:42 -0800*
