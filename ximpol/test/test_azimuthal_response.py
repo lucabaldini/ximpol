@@ -93,8 +93,7 @@ class TestAzimuthalResponse(unittest.TestCase):
     def test_rvs(self):
         """Test the random number generation.
         """
-        visibility = numpy.zeros(1000000)
-        visibility.fill(0.5)
+        visibility = numpy.full(1000000, 0.5)
         phi = self.generator.rvs_phi(visibility, 0.25*numpy.pi)
         hist = plt.hist(phi, bins=numpy.linspace(0, 2*numpy.pi, 100),
                         histtype='step', label='Random angles')

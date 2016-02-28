@@ -285,8 +285,7 @@ class TestCountSpectrum(unittest.TestCase):
                             show=self.interactive)
 
         ref_slice = count_spectrum.slice(tref)
-        _time = numpy.zeros(num_events)
-        _time.fill(tref)
+        _time = numpy.full(num_events, tref)
         _energy = count_spectrum.rvs(_time)
         _binning = numpy.linspace(self.aeff.xmin(), self.aeff.xmax(), 100)
         obs, bins, patches = plt.hist(_energy, bins=_binning,

@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* Replace numpy.fill() with numpy.full() when appropriate (issue #66).
+
 
 *ximpol (0.30.1) - Sat, 27 Feb 2016 08:20:34 -0800*
 

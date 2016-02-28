@@ -122,8 +122,7 @@ class xAzimuthalResponseGenerator(xUnivariateAuxGenerator):
     >>> from ximpol.irf.mrf import xAzimuthalResponseGenerator
     >>>
     >>> generator = xAzimuthalResponseGenerator()
-    >>> visibility = numpy.zeros(1000000)
-    >>> visibility.fill(0.5)
+    >>> visibility = numpy.full(1000000, 0.5)
     >>> phase = numpy.radians(45.)
     >>> phi = generator.rvs_phi(visibility, phase)
     >>> hist = plt.hist(phi, bins=numpy.linspace(0, 2*numpy.pi, 100),

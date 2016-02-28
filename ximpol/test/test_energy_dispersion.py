@@ -55,10 +55,9 @@ class TestEnergyDispersion(unittest.TestCase):
     def test_rvs(self, num_events=100000):
         """
         """
-        mc_energy = 10
+        mc_energy = 10.
         _ppf = self.edisp.matrix.vppf.vslice(mc_energy)
-        _e = numpy.zeros(num_events)
-        _e.fill(mc_energy)
+        _e = numpy.full(num_events, mc_energy)
         _slice = self.edisp.matrix.slice(mc_energy)
         _ch = self.edisp.matrix.rvs(_e)
         n, bins, patches = plt.hist(_ch, bins=numpy.linspace(0, 255, 256),

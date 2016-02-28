@@ -1,6 +1,6 @@
 #!/urs/bin/env python
 #
-# Copyright (C) 2015, the ximpol team.
+# Copyright (C) 2015--2016, the ximpol team.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU GengReral Public License as published by
@@ -158,7 +158,7 @@ class xModelComponentBase:
         # Set the source ID.
         event_list.set_column('MC_SRC_ID', self.identifier)
         # Set the phase to -1 for all non-periodic sources.
-        event_list.set_column('PHASE', -1)
+        event_list.set_column('PHASE', -1.)
         return event_list
 
 
@@ -199,10 +199,8 @@ class xPointSource(xModelComponentBase):
         size : float
             The number of sky coordinate pairs to be generated.
         """
-        ra = numpy.zeros(size)
-        ra.fill(self.ra)
-        dec = numpy.zeros(size)
-        dec.fill(self.dec)
+        ra = numpy.full(size, self.ra, 'f')
+        dec = numpy.full(size, self.dec, 'f')
         return (ra, dec)
 
 

@@ -128,9 +128,7 @@ class xMonteCarloEventList(dict):
         """
         assert self.has_key(name)
         if isinstance(data, numbers.Number):
-            _col = numpy.empty(self.length)
-            _col.fill(data)
-            data = _col
+            data = numpy.full(self.length, data)
         if self.length > 0:
             assert(len(data) == self.length)
         else:

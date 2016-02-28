@@ -58,15 +58,13 @@ class TestModulationFactor(unittest.TestCase):
         self.interactive = sys.flags.interactive
 
     def test_constant(self, num_events=1000000, polarization_degree=1.,
-                      polarization_angle=numpy.radians(20)):
+                      polarization_angle=numpy.radians(20.)):
         """Test the modulation factor as a random number generator when
         both the polarization angle and degrees are energy- and
         time-independent.
         """
-        poldegree = numpy.zeros(num_events)
-        poldegree.fill(polarization_degree)
-        polangle = numpy.zeros(num_events)
-        polangle.fill(polarization_angle)
+        poldegree = numpy.full(num_events, polarization_degree)
+        polangle = numpy.full(num_events, polarization_angle)
         self.modf.generator.plot(show=False)
         save_current_figure('test_modulation_constant_generator.png',
                             show=self.interactive)
