@@ -2,6 +2,10 @@ Release notes
 =============
 
 * Replace numpy.fill() with numpy.full() when appropriate (issue #66).
+* New display interface to binned files ximpol/bin/xpview.py (issue #55).
+* Obsolete script ximpol/bin/xpimgview.py removed.
+* Obsolete script ximpol/bin/xpevtview.py removed.
+* A couple of bug fixes in the source models.
 
 
 *ximpol (0.30.1) - Sat, 27 Feb 2016 08:20:34 -0800*

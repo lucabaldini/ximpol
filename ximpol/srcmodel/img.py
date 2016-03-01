@@ -112,7 +112,8 @@ class xFITSImage:
         fig.show_colorscale(cmap = 'afmhot')
         fig.add_colorbar()
         fig.colorbar.set_axis_label_text(zlabel)
-        plt.show()
+        if show:
+            plt.show()
 
 
 

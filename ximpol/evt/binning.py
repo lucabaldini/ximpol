@@ -29,6 +29,7 @@ from ximpol.evt.event import xEventFile
 from ximpol.core.fitsio import xPrimaryHDU, xBinTableHDUBase
 from ximpol.irf.mrf import xAzimuthalResponseGenerator
 from ximpol.utils.matplotlib_ import pyplot as plt
+from ximpol.srcmodel.img import xFITSImage
 
 
 class xEventBinningBase:
@@ -121,6 +122,25 @@ class xEventBinningBase:
         pass
 
 
+class xBinnedFileBase:
+
+    """Base class for binned files.
+    """
+
+    def __init__(self, file_path):
+        """Constructor.
+        """
+        assert(file_path.endswith('.fits'))
+        logger.info('Opening input binned file %s...' % file_path)
+        self.hdu_list = fits.open(file_path)
+        self.hdu_list.info()
+
+    def plot(self, *args, **kwargs):
+        """Do nothing method.
+        """
+        logger.info('%s.plot() not implemented, yet.' % self.__class__.__name__)
+
+
 class xBinTableHDUPHA1(xBinTableHDUBase):
 
     """Binary table for binned PHA1 data.
@@ -186,6 +206,32 @@ class xEventBinningPHA1(xEventBinningBase):
         logger.info('Done.')
 
 
+class xBinnedCountSpectrum(xBinnedFileBase):
+
+    """Binned phasogram.
+    """
+
+    def __init__(self, file_path):
+        """Constructor.
+        """
+        xBinnedFileBase.__init__(self, file_path)
+        self.data = self.hdu_list['SPECTRUM'].data
+        self.channel = self.data['CHANNEL']
+        self.rate = self.data['RATE']
+        self.error = self.data['STAT_ERR']
+
+    def plot(self, show=True):
+        """Overloaded plot method.
+        """
+        fig = plt.figure('Count spectrum')
+        plt.errorbar(self.channel, self.rate, yerr=self.error, fmt='o')
+        plt.xlabel('PHA')
+        plt.ylabel('Rate [Hz]')
+        plt.yscale('log')
+        if show:
+            plt.show()
+
+
 class xEventBinningCMAP(xEventBinningBase):
 
     """Class for CMAP binning.
@@ -246,6 +292,22 @@ class xEventBinningCMAP(xEventBinningBase):
         logger.info('Writing binned CMAP data to %s...' % self.get('outfile'))
         hdu.writeto(self.get('outfile'), clobber=True)
         logger.info('Done.')
+
+
+class xBinnedMap:
+
+    """Display interface to binned CMAP files.
+    """
+
+    def __init__(self, file_path):
+        """Constructor.
+        """
+        self.image = xFITSImage(file_path, build_cdf=False)
+
+    def plot(self, show=True):
+        """Plot the data.
+        """
+        self.image.plot(show=show)
 
 
 class xBinTableHDULC(xBinTableHDUBase):
@@ -317,6 +379,31 @@ class xEventBinningLC(xEventBinningBase):
         logger.info('Done.')
 
 
+class xBinnedLightCurve(xBinnedFileBase):
+
+    """Binned light curve.
+    """
+
+    def __init__(self, file_path):
+        """Constructor.
+        """
+        xBinnedFileBase.__init__(self, file_path)
+        self.data = self.hdu_list['RATE'].data
+        self.time = self.data['TIME']
+        self.counts = self.data['COUNTS']
+        self.error = self.data['ERROR']
+
+    def plot(self, show=True):
+        """Overloaded plot method.
+        """
+        fig = plt.figure('Light curve')
+        plt.errorbar(self.time, self.counts, yerr=self.error, fmt='o')
+        plt.xlabel('Time [s]')
+        plt.ylabel('Counts/bin')
+        if show:
+            plt.show()
+
+
 class xBinTableHDUPHASG(xBinTableHDUBase):
 
     """Binary table for binned PHASG data.
@@ -368,6 +455,31 @@ class xEventBinningPHASG(xEventBinningBase):
         logger.info('Writing binned PHASG data to %s...' % self.get('outfile'))
         hdu_list.writeto(self.get('outfile'), clobber=True)
         logger.info('Done.')
+
+
+class xBinnedPhasogram(xBinnedFileBase):
+
+    """Binned phasogram.
+    """
+
+    def __init__(self, file_path):
+        """Constructor.
+        """
+        xBinnedFileBase.__init__(self, file_path)
+        self.data = self.hdu_list['RATE'].data
+        self.phase = self.data['PHASE']
+        self.counts = self.data['COUNTS']
+        self.error = self.data['ERROR']
+
+    def plot(self, show=True):
+        """Overloaded plot method.
+        """
+        fig = plt.figure('Phasogram')
+        plt.errorbar(self.phase, self.counts, yerr=self.error, fmt='o')
+        plt.xlabel('Phase')
+        plt.ylabel('Counts/bin')
+        if show:
+            plt.show()
 
 
 class xBinTableHDUMCUBE(xBinTableHDUBase):
@@ -468,7 +580,7 @@ class xEventBinningMCUBE(xEventBinningBase):
         logger.info('Done.')
 
 
-class xModulationCube:
+class xBinnedModulationCube(xBinnedFileBase):
 
     """Read-mode interface to a MCUBE FITS file.
     """
@@ -476,10 +588,7 @@ class xModulationCube:
     def __init__(self, file_path):
         """Constructor.
         """
-        assert(file_path.endswith('.fits'))
-        logger.info('Opening input event file %s...' % file_path)
-        self.hdu_list = fits.open(file_path)
-        self.hdu_list.info()
+        xBinnedFileBase.__init__(self, file_path)
         self.data = self.hdu_list['MODULATION'].data
         self.emin = self.data['ENERGY_LO']
         self.emax = self.data['ENERGY_HI']
@@ -497,60 +606,56 @@ class xModulationCube:
         logger.info(fit_results)
         return fit_results
 
-    def plot_bin(self, i, fit=True, show=True):
+    def plot_bin(self, i, show=True, fit=True):
         """Plot the azimuthal distribution for the i-th energy slice.
         """
+        _emin = self.emin[i]
+        _emax = self.emax[i]
+        _emean = self.emean[i]
+        label = '%.2f--%.2f <%.3f> keV' % (_emin, _emax, _emean)
+        fig = plt.figure('Modulation curve (%s)' % label)
         plt.errorbar(self.phi_x, self.phi_y[i], yerr=numpy.sqrt(self.phi_y[i]),
                      fmt='o')
         if fit:
             fit_results = self.fit_bin(i)
             fit_results.plot()
-        plt.axis([0., 2*numpy.pi, 0., None])
-        plt.xlabel('$\\phi$ [rad]')
-        plt.ylabel('Counts')
+        plt.axis([0., 2*numpy.pi, 0., 1.2*self.phi_y[i].max()])
+        plt.xlabel('Azimuthal angle [rad]')
+        plt.ylabel('Counts/bin')
+        plt.text(0.02, 0.95, label, transform=plt.gca().transAxes)
         if show:
             plt.show()
 
-    def plot(self, fit=True, show=True):
+    def plot(self, show=True, fit=True, analyze=True):
         """Plot the azimuthal distributions for all the energy bins.
         """
-        for i, _emean in enumerate(self.emean):
-            fig = plt.figure()
-            self.plot_bin(i, fit, False)
-        plt.show()
-
-    def quick_analysis(self, interactive=True):
-        """Run a quick analysis on the modulation cube.
-        """
-        from ximpol.irf import load_mrf
-        irf_name = self.hdu_list['PRIMARY'].header['IRFNAME']
-        modf = load_mrf(irf_name)
+        if analyze:
+            fit = True
         fit_results = []
         for i, _emean in enumerate(self.emean):
-            fig = plt.figure()
-            _res = self.fit_bin(i)
             self.plot_bin(i, False, False)
-            _res.plot()
-            fit_results.append(_res)
-        fig = plt.figure()
-        _x = self.emean
-        _y = numpy.array([_res.visibility for _res in fit_results])
-        _y /= modf(_x)
-        _dy = numpy.array([_res.visibility_error for _res in fit_results])
-        _dy /= modf(_x)
-        plt.errorbar(_x, _y, _dy, fmt='o')
-        plt.xlabel('Energy [keV]')
-        plt.ylabel('Polarization degree')
-        fig = plt.figure()
-        _y = [numpy.degrees(_res.phase) for _res in fit_results]
-        _dy = [numpy.degrees(_res.phase_error) for _res in fit_results]
-        plt.errorbar(_x, _y, _dy, fmt='o')
-        plt.xlabel('Energy [keV]')
-        plt.ylabel('Polarization angle [$^\circ$]')
-        plt.show()
-
-
-
-if __name__ == '__main__':
-    c = xModulationCube('test_single_point_source_mcube.fits')
-    c.quick_analysis()
+            if fit:
+                _res = self.fit_bin(i)
+                _res.plot()
+                fit_results.append(_res)
+        if analyze:
+            from ximpol.irf import load_mrf
+            irf_name = self.hdu_list['PRIMARY'].header['IRFNAME']
+            modf = load_mrf(irf_name)
+            fig = plt.figure('Polarization degree vs. energy')
+            _x = self.emean
+            _y = numpy.array([_res.visibility for _res in fit_results])
+            _y /= modf(_x)
+            _dy = numpy.array([_res.visibility_error for _res in fit_results])
+            _dy /= modf(_x)
+            plt.errorbar(_x, _y, _dy, fmt='o')
+            plt.xlabel('Energy [keV]')
+            plt.ylabel('Polarization degree')
+            fig = plt.figure('Polarization angle vs. energy')
+            _y = [numpy.degrees(_res.phase) for _res in fit_results]
+            _dy = [numpy.degrees(_res.phase_error) for _res in fit_results]
+            plt.errorbar(_x, _y, _dy, fmt='o')
+            plt.xlabel('Energy [keV]')
+            plt.ylabel('Polarization angle [$^\circ$]')
+        if show:
+            plt.show()

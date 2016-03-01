@@ -35,7 +35,7 @@ polarization_degree = constant(0.157)
 polarization_angle = constant(numpy.radians(161.1))
 
 casa = xExtendedSource('Cas A', img_file_path, energy_spectrum,
-                       polarization_angle, polarization_degree)
+                       polarization_degree, polarization_angle)
 
 ROI_MODEL.add_source(casa)
 
