@@ -304,10 +304,10 @@ class xBinnedMap:
         """
         self.image = xFITSImage(file_path, build_cdf=False)
 
-    def plot(self, show=True):
+    def plot(self, show=True,subplot=(1,1,1)):
         """Plot the data.
         """
-        self.image.plot(show=show)
+        return self.image.plot(show=show,subplot=subplot)
 
 
 class xBinTableHDULC(xBinTableHDUBase):
@@ -612,8 +612,8 @@ class xBinnedModulationCube(xBinnedFileBase):
         _emin = self.emin[i]
         _emax = self.emax[i]
         _emean = self.emean[i]
-        label = '%.2f--%.2f <%.3f> keV' % (_emin, _emax, _emean)
-        fig = plt.figure('Modulation curve (%s)' % label)
+        label = '%.2f$--$%.2f $<$%.3f$>$ keV' % (_emin, _emax, _emean)
+        #if fig is None: fig = plt.figure('Modulation curve (%s)' % label)
         plt.errorbar(self.phi_x, self.phi_y[i], yerr=numpy.sqrt(self.phi_y[i]),
                      fmt='o')
         if fit:
@@ -626,13 +626,15 @@ class xBinnedModulationCube(xBinnedFileBase):
         if show:
             plt.show()
 
-    def plot(self, show=True, fit=True, analyze=True):
+    def plot(self, show=True, fit=True, analyze=True,xsubplot=0):
         """Plot the azimuthal distributions for all the energy bins.
         """
         if analyze:
             fit = True
         fit_results = []
+        if xsubplot==0: plt.figure()
         for i, _emean in enumerate(self.emean):
+            plt.subplot(len(self.emean),xsubplot+1,(xsubplot+1)*(i+1))
             self.plot_bin(i, False, False)
             if fit:
                 _res = self.fit_bin(i)
