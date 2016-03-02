@@ -88,21 +88,21 @@ def xpobssim(output_file_path, config_file_path, irf_name, duration, start_time,
 if __name__=='__main__':
     import argparse
     parser = argparse.ArgumentParser(description=__description__)
-    parser.add_argument('-o', '--output-file', type=str, default=None,
+    parser.add_argument('--outfile', type=str, default=None,
                         help='the output FITS event file')
-    parser.add_argument('-c', '--config-file', type=str, required=True,
+    parser.add_argument('--configfile', type=str, required=True,
                         help='the input configuration file')
-    parser.add_argument('-r', '--irf-name', type=str, default='xipe_baseline',
+    parser.add_argument('--irfname', type=str, default='xipe_baseline',
                         help='the input configuration file')
-    parser.add_argument('-d', '--duration', type=float, default=10,
+    parser.add_argument('--duration', type=float, default=10,
                         help='the duration (in s) of the simulation')
-    parser.add_argument('-t', '--start-time', type=float, default=0.,
+    parser.add_argument('--tstart', type=float, default=0.,
                         help='the start time (MET in s) of the simulation')
-    parser.add_argument('-n', '--time-steps', type=int, default=100,
+    parser.add_argument('--tsteps', type=int, default=100,
                         help='the number of steps for sampling the lightcurve')
-    parser.add_argument('-s', '--random-seed', type=int, default=0,
+    parser.add_argument('--seed', type=int, default=0,
                         help='the random seed for the simulation')
     args = parser.parse_args()
     startmsg()
-    xpobssim(args.output_file, args.config_file, args.irf_name, args.duration,
-             args.start_time, args.time_steps, args.random_seed)
+    xpobssim(args.outfile, args.configfile, args.irfname, args.duration,
+             args.tstart, args.tsteps, args.seed)
