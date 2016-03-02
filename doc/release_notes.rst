@@ -1,7 +1,8 @@
 Release notes
 =============
 
-* Changed name of xpbinview.py to xpviewbin.py
+* Changed name of xpbinview.py to xpviewbin.py.
+* Short options removed from xpobssim (issue #71).
 
 
 *ximpol (0.32.0) - Tue, 01 Mar 2016 16:45:31 -0800*
