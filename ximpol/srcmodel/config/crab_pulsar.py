@@ -85,7 +85,7 @@ pol_angle = xInterpolatedUnivariateSpline(_phi, _pol_angle, k=1, **fmt)
 
 # Mind that you have to wrap this into a function to be used.
 # This could be done in a more general way with some sort of library function.
-def polarization_degree(E, t):
+def polarization_degree(E, t, ra, dec):
     return pol_degree(t)
 
 # Build the polarization degree as a function of the phase.
@@ -97,7 +97,7 @@ fmt = dict(xname=r'$\phi$', yname='Polarization degree')
 pol_degree = xInterpolatedUnivariateSpline(_phi, _pol_degree, k=1, **fmt)
 
 # And, again, this needs to be wrapped into a function.
-def polarization_angle(E, t):
+def polarization_angle(E, t, ra, dec):
     return pol_angle(t)
 
 

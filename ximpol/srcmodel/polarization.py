@@ -21,18 +21,29 @@ from astropy.io import fits
 from astropy import wcs
 from ximpol.core.spline import xInterpolatedBivariateSplineLinear
 
+
+
+def constant(C):
+    """Simple wrapper returning a constant, independently of the input
+    arguments.
+    """
+    def _function(E, t, ra, dec):
+        return C
+    return _function
+
+
 class xPolMap:
     '''Class for the polarization map
     '''
     def __init__(self, x_filepath,y_filepath):
         self.x_wcs,self.x_map = self.readMap(x_filepath)
         self.y_wcs,self.y_map = self.readMap(y_filepath)
-        
+
         pass
 
     def readMap(self,filename):
         # Load the FITS hdulist using astropy.io.fits
-        w = wcs.WCS(filename)            
+        w = wcs.WCS(filename)
         hdu = fits.open(filename)
         data=hdu[0].data
         nbinsx,nbinsy=data.shape
@@ -41,18 +52,39 @@ class xPolMap:
         spline=xInterpolatedBivariateSplineLinear(x,y,data)
         return w,spline
 
-
     def getPolarizationVector(self,ra,dec):
-        
+        """
+        """
         x_x,x_y = self.x_wcs.wcs_world2pix(ra,dec,0)
         y_x,y_y = self.y_wcs.wcs_world2pix(ra,dec,0)
         px = self.x_map(x_x,x_y)
         py = self.y_map(y_x,y_y)
         return px,py
-    
-    def getPolarizationAngle(self,ra,dec):        
-        px,py=self.getPolarizationVector(ra,dec)
-        return numpy.sqrt(px*px+py*py),numpy.arctan2(py,px)
+
+    def polarization_degree(self, ra, dec):
+        """Return the polarization degree for a given direction in the sky.
+
+        Warning
+        -------
+        Note that we're calling the getPolarizationVector() function here and
+        in the polarization_angle() method, while we could in principle
+        get away with just one function call. The issue is that downstream
+        we need the polarization degree and angle separately, and if we want
+        to optimize things here, we would have to implement a generic
+        polarization() interface in the model components that is called
+        consistently in rvs_event_list().
+        """
+        px, py = self.getPolarizationVector(ra, dec)
+        return numpy.sqrt(px*px + py*py)
+
+    def polarization_angle(self, ra, dec):
+        """Return the polarization angle for a given direction in the sky.
+        """
+        px, py = self.getPolarizationVector(ra, dec)
+        phi = numpy.arctan2(py, px)
+        phi += (phi < 0.)*numpy.pi
+        return phi
+
 
 if __name__=='__main__':
     import os
@@ -64,7 +96,7 @@ if __name__=='__main__':
     polarization_x_map = os.path.join(XIMPOL_SRCMODEL,'fits','casa_pol_x.fits')
     polarization_y_map = os.path.join(XIMPOL_SRCMODEL,'fits','casa_pol_y.fits')
     casa_map           = os.path.join(XIMPOL_SRCMODEL,'fits','casa_1p5_3p0_keV.fits')
-    polarization_map   = xPolMap(polarization_x_map,polarization_y_map)    
+    polarization_map   = xPolMap(polarization_x_map,polarization_y_map)
     my_ra  = 350.863
     my_dec =  58.815
     npoints=1000
@@ -89,25 +121,24 @@ if __name__=='__main__':
     #aplpy.make_rgb_cube([polarization_x_map,polarization_y_map,casa_map],'thecube.fits')
     #aplpy.make_rgb_image('thecube.fits','test.tif',stretch_r='linear',stretch_g='linear',stretch_b='arcsinh')
     #aplpy.show_arrows(wx,wy,vx,vy,color='w',alpha=0.8)
-    
+
     gc = aplpy.FITSFigure(polarization_x_map,figsize=(10,10))
     gc.show_colorscale(stretch='sqrt')
     gc.show_arrows(wx,wy,vx,vy,color='w',alpha=0.8)
     gc.show_markers(wx,wy,marker='o')
     #gc.tick_labels.set_xformat('dd')
     #gc.tick_labels.set_yformat('dd')
-        
+
     gc = aplpy.FITSFigure(polarization_y_map,figsize=(10,10))
     gc.show_colorscale(stretch='sqrt')
     gc.show_arrows(wx,wy,vx,vy,color='w',alpha=0.8)
     gc.show_markers(wx,wy,marker='o')
-    
+
     gc = aplpy.FITSFigure(casa_map,figsize=(10,10))
     gc.show_colorscale(stretch='sqrt')
     gc.show_arrows(wx,wy,vx,vy,color='w',alpha=0.8)
-    gc.show_markers(wx,wy,marker='o')    
+    gc.show_markers(wx,wy,marker='o')
     #gc.tick_labels.set_xformat('dd')
     #gc.tick_labels.set_yformat('dd')
-    
+
     plt.show()
-    

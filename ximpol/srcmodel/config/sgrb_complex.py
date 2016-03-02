@@ -22,7 +22,7 @@ import os
 
 from ximpol import XIMPOL_SRCMODEL
 from ximpol.srcmodel.roi import xUniformDisk, xROIModel
-from ximpol.srcmodel.spectrum import constant
+from ximpol.srcmodel.polarization import constant
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
 
 

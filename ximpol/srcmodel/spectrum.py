@@ -37,13 +37,6 @@ def power_law(C, Gamma):
             return C*numpy.power(E, -Gamma)
     return _function
 
-def constant(C):
-    """
-    """
-    def _function(E,t):
-        return C
-    return _function
-
 
 class xCountSpectrum(xUnivariateAuxGenerator):
 

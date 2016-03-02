@@ -151,8 +151,10 @@ class xModelComponentBase:
         event_list.set_column('RA', col_ra)
         event_list.set_column('DEC', col_dec)
         # Extract the photoelectron emission directions.
-        pol_degree = self.polarization_degree(col_mc_energy, col_time)
-        pol_angle = self.polarization_angle(col_mc_energy, col_time)
+        pol_degree = self.polarization_degree(col_mc_energy, col_time,
+                                              col_mc_ra, col_mc_dec)
+        pol_angle = self.polarization_angle(col_mc_energy, col_time,
+                                              col_mc_ra, col_mc_dec)
         col_pe_angle = modf.rvs_phi(col_mc_energy, pol_degree, pol_angle)
         event_list.set_column('PE_ANGLE', col_pe_angle)
         # Set the source ID.
@@ -299,8 +301,10 @@ class xPeriodicPointSource(xPointSource):
         event_list.set_column('RA', col_ra)
         event_list.set_column('DEC', col_dec)
         # Extract the photoelectron emission directions.
-        pol_degree = self.polarization_degree(col_mc_energy, col_phase)
-        pol_angle = self.polarization_angle(col_mc_energy, col_phase)
+        pol_degree = self.polarization_degree(col_mc_energy, col_phase,
+                                              col_mc_ra, col_mc_dec)
+        pol_angle = self.polarization_angle(col_mc_energy, col_phase,
+                                            col_mc_ra, col_mc_dec)
         col_pe_angle = modf.rvs_phi(col_mc_energy, pol_degree, pol_angle)
         event_list.set_column('PE_ANGLE', col_pe_angle)
         # Set the source ID.

@@ -21,7 +21,8 @@ import numpy
 import os
 
 from ximpol.srcmodel.roi import xExtendedSource, xROIModel
-from ximpol.srcmodel.spectrum import power_law, constant
+from ximpol.srcmodel.spectrum import power_law
+from ximpol.srcmodel.polarization import constant
 from ximpol import XIMPOL_SRCMODEL
 
 

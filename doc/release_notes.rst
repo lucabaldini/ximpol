@@ -1,6 +1,9 @@
 Release notes
 =============
 
+* Implemented position-dependent polarization patterns based on FITS maps.
+* All configuration files updated to the new interfaces.
+
 
 *ximpol (0.31.0) - Tue, 01 Mar 2016 15:17:37 -0800*
 
