@@ -39,7 +39,7 @@ VIEW_DICT = {
     'MCUBE': xBinnedModulationCube
 }
 
-def xpbinview(file_path):
+def xpviewbin(file_path):
     """Quick FITS image viewer.
     """
     try:
@@ -56,4 +56,4 @@ if __name__ == '__main__':
                         help='the input FITS image file')
     args = parser.parse_args()
     startmsg()
-    xpbinview(args.file_path)
+    xpviewbin(args.file_path)
