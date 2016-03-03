@@ -40,7 +40,9 @@ def parse_spectral_model(file_name):
     file_path = os.path.join(XIMPOL_SRCMODEL, 'ascii', file_name)
     data = numpy.loadtxt(file_path, unpack=True)
     energy, flux = data[0], data[2]
-    return xInterpolatedUnivariateSplineLinear(energy, flux)
+    fmt = dict(xname='Energy', xunits='keV', yname='Flux',
+               yunits='cm$^{-2}$ s$^{-1}$ keV$^{-1}$')
+    return xInterpolatedUnivariateSplineLinear(energy, flux, **fmt)
 
 
 ROI_MODEL = xROIModel(266.8, -28.46)
@@ -77,8 +79,10 @@ ROI_MODEL.add_sources(SgrB1, SgrB2)
 if __name__ == '__main__':
     print(ROI_MODEL)
     from ximpol.utils.matplotlib_ import pyplot as plt
-    plt.figure()
-    energy_spectrum_b1.plot(show=False)
-    plt.figure()
-    energy_spectrum_b2.plot(show=False)
+    plt.figure('Sgr complex')
+    spectral_model_b1.plot(show=False, label='Sgr B1')
+    spectral_model_b2.plot(show=False, label='Sgr B2')
+    plt.yscale('log')
+    plt.axis([1, 10, 1e-7, 1e-3])
+    plt.legend(bbox_to_anchor=(0.35, 0.85))
     plt.show()
