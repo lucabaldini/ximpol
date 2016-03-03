@@ -1,6 +1,9 @@
 Release notes
 =============
 
+* Some changes for the creation of the Cas A movie.
+* Minor tweaks.
+
 
 *ximpol (0.32.1) - Wed, 02 Mar 2016 10:44:26 -0800*
 
