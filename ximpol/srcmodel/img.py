@@ -100,21 +100,21 @@ class xFITSImage:
         """
         return self.data[i][j]
 
-    def plot(self, show=True, zlabel='Counts/pixel'):
+    def plot(self, show=True, zlabel='Counts/pixel',subplot=(1,1,1)):
         """Plot the image.
 
         This is using aplpy to render the image.
         """
         import aplpy
         with context_no_grids():
-            fig = aplpy.FITSFigure(self.hdu_list[0], figure = plt.figure(0))
+            fig = aplpy.FITSFigure(self.hdu_list[0], figure=plt.figure(0,figsize=(10*subplot[1],10*subplot[0])), subplot = subplot)
         fig.add_grid()
         fig.show_colorscale(cmap = 'afmhot')
         fig.add_colorbar()
         fig.colorbar.set_axis_label_text(zlabel)
         if show:
             plt.show()
-
+        return fig
 
 
 
