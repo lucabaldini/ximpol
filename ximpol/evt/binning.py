@@ -578,7 +578,7 @@ class xEventBinningMCUBE(xEventBinningBase):
         logger.info('Writing binned MCUBE data to %s...' % self.get('outfile'))
         hdu_list.writeto(self.get('outfile'), clobber=True)
         logger.info('Done.')
-
+        
 
 class xBinnedModulationCube(xBinnedFileBase):
 
@@ -612,7 +612,7 @@ class xBinnedModulationCube(xBinnedFileBase):
         _emin = self.emin[i]
         _emax = self.emax[i]
         _emean = self.emean[i]
-        label = '%.2f$--$%.2f $<$%.3f$>$ keV' % (_emin, _emax, _emean)
+        label = '%.2f$-$%.2f $<$%.3f$>$ keV' % (_emin, _emax, _emean)
         #if fig is None: fig = plt.figure('Modulation curve (%s)' % label)
         plt.errorbar(self.phi_x, self.phi_y[i], yerr=numpy.sqrt(self.phi_y[i]),
                      fmt='o')
@@ -631,7 +631,7 @@ class xBinnedModulationCube(xBinnedFileBase):
         """
         if analyze:
             fit = True
-        fit_results = []
+        self.fit_results = []
         if xsubplot==0: plt.figure()
         for i, _emean in enumerate(self.emean):
             plt.subplot(len(self.emean),xsubplot+1,(xsubplot+1)*(i+1))
@@ -639,23 +639,23 @@ class xBinnedModulationCube(xBinnedFileBase):
             if fit:
                 _res = self.fit_bin(i)
                 _res.plot()
-                fit_results.append(_res)
+                self.fit_results.append(_res)
         if analyze:
             from ximpol.irf import load_mrf
             irf_name = self.hdu_list['PRIMARY'].header['IRFNAME']
             modf = load_mrf(irf_name)
             fig = plt.figure('Polarization degree vs. energy')
             _x = self.emean
-            _y = numpy.array([_res.visibility for _res in fit_results])
+            _y = numpy.array([_res.visibility for _res in self.fit_results])
             _y /= modf(_x)
-            _dy = numpy.array([_res.visibility_error for _res in fit_results])
+            _dy = numpy.array([_res.visibility_error for _res in self.fit_results])
             _dy /= modf(_x)
             plt.errorbar(_x, _y, _dy, fmt='o')
             plt.xlabel('Energy [keV]')
             plt.ylabel('Polarization degree')
             fig = plt.figure('Polarization angle vs. energy')
-            _y = [numpy.degrees(_res.phase) for _res in fit_results]
-            _dy = [numpy.degrees(_res.phase_error) for _res in fit_results]
+            _y = [numpy.degrees(_res.phase) for _res in self.fit_results]
+            _dy = [numpy.degrees(_res.phase_error) for _res in self.fit_results]
             plt.errorbar(_x, _y, _dy, fmt='o')
             plt.xlabel('Energy [keV]')
             plt.ylabel('Polarization angle [$^\circ$]')
