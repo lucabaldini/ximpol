@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.33.1) - Mon, 07 Mar 2016 12:11:25 -0800*
+
 * Minor changes to the lamp_post_accreting_bh source model.
 
 
