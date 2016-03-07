@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.33.0) - Mon, 07 Mar 2016 10:59:30 -0800*
+
 * Some changes for the creation of the Cas A movie.
 * Minor tweaks.
 * Layout of the configuration files reorganized, with ximpol/srcmodel/config
