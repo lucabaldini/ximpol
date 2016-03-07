@@ -58,11 +58,13 @@ if __name__ == '__main__':
     for folder_path in [
             XIMPOL_ROOT,
             XIMPOL_BIN,
+            XIMPOL_CONFIG,
             XIMPOL_CORE,
             XIMPOL_DETECTOR,
             XIMPOL_DIST,
             XIMPOL_DOC,
             XIMPOL_EVT,
+            XIMPOL_EXAMPLES,
             XIMPOL_IRF,
             XIMPOL_NOTEBOOKS,
             XIMPOL_SRCMODEL,

@@ -20,9 +20,10 @@
 import numpy
 import sys,os
 from ximpol.srcmodel.roi import xPointSource, xROIModel
-from ximpol.srcmodel.spectrum import power_law, constant
+from ximpol.srcmodel.spectrum import power_law
+from ximpol.srcmodel.polarization import constant
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
-from ximpol import XIMPOL_SRCMODEL
+from ximpol import XIMPOL_CONFIG
 
 roi_ra,roi_dec=173.13, 27.71
 grb_ra,grb_dec=173.1362, 27.7129
@@ -49,7 +50,7 @@ def parse(ascii_file_name,scale=3):
 
 
 
-time_array,flux_array=parse(os.path.join(XIMPOL_SRCMODEL,'ascii/GRB130427_Swift.dat'),scale=11)
+time_array,flux_array=parse(os.path.join(XIMPOL_CONFIG,'ascii/GRB130427_Swift.dat'),scale=11)
 
 
 integral_flux = xInterpolatedUnivariateSplineLinear(time_array,flux_array,'Time','s','Flux','erg/cm^2/s')

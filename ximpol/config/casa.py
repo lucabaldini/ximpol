@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2015, the ximpol team.
+# Copyright (C) 2015--2016, the ximpol team.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU GengReral Public License as published by
@@ -22,20 +22,20 @@ import os
 
 from ximpol.srcmodel.roi import xExtendedSource, xROIModel
 from ximpol.srcmodel.spectrum import power_law
-from ximpol.srcmodel.polarization import xPolMap#, constant
-from ximpol import XIMPOL_SRCMODEL
+from ximpol.srcmodel.polarization import xPolMap
+from ximpol import XIMPOL_CONFIG
 
 
 ROI_MODEL = xROIModel(350.8664167, 58.8117778)
 
-img_file_path = os.path.join(XIMPOL_SRCMODEL, 'fits', 'casa_1p5_3p0_keV.fits')
+img_file_path = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_1p5_3p0_keV.fits')
 
 # This is actually for the Crab and needs to be fixed.
 energy_spectrum = power_law(10., 2.)
 
 # Read the polarization maps/
-pol_mapx_path = os.path.join(XIMPOL_SRCMODEL, 'fits', 'casa_pol_x.fits')
-pol_mapy_path = os.path.join(XIMPOL_SRCMODEL, 'fits', 'casa_pol_y.fits')
+pol_mapx_path = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_pol_x.fits')
+pol_mapy_path = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_pol_y.fits')
 polarization_map = xPolMap(pol_mapx_path, pol_mapy_path)
 
 def polarization_angle(E, t, ra, dec):

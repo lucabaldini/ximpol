@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2015, the ximpol team.
+# Copyright (C) 2015--2016, the ximpol team.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU GengReral Public License as published by
@@ -20,7 +20,7 @@
 import numpy
 import os
 
-from ximpol import XIMPOL_SRCMODEL
+from ximpol import XIMPOL_CONFIG
 from ximpol.srcmodel.roi import xUniformDisk, xROIModel
 from ximpol.srcmodel.polarization import constant
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
@@ -37,7 +37,7 @@ def parse_spectral_model(file_name):
     """Parse a spectral model written by XSPEC and return the corresponding
     interpolated univariate spline.
     """
-    file_path = os.path.join(XIMPOL_SRCMODEL, 'ascii', file_name)
+    file_path = os.path.join(XIMPOL_CONFIG, 'ascii', file_name)
     data = numpy.loadtxt(file_path, unpack=True)
     energy, flux = data[0], data[2]
     fmt = dict(xname='Energy', xunits='keV', yname='Flux',

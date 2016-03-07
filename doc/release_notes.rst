@@ -3,7 +3,13 @@ Release notes
 
 * Some changes for the creation of the Cas A movie.
 * Minor tweaks.
-
+* Layout of the configuration files reorganized, with ximpol/srcmodel/config
+  moved to ximpol and the ascii and fits folder moved as subfolders therein.
+* ximpol.__init__.py and cleanup script modified accordingly.
+* Lamp-Post accreting BH model (by Alberto) added.
+* All soure models adapted to the new layout.
+* And all the unit tests run for cross-check.
+  
 
 *ximpol (0.32.1) - Wed, 02 Mar 2016 10:44:26 -0800*
 

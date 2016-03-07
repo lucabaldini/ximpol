@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2015, the ximpol team.
+# Copyright (C) 2015--2016, the ximpol team.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU GengReral Public License as published by
@@ -23,12 +23,12 @@ import os
 from ximpol.srcmodel.roi import xExtendedSource, xROIModel
 from ximpol.srcmodel.spectrum import power_law
 from ximpol.srcmodel.polarization import constant
-from ximpol import XIMPOL_SRCMODEL
+from ximpol import XIMPOL_CONFIG
 
 
 ROI_MODEL = xROIModel(83.633083, 22.014500)
 
-img_file_path = os.path.join(XIMPOL_SRCMODEL, 'fits', 'crab_0p3_10p0_keV.fits')
+img_file_path = os.path.join(XIMPOL_CONFIG, 'fits', 'crab_0p3_10p0_keV.fits')
 energy_spectrum = power_law(10., 2.)
 polarization_degree = constant(0.157)
 polarization_angle = constant(numpy.radians(161.1))

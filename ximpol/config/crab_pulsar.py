@@ -32,7 +32,7 @@ import scipy.signal
 from scipy.optimize import curve_fit
 import os
 
-from ximpol import XIMPOL_SRCMODEL
+from ximpol import XIMPOL_CONFIG
 from ximpol.core.rand import xUnivariateGenerator
 from ximpol.core.spline import xInterpolatedUnivariateSpline
 from ximpol.srcmodel.roi import xPeriodicPointSource, xEphemeris, xROIModel
@@ -42,7 +42,7 @@ from ximpol.srcmodel.spectrum import power_law
 def _full_path(file_name):
     """Convenience function to retrieve the relevant files.
     """
-    return os.path.join(XIMPOL_SRCMODEL, 'ascii', file_name)
+    return os.path.join(XIMPOL_CONFIG, 'ascii', file_name)
 
 # Grab all the relevant files.
 SPEC_FILE_PATH = _full_path('Crab_PhaseResolvedSpectrum.txt')

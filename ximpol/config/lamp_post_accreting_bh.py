@@ -22,7 +22,7 @@ import os
 
 from ximpol.srcmodel.roi import xPointSource, xROIModel
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
-from ximpol import XIMPOL_SRCMODEL
+from ximpol import XIMPOL_CONFIG
 
 
 def parse(ascii_file_name, eMin = 1, eMax = 80, scale=3):
@@ -74,7 +74,7 @@ Each file corresponds to a different choice of the main input parameters.
 
 # spin = 0, h =  3, inclin_angle = 30
 data_file_name = 'lamp_pol_0_30_003_reduced.dat'
-data_file_path = os.path.join (XIMPOL_SRCMODEL, 'ascii', data_file_name)
+data_file_path = os.path.join (XIMPOL_CONFIG, 'ascii', data_file_name)
 
 eMin = 1.
 eMax = 100.
