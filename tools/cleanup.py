@@ -60,6 +60,7 @@ if __name__ == '__main__':
             XIMPOL_BIN,
             XIMPOL_CONFIG,
             XIMPOL_CORE,
+            XIMPOL_DATA,
             XIMPOL_DETECTOR,
             XIMPOL_DIST,
             XIMPOL_DOC,

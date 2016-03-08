@@ -26,10 +26,11 @@ from ximpol import XIMPOL_BIN
 import sys
 sys.path.append(XIMPOL_BIN)
 sys.dont_write_bytecode = 1
-from xpobssim import xpobssim
-from xpobssim import PARSER as XPOBSSIM_PARSER
-from xpbin import xpbin
-from xpbin import PARSER as XPBIN_PARSER
+from xpobssim import xpobssim, PARSER as XPOBSSIM_PARSER
+from xpselect import xpselect, PARSER as XPSELECT_PARSER
+from xpbin import xpbin, PARSER as XPBIN_PARSER
+
+
 
 
 from ximpol.utils.logging_ import logger
@@ -69,6 +70,15 @@ class xPipeline:
         switches = self.command_line(**kwargs).split()
         kwargs = XPOBSSIM_PARSER.parse_args(switches).__dict__
         outfile = xpobssim(**kwargs)
+        self.event_files.append(outfile)
+        return outfile
+
+    def xpselect(self, file_path, **kwargs):
+        """Generate an event file.
+        """
+        switches = self.command_line(**kwargs).split() + [file_path]
+        kwargs = XPSELECT_PARSER.parse_args(switches).__dict__
+        outfile = xpselect(file_path, **kwargs)
         self.event_files.append(outfile)
         return outfile
 

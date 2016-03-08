@@ -32,6 +32,9 @@ pipeline = xPipeline()
 # Generate the events.
 evt_file_path = pipeline.xpobssim(configfile=CFG_FILE, duration=DURATION)
 
+# Select the data (for fun)
+pipeline.xpselect(evt_file_path, emin=2., emax=3.)
+
 # Bin the events in different flavors.
 pipeline.xpbin(evt_file_path, algorithm='CMAP')
 pipeline.xpbin(evt_file_path, algorithm='PHA1')

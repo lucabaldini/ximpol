@@ -43,64 +43,68 @@ PRJCTS = ['AIT', 'ZEA', 'ARC', 'CAR', 'GLS', 'MER', 'NCP', 'SIN', 'STG', 'TAN']
 COORD_SYS = ['CEL', 'GAL']
 
 
-def xpbin(args):
+"""Command-line switches.
+"""
+import argparse
+PARSER = argparse.ArgumentParser(description=__description__)
+PARSER.add_argument('evfile', type=str,
+                    help='path to the input event file')
+PARSER.add_argument('--algorithm', choices=BIN_ALGS, required=True,
+                    help='the binning algorithm')
+PARSER.add_argument('--outfile', type=str, default=None,
+                    help='path to the output binned FITS file')
+PARSER.add_argument('--tbinalg', choices=TBIN_ALGS, default='LIN',
+                    help='time binning specification')
+PARSER.add_argument('--tstart', type=float, default=None,
+                    help='start time for LIN/LOG time binning')
+PARSER.add_argument('--tstop', type=float, default=None,
+                    help='stop time for LIN/LOG time binning')
+PARSER.add_argument('--tbins', type=int, default=100,
+                    help='number of bins for LIN/LOG time binning')
+PARSER.add_argument('--tbinfile', type=str, default=None,
+                    help='path to the optional time bin definition file')
+PARSER.add_argument('--phasebins', type=int, default=50,
+                    help='number of bins for phase binning')
+PARSER.add_argument('--nxpix', type=int, default=256,
+                    help='number of horizontal pixels in the output image')
+PARSER.add_argument('--nypix', type=int, default=256,
+                    help='number of vertical pizels in the output image')
+PARSER.add_argument('--binsz', type=float, default=2.5,
+                    help='the pixel size of the output image in arcseconds')
+PARSER.add_argument('--xref', type=float, default=None,
+                    help='the horizontal position of the image center')
+PARSER.add_argument('--yref', type=float, default=None,
+                    help='the vertical position of the image center')
+PARSER.add_argument('--proj', choices=PRJCTS, default='TAN',
+                    help='coordinate projection')
+PARSER.add_argument('--ebinalg', choices=EBIN_ALGS, default='LIN',
+                    help='energy binning specification')
+PARSER.add_argument('--emin', type=float, default=1.,
+                    help='minimum energy for LIN/LOG energy binning')
+PARSER.add_argument('--emax', type=float, default=10.,
+                    help='maximum energy for LIN/LOG energy binning')
+PARSER.add_argument('--ebins', type=int, default=5,
+                    help='number of bins for LIN/LOG energy binning')
+PARSER.add_argument('--ebinfile', type=str, default=None,
+                    help='path to the optional energy bin definition file')
+PARSER.add_argument('--phibins', type=int, default=75,
+                    help='number of bins for LIN/LOG phi binning')
+PARSER.add_argument('--mc', action='store_true', default=False,
+                    help='use Monte Carlo information for binning')
+
+
+def xpbin(file_path, **kwargs):
     """Application to bin the data.
 
     We want to (loosely) model this on
     http://fermi.gsfc.nasa.gov/ssc/data/analysis/scitools/help/gtbin.txt
     """
-    evt_file_path = args.evfile
-    assert(evt_file_path.endswith('.fits'))
-    BIN_ALG_DICT[args.algorithm](evt_file_path, **args.__dict__).bin_()
+    assert(file_path.endswith('.fits'))
+    BIN_ALG_DICT[kwargs['algorithm']](file_path, **kwargs).bin_()
+    return kwargs['outfile']
 
 
 if __name__=='__main__':
-    import argparse
-    parser = argparse.ArgumentParser(description=__description__)
-    parser.add_argument('evfile', type=str,
-                        help='path to the input event file')
-    parser.add_argument('--algorithm', choices=BIN_ALGS, required=True,
-                        help='the binning algorithm')
-    parser.add_argument('--outfile', type=str, default=None,
-                        help='path to the output binned FITS file')
-    parser.add_argument('--tbinalg', choices=TBIN_ALGS, default='LIN',
-                        help='time binning specification')
-    parser.add_argument('--tstart', type=float, default=None,
-                        help='start time for LIN/LOG time binning')
-    parser.add_argument('--tstop', type=float, default=None,
-                        help='stop time for LIN/LOG time binning')
-    parser.add_argument('--tbins', type=int, default=100,
-                        help='number of bins for LIN/LOG time binning')
-    parser.add_argument('--tbinfile', type=str, default=None,
-                        help='path to the optional time bin definition file')
-    parser.add_argument('--phasebins', type=int, default=50,
-                        help='number of bins for phase binning')
-    parser.add_argument('--nxpix', type=int, default=256,
-                        help='number of horizontal pixels in the output image')
-    parser.add_argument('--nypix', type=int, default=256,
-                        help='number of vertical pizels in the output image')
-    parser.add_argument('--binsz', type=float, default=2.5,
-                        help='the pixel size of the output image in arcseconds')
-    parser.add_argument('--xref', type=float, default=None,
-                        help='the horizontal position of the image center')
-    parser.add_argument('--yref', type=float, default=None,
-                        help='the vertical position of the image center')
-    parser.add_argument('--proj', choices=PRJCTS, default='TAN',
-                        help='coordinate projection')
-    parser.add_argument('--ebinalg', choices=EBIN_ALGS, default='LIN',
-                        help='energy binning specification')
-    parser.add_argument('--emin', type=float, default=1.,
-                        help='minimum energy for LIN/LOG energy binning')
-    parser.add_argument('--emax', type=float, default=10.,
-                        help='maximum energy for LIN/LOG energy binning')
-    parser.add_argument('--ebins', type=int, default=5,
-                        help='number of bins for LIN/LOG energy binning')
-    parser.add_argument('--ebinfile', type=str, default=None,
-                        help='path to the optional energy bin definition file')
-    parser.add_argument('--phibins', type=int, default=75,
-                        help='number of bins for LIN/LOG phi binning')
-    parser.add_argument('--mc', action='store_true', default=False,
-                        help='use Monte Carlo information for binning')
-    args = parser.parse_args()
+    args = PARSER.parse_args()
     startmsg()
-    xpbin(args)
+    xpbin(args.evfile, **args.__dict__)

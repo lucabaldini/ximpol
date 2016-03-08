@@ -27,9 +27,30 @@ import imp
 from ximpol.irf import load_irfs
 from ximpol.evt.event import xMonteCarloEventList
 from ximpol.utils.profile import xChrono
+from ximpol.utils.os_ import mkdir
 from ximpol.utils.logging_ import logger, startmsg
-from ximpol import XIMPOL_IRF
+from ximpol import XIMPOL_IRF, XIMPOL_DATA
 from ximpol.srcmodel.spectrum import xCountSpectrum
+
+
+"""Command-line switches.
+"""
+import argparse
+PARSER = argparse.ArgumentParser(description=__description__)
+PARSER.add_argument('--outfile', type=str, default=None,
+                    help='the output FITS event file')
+PARSER.add_argument('--configfile', type=str, required=True,
+                    help='the input configuration file')
+PARSER.add_argument('--irfname', type=str, default='xipe_baseline',
+                    help='the input configuration file')
+PARSER.add_argument('--duration', type=float, default=10,
+                    help='the duration (in s) of the simulation')
+PARSER.add_argument('--tstart', type=float, default=0.,
+                    help='the start time (MET in s) of the simulation')
+PARSER.add_argument('--tsteps', type=int, default=100,
+                    help='the number of steps for sampling the lightcurve')
+PARSER.add_argument('--seed', type=int, default=0,
+                    help='the random seed for the simulation')
 
 
 class xSimulationInfo:
@@ -41,68 +62,50 @@ class xSimulationInfo:
     pass
 
 
-def xpobssim(output_file_path, config_file_path, irf_name, duration, start_time,
-             time_steps, random_seed):
+def xpobssim(**kwargs):
     """Run the ximpol fast simulator.
     """
-    assert(config_file_path.endswith('.py'))
-    if output_file_path is None:
-        file_name = os.path.basename(config_file_path).replace('.py', '.fits')
-        output_file_path = file_name
-
+    assert(kwargs['configfile'].endswith('.py'))
+    if kwargs['outfile'] is None:
+        outfile = os.path.basename(kwargs['configfile']).replace('.py', '.fits')
+        mkdir(XIMPOL_DATA)
+        kwargs['outfile'] = os.path.join(XIMPOL_DATA, outfile)
+        logger.info('Setting output file path to %s...' % kwargs['outfile'])
     chrono = xChrono()
-    logger.info('Setting the random seed to %d...' % random_seed)
-    numpy.random.seed(random_seed)
-
+    logger.info('Setting the random seed to %d...' % kwargs['seed'])
+    numpy.random.seed(kwargs['seed'])
     logger.info('Loading the instrument response functions...')
-    aeff, psf, modf, edisp = load_irfs(irf_name)
+    aeff, psf, modf, edisp = load_irfs(kwargs['irfname'])
     logger.info('Done %s.' % chrono)
-
     logger.info('Setting up the source model...')
-    module_name = os.path.basename(config_file_path).replace('.py', '')
-    ROI_MODEL = imp.load_source(module_name, config_file_path).ROI_MODEL
+    module_name = os.path.basename(kwargs['configfile']).replace('.py', '')
+    ROI_MODEL = imp.load_source(module_name, kwargs['configfile']).ROI_MODEL
     logger.info(ROI_MODEL)
-    if start_time < ROI_MODEL.min_validity_time():
-        start_time = ROI_MODEL.min_validity_time()
-        logger.info('Simulation start time set to %s...' % start_time)
-    stop_time = start_time + duration
-    if stop_time > ROI_MODEL.max_validity_time():
-        stop_time = ROI_MODEL.max_validity_time()
-        logger.info('Simulation stop time set to %s...' % stop_time)
-    gti_list = [(start_time, stop_time)]
-    sampling_time = numpy.linspace(start_time, stop_time, time_steps)
+    if kwargs['tstart'] < ROI_MODEL.min_validity_time():
+        kwargs['tstart'] = ROI_MODEL.min_validity_time()
+        logger.info('Simulation start time set to %s...' % kwargs['tstart'])
+    tstop = kwargs['tstart'] + kwargs['duration']
+    if tstop > ROI_MODEL.max_validity_time():
+        tstop = ROI_MODEL.max_validity_time()
+        logger.info('Simulation stop time set to %s...' % tstop)
+    gti_list = [(kwargs['tstart'], tstop)]
+    sampling_time = numpy.linspace(kwargs['tstart'], tstop, kwargs['tsteps'])
     event_list = ROI_MODEL.rvs_event_list(aeff, psf, modf, edisp, sampling_time)
     logger.info('Done %s.' % chrono)
     simulation_info = xSimulationInfo()
     simulation_info.gti_list = gti_list
     simulation_info.roi_model = ROI_MODEL
-    simulation_info.irf_name = irf_name
+    simulation_info.irf_name = kwargs['irfname']
     simulation_info.aeff = aeff
     simulation_info.psf = psf
     simulation_info.modf = modf
     simulation_info.edisp = edisp
-    event_list.write_fits(output_file_path, simulation_info)
+    event_list.write_fits(kwargs['outfile'], simulation_info)
     logger.info('All done %s!' % chrono)
+    return kwargs['outfile']
 
 
 if __name__=='__main__':
-    import argparse
-    parser = argparse.ArgumentParser(description=__description__)
-    parser.add_argument('--outfile', type=str, default=None,
-                        help='the output FITS event file')
-    parser.add_argument('--configfile', type=str, required=True,
-                        help='the input configuration file')
-    parser.add_argument('--irfname', type=str, default='xipe_baseline',
-                        help='the input configuration file')
-    parser.add_argument('--duration', type=float, default=10,
-                        help='the duration (in s) of the simulation')
-    parser.add_argument('--tstart', type=float, default=0.,
-                        help='the start time (MET in s) of the simulation')
-    parser.add_argument('--tsteps', type=int, default=100,
-                        help='the number of steps for sampling the lightcurve')
-    parser.add_argument('--seed', type=int, default=0,
-                        help='the random seed for the simulation')
-    args = parser.parse_args()
+    args = PARSER.parse_args()
     startmsg()
-    xpobssim(args.outfile, args.configfile, args.irfname, args.duration,
-             args.tstart, args.tsteps, args.seed)
+    xpobssim(**args.__dict__)

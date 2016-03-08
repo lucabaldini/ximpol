@@ -114,3 +114,4 @@ class xEventSelect:
         logger.info('Writing data subselectionto %s...' % self.get('outfile'))
         hdu_list.writeto(self.get('outfile'), clobber=True)
         logger.info('Done.')
+        return self.get('outfile')

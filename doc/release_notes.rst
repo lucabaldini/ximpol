@@ -1,6 +1,12 @@
 Release notes
 =============
 
+* Internals of xpobssim, xpselect and xpbin tweaked to be fully configurable
+  via keyword arguments, to facilitate pipelining analyses.
+* ximpol/examples folder added.
+* First stup at an analysis pipeline to facilitate complex simulation/analysis
+  chains.
+
 
 *ximpol (0.33.1) - Mon, 07 Mar 2016 12:11:25 -0800*
 

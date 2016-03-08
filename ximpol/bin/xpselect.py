@@ -24,51 +24,53 @@ from ximpol.utils.logging_ import logger, startmsg, abort
 from ximpol.evt.select import xEventSelect
 
 
-def xpselect(args):
+"""Command-line switches.
+"""
+import argparse
+PARSER = argparse.ArgumentParser(description=__description__)
+PARSER.add_argument('evfile', type=str,
+                    help='path to the input event file')
+PARSER.add_argument('--outfile', type=str, default=None,
+                    help='path to the output binned FITS file')
+PARSER.add_argument('--ra', type=float, default=None,
+                    help='RA of acceptance cone in decimal degrees')
+PARSER.add_argument('--dec', type=float, default=None,
+                    help='Dec of acceptance cone in decimal degrees')
+PARSER.add_argument('--rad', type=float, default=None,
+                    help='ROI radius in arcminutes')
+PARSER.add_argument('--tmin', type=float, default=None,
+                    help='minimum time')
+PARSER.add_argument('--tmax', type=float, default=None,
+                    help='maximum time')
+PARSER.add_argument('--phasemin', type=float, default=None,
+                    help='minimum phase')
+PARSER.add_argument('--phasemax', type=float, default=None,
+                    help='maximum phase')
+PARSER.add_argument('--emin', type=float, default=None,
+                    help='minimum energy')
+PARSER.add_argument('--emax', type=float, default=None,
+                    help='maximum energy')
+PARSER.add_argument('--phimin', type=float, default=None,
+                    help='minimum azimuthal angle')
+PARSER.add_argument('--phimax', type=float, default=None,
+                    help='maximum azimuthal angle')
+PARSER.add_argument('--mcsrcid', action='append', type=int, default=[],
+                    help='the Monte Carlo source ID to select')
+PARSER.add_argument('--mc', action='store_true', default=False,
+                    help='use Monte Carlo information for the selection')
+
+
+def xpselect(file_path, **kwargs):
     """Application for data subselection.
 
     We want to (loosely) model this on
     http://fermi.gsfc.nasa.gov/ssc/data/analysis/scitools/help/gtselect.txt
     """
-    evt_file_path = args.evfile
-    assert(evt_file_path.endswith('.fits'))
-    kwargs = args.__dict__
-    xEventSelect(evt_file_path, **kwargs).select()
+    assert(file_path.endswith('.fits'))
+    return xEventSelect(file_path, **kwargs).select()
 
 
 if __name__=='__main__':
-    import argparse
-    parser = argparse.ArgumentParser(description=__description__)
-    parser.add_argument('evfile', type=str,
-                        help='path to the input event file')
-    parser.add_argument('--outfile', type=str, default=None,
-                        help='path to the output binned FITS file')
-    parser.add_argument('--ra', type=float, default=None,
-                        help='RA of acceptance cone in decimal degrees')
-    parser.add_argument('--dec', type=float, default=None,
-                        help='Dec of acceptance cone in decimal degrees')
-    parser.add_argument('--rad', type=float, default=None,
-                        help='ROI radius in arcminutes')
-    parser.add_argument('--tmin', type=float, default=None,
-                        help='minimum time')
-    parser.add_argument('--tmax', type=float, default=None,
-                        help='maximum time')
-    parser.add_argument('--phasemin', type=float, default=None,
-                        help='minimum phase')
-    parser.add_argument('--phasemax', type=float, default=None,
-                        help='maximum phase')
-    parser.add_argument('--emin', type=float, default=None,
-                        help='minimum energy')
-    parser.add_argument('--emax', type=float, default=None,
-                        help='maximum energy')
-    parser.add_argument('--phimin', type=float, default=None,
-                        help='minimum azimuthal angle')
-    parser.add_argument('--phimax', type=float, default=None,
-                        help='maximum azimuthal angle')
-    parser.add_argument('--mcsrcid', action='append', type=int, default=[],
-                        help='the Monte Carlo source ID to select')
-    parser.add_argument('--mc', action='store_true', default=False,
-                        help='use Monte Carlo information for the selection')
-    args = parser.parse_args()
+    args = PARSER.parse_args()
     startmsg()
-    xpselect(args)
+    xpselect(args.evfile, **args.__dict__)
