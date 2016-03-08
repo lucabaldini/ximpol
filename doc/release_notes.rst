@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.34.1) - Mon, 07 Mar 2016 16:54:42 -0800*
+
 * Help formatter for xpobssim, xpselect and xpbin changed.
 
 
