@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.35.0) - Tue, 08 Mar 2016 15:31:58 -0800*
+
 * Modified configuration file for Cas A, now with separate extended
   components for the thermal and the non-thermal emission.
 * Subtraction implemented for unidimentional splines.
