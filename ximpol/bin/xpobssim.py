@@ -36,7 +36,9 @@ from ximpol.srcmodel.spectrum import xCountSpectrum
 """Command-line switches.
 """
 import argparse
-PARSER = argparse.ArgumentParser(description=__description__)
+formatter = argparse.ArgumentDefaultsHelpFormatter
+PARSER = argparse.ArgumentParser(description=__description__,
+                                 formatter_class=formatter)
 PARSER.add_argument('--outfile', type=str, default=None,
                     help='the output FITS event file')
 PARSER.add_argument('--configfile', type=str, required=True,

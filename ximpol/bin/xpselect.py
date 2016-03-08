@@ -27,7 +27,9 @@ from ximpol.evt.select import xEventSelect
 """Command-line switches.
 """
 import argparse
-PARSER = argparse.ArgumentParser(description=__description__)
+formatter = argparse.ArgumentDefaultsHelpFormatter
+PARSER = argparse.ArgumentParser(description=__description__,
+                                 formatter_class=formatter)
 PARSER.add_argument('evfile', type=str,
                     help='path to the input event file')
 PARSER.add_argument('--outfile', type=str, default=None,

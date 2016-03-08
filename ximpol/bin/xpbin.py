@@ -46,7 +46,9 @@ COORD_SYS = ['CEL', 'GAL']
 """Command-line switches.
 """
 import argparse
-PARSER = argparse.ArgumentParser(description=__description__)
+formatter = argparse.ArgumentDefaultsHelpFormatter
+PARSER = argparse.ArgumentParser(description=__description__,
+                                 formatter_class=formatter)
 PARSER.add_argument('evfile', type=str,
                     help='path to the input event file')
 PARSER.add_argument('--algorithm', choices=BIN_ALGS, required=True,
