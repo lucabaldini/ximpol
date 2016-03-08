@@ -500,11 +500,14 @@ class xBinTableHDUMCUBE(xBinTableHDUBase):
     ]
 
     @classmethod
-    def add_phi_spec(self, phibins):
+    def set_phi_spec(self, phibins):
         """Add the specification for the PHIHIST field.
         """
         phi_specs = ('PHI_HIST', '%dJ' % phibins)
-        self.DATA_SPECS.append(phi_specs)
+        if 'PHI_HIST' in [spec[0] for spec in self.DATA_SPECS]:
+            self.DATA_SPECS[-1] = phi_specs
+        else:
+            self.DATA_SPECS.append(phi_specs)
 
 
 class xEventBinningMCUBE(xEventBinningBase):
@@ -569,7 +572,7 @@ class xEventBinningMCUBE(xEventBinningBase):
         for _emin, _emax in zip(emin, emax):
             emean.append(numpy.mean(energy[(energy > _emin)*(energy < _emax)]))
         data = [emin, emax, emean, counts]
-        xBinTableHDUMCUBE.add_phi_spec(self.get('phibins'))
+        xBinTableHDUMCUBE.set_phi_spec(self.get('phibins'))
         mcube_hdu = xBinTableHDUMCUBE(data)
         mcube_hdu.setup_header(self.event_file.primary_keywords())
         gti_hdu = self.event_file.hdu_list['GTI']
@@ -578,7 +581,7 @@ class xEventBinningMCUBE(xEventBinningBase):
         logger.info('Writing binned MCUBE data to %s...' % self.get('outfile'))
         hdu_list.writeto(self.get('outfile'), clobber=True)
         logger.info('Done.')
-        
+
 
 class xBinnedModulationCube(xBinnedFileBase):
 
@@ -597,12 +600,16 @@ class xBinnedModulationCube(xBinnedFileBase):
         phibins = self.phi_y.shape[1]
         self.phi_binning = numpy.linspace(0, 2*numpy.pi, phibins + 1)
         self.phi_x = 0.5*(self.phi_binning[:-1] + self.phi_binning[1:])
+        from ximpol.irf import load_mrf
+        irf_name = self.hdu_list['PRIMARY'].header['IRFNAME']
+        self.modf = load_mrf(irf_name)
 
     def fit_bin(self, i):
         """Fit the azimuthal distribution for the i-th energy slice.
         """
         hist = (self.phi_y[i], self.phi_binning, None)
         fit_results = xAzimuthalResponseGenerator.fit_histogram(hist)
+        fit_results.set_polarization(self.modf(self.emean[i]))
         logger.info(fit_results)
         return fit_results
 
@@ -626,30 +633,29 @@ class xBinnedModulationCube(xBinnedFileBase):
         if show:
             plt.show()
 
-    def plot(self, show=True, fit=True, analyze=True,xsubplot=0):
+    def plot(self, show=True, fit=True, analyze=True, xsubplot=0):
         """Plot the azimuthal distributions for all the energy bins.
         """
         if analyze:
             fit = True
         self.fit_results = []
-        if xsubplot==0: plt.figure()
         for i, _emean in enumerate(self.emean):
-            plt.subplot(len(self.emean),xsubplot+1,(xsubplot+1)*(i+1))
+            if xsubplot==0:
+                plt.figure()
+            else:
+                plt.subplot(len(self.emean), xsubplot+1, (xsubplot+1)*(i+1))
             self.plot_bin(i, False, False)
             if fit:
                 _res = self.fit_bin(i)
                 _res.plot()
                 self.fit_results.append(_res)
         if analyze:
-            from ximpol.irf import load_mrf
-            irf_name = self.hdu_list['PRIMARY'].header['IRFNAME']
-            modf = load_mrf(irf_name)
             fig = plt.figure('Polarization degree vs. energy')
             _x = self.emean
-            _y = numpy.array([_res.visibility for _res in self.fit_results])
-            _y /= modf(_x)
-            _dy = numpy.array([_res.visibility_error for _res in self.fit_results])
-            _dy /= modf(_x)
+            _y = numpy.array([_res.polarization_degree for _res in \
+                              self.fit_results])
+            _dy = numpy.array([_res.polarization_degree_error for _res in \
+                               self.fit_results])
             plt.errorbar(_x, _y, _dy, fmt='o')
             plt.xlabel('Energy [keV]')
             plt.ylabel('Polarization degree')

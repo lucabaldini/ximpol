@@ -1,6 +1,13 @@
 Release notes
 =============
 
+* Modified configuration file for Cas A, now with separate extended
+  components for the thermal and the non-thermal emission.
+* Subtraction implemented for unidimentional splines.
+* Classes for the fit of the azimuthal distributions tweaked.
+* One full analysis pipeline for Cas A implemented in ximpol/examples/casa.py.
+* A few obsolete files removed.
+
 
 *ximpol (0.34.1) - Mon, 07 Mar 2016 16:54:42 -0800*
 
