@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.34.0) - Mon, 07 Mar 2016 16:45:19 -0800*
+
 * Internals of xpobssim, xpselect and xpbin tweaked to be fully configurable
   via keyword arguments, to facilitate pipelining analyses.
 * ximpol/examples folder added.
