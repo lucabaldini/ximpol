@@ -28,38 +28,46 @@ from ximpol.utils.logging_ import logger
 from ximpol import XIMPOL_CONFIG
 
 
-ROI_MODEL = xROIModel(350.8664167, 58.8117778)
+"""Configuration file for a semi-realistic model of Cas A.
 
-total_spec_file_path = os.path.join(XIMPOL_CONFIG, 'ascii',
-                                    'casa_total_spectrum.csv')
-nonthermal_spec_file_path = os.path.join(XIMPOL_CONFIG, 'ascii',
-                                         'casa_nonthermal_spectrum.csv')
+The spectral model is taken from
+E.A. Helder and J. Vink, "Characterizing the non-thermal emission of Cas A",
+Astrophys.J. 686 (2008) 1094--1102, http://arxiv.org/abs/0806.3748,
+which seems to be one of the few instances where an actual spectrum in physical
+units (i.e., not a count spectrum) is presented.
+We grabbed by hand the data points and we're calling "thermal" whatever is in
+the lines and "non-thermal" the rest.
+
+We have two images of Cas A, at low (1.5--3.0 keV) and high (4.0--6.0 keV) and,
+due to the absence of lines between 4 and 6 keV we're attaching the latter to
+the non-thermal spectrum and the former to the thermal component.
+
+The polarization map is a simple geometrical, radially-symmetric, model.
+"""
+
+
+def parse_spectral_model(file_name, emin=1., emax=15.):
+    """Parse the input file with the spectral point.
+    """
+    file_path = os.path.join(XIMPOL_CONFIG, 'ascii', file_name)
+    logger.info('Parsing input file %s...' % file_path)
+    _energy, _flux = numpy.loadtxt(file_path, delimiter=',', unpack=True)
+    _mask = (_energy >= emin)*(_energy <= emax)
+    _energy = _energy[_mask]
+    _flux = _flux[_mask]
+    fmt = dict(xname='Energy', xunits='keV', yname='Flux',
+               yunits='cm$^{-2}$ s$^{-1}$ keV$^{-1}$')
+    return xInterpolatedUnivariateSplineLinear(_energy, _flux, **fmt)
+
+
+ROI_MODEL = xROIModel(350.8664167, 58.8117778)
 
 le_img_file_path = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_1p5_3p0_keV.fits')
 he_img_file_path = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_4p0_6p0_keV.fits')
 
-def parse_spectrum(file_path, emin=1., emax=12.):
-    """Parse the input file with the spectral point.
-    """
-    logger.info('Parsing input file %s...' % file_path)
-    energy, flux = numpy.loadtxt(file_path, delimiter=',', unpack=True)
-    _mask = (energy >= emin)*(energy <= emax)
-    return energy[_mask], flux[_mask]
-
-# Parse the total spectrum
-_energy, _flux = parse_spectrum(total_spec_file_path)
-fmt = dict(xname='Energy', xunits='keV', yname='Flux',
-           yunits='cm$^{-2}$ s$^{-1}$ keV$^{-1}$')
-total_spectral_model = xInterpolatedUnivariateSplineLinear(_energy, _flux,
-                                                           **fmt)
-# Parse the non-thermal spectrum
-_energy, _flux = parse_spectrum(nonthermal_spec_file_path)
-_flux = numpy.minimum(_flux, 0.92*total_spectral_model(_energy))
-fmt = dict(xname='Energy', xunits='keV', yname='Flux',
-           yunits='cm$^{-2}$ s$^{-1}$ keV$^{-1}$')
-nonthermal_spectral_model = xInterpolatedUnivariateSplineLinear(_energy, _flux,
-                                                                **fmt)
-# Subtract the two to get the thermal component.
+# Read in the spectral models.
+total_spectral_model = parse_spectral_model('casa_total_spectrum.csv')
+nonthermal_spectral_model = parse_spectral_model('casa_nonthermal_spectrum.csv')
 thermal_spectral_model = total_spectral_model - nonthermal_spectral_model
 
 def thermal_energy_spectrum(E, t):
@@ -68,6 +76,7 @@ def thermal_energy_spectrum(E, t):
 def nonthermal_energy_spectrum(E, t):
     return nonthermal_spectral_model(E)
 
+# The thermal component is totally unpolarized.
 thermal_polarization_angle = constant(0.)
 thermal_polarization_degree = constant(0.)
 
