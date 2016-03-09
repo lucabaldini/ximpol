@@ -1,6 +1,9 @@
 Release notes
 =============
 
+* Clobber mechanism implemented at the single tool level and propagated to
+  the pipeline.
+
 
 *ximpol (0.35.2) - Wed, 09 Mar 2016 10:06:32 -0800*
 
