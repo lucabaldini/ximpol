@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* New Cas A spectral models.
+
 
 *ximpol (0.35.0) - Tue, 08 Mar 2016 15:31:58 -0800*
 
