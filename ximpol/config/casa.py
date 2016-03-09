@@ -31,9 +31,9 @@ from ximpol import XIMPOL_CONFIG
 ROI_MODEL = xROIModel(350.8664167, 58.8117778)
 
 total_spec_file_path = os.path.join(XIMPOL_CONFIG, 'ascii',
-                                    'CasA_total_spectrum.txt')
+                                    'casa_total_spectrum.csv')
 nonthermal_spec_file_path = os.path.join(XIMPOL_CONFIG, 'ascii',
-                                         'CasA_nonthermal_spectrum.txt')
+                                         'casa_nonthermal_spectrum.csv')
 
 le_img_file_path = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_1p5_3p0_keV.fits')
 he_img_file_path = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_4p0_6p0_keV.fits')
@@ -42,7 +42,7 @@ def parse_spectrum(file_path, emin=1., emax=12.):
     """Parse the input file with the spectral point.
     """
     logger.info('Parsing input file %s...' % file_path)
-    energy, flux = numpy.loadtxt(file_path, unpack=True)
+    energy, flux = numpy.loadtxt(file_path, delimiter=',', unpack=True)
     _mask = (energy >= emin)*(energy <= emax)
     return energy[_mask], flux[_mask]
 
@@ -54,6 +54,7 @@ total_spectral_model = xInterpolatedUnivariateSplineLinear(_energy, _flux,
                                                            **fmt)
 # Parse the non-thermal spectrum
 _energy, _flux = parse_spectrum(nonthermal_spec_file_path)
+_flux = numpy.minimum(_flux, 0.92*total_spectral_model(_energy))
 fmt = dict(xname='Energy', xunits='keV', yname='Flux',
            yunits='cm$^{-2}$ s$^{-1}$ keV$^{-1}$')
 nonthermal_spectral_model = xInterpolatedUnivariateSplineLinear(_energy, _flux,
@@ -97,7 +98,8 @@ if __name__ == '__main__':
     from ximpol.utils.matplotlib_ import pyplot as plt
     print(ROI_MODEL)
     fig = plt.figure('Energy spectrum')
-    total_spectral_model.plot(logy=True, show=False)
-    nonthermal_spectral_model.plot(logy=True, show=False)
-    thermal_spectral_model.plot(logy=True, show=False)
+    total_spectral_model.plot(logy=True, show=False, label='Total')
+    nonthermal_spectral_model.plot(logy=True, show=False, label='Non-thermal')
+    thermal_spectral_model.plot(logy=True, show=False, label='Thermal')
+    plt.legend(bbox_to_anchor=(0.95, 0.95))
     plt.show()
