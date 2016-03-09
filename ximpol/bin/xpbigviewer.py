@@ -10,5 +10,5 @@ for i in range(number_of_regions):
     outfilename='frame_%04d.png' %i
     cmd='./xpbigviewer_oneframe.py -ra %s -dec %s -rad %s -o %s' %(ra,dec,rad,outfilename)
     print cmd
-    os.system(cmd)
+    #os.system(cmd)
     pass
