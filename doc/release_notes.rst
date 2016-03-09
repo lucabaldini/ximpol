@@ -2,6 +2,26 @@ Release notes
 =============
 
 
+*ximpol (0.35.2) - Wed, 09 Mar 2016 10:06:32 -0800*
+
+* Smoother version of the Cas A spectral models.
+
+
+*ximpol (0.35.1) - Tue, 08 Mar 2016 22:01:46 -0800*
+
+* New Cas A spectral models.
+
+
+*ximpol (0.35.0) - Tue, 08 Mar 2016 15:31:58 -0800*
+
+* Modified configuration file for Cas A, now with separate extended
+  components for the thermal and the non-thermal emission.
+* Subtraction implemented for unidimentional splines.
+* Classes for the fit of the azimuthal distributions tweaked.
+* One full analysis pipeline for Cas A implemented in ximpol/examples/casa.py.
+* A few obsolete files removed.
+
+
 *ximpol (0.34.1) - Mon, 07 Mar 2016 16:54:42 -0800*
 
 * Help formatter for xpobssim, xpselect and xpbin changed.

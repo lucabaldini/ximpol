@@ -267,6 +267,14 @@ class xModulationFitResults:
         self.visibility, self.phase, self.normalization = popt
         self.visibility_error, self.phase_error,\
             self.normalization_error = numpy.sqrt(pcov.diagonal())
+        self.polarization_degree = None
+        self.polarization_degree_error = None
+
+    def set_polarization(self, modulation_factor):
+        """
+        """
+        self.polarization_degree = self.visibility/modulation_factor
+        self.polarization_degree_error = self.visibility_error/modulation_factor
 
     def plot(self, show=False, stat=True, label=None, *options):
         """Plot the fit results.
@@ -285,17 +293,26 @@ class xModulationFitResults:
     def latex(self):
         """LaTeX formatting.
         """
-        return '$\\xi = %.3f \\pm %.3f$, $\\phi = (%.2f \\pm %.2f)^\\circ$,'\
-            '$\\chi^2/{\\rm ndf} = %.1f/%d$' %\
-            (self.visibility, self.visibility_error, numpy.degrees(self.phase),
-             numpy.degrees(self.phase_error), self.chisquare, self.ndof)
+        text = r'$\xi = %.3f \pm %.3f$, $\phi = (%.2f \pm %.2f)^\circ$,'\
+               r'$\chi^2/{\rm ndf} = %.1f/%d$' %\
+               (self.visibility, self.visibility_error,
+                numpy.degrees(self.phase), numpy.degrees(self.phase_error),
+                self.chisquare, self.ndof)
+        if self.polarization_degree is not None:
+            text += r', $p = %.3f \pm %.3f$' %\
+                    (self.polarization_degree, self.polarization_degree_error)
+        return text
 
     def __str__(self):
         """String formatting.
         """
-        return 'Visibility = %.3f +/- %.3f, phase = %.2f +/- %.2f deg' %\
-            (self.visibility, self.visibility_error, numpy.degrees(self.phase),
-             numpy.degrees(self.phase_error))
+        text = 'Visibility = %.3f +/- %.3f, phase = %.2f +/- %.2f deg' %\
+               (self.visibility, self.visibility_error,
+                numpy.degrees(self.phase), numpy.degrees(self.phase_error))
+        if self.polarization_degree is not None:
+            text += ', polarization degree = %.3f +/- %.3f' %\
+                    (self.polarization_degree, self.polarization_degree_error)
+        return text
 
 
 class xModulationFactor(xInterpolatedUnivariateSplineLinear):

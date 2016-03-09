@@ -173,6 +173,14 @@ class xUnivariateSplineBase:
         _y = self(_x) + other(_x)
         return self.__class__(_x, _y)
 
+    def __sub__(self, other):
+        """Overloaded sum operator.
+        """
+        assert(self.__class__.__name__ == other.__class__.__name__)
+        _x = numpy.union1d(self.x, other.x)
+        _y = self(_x) - other(_x)
+        return self.__class__(_x, _y)
+
     def __len__(self):
         """Return the lenght of the arrays used to construct the spline.
         """
