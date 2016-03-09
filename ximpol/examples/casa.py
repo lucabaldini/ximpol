@@ -35,6 +35,9 @@ map_file_path = os.path.join(XIMPOL_DATA, 'casa_cmap.fits')
 ebins_file_path = os.path.join(XIMPOL_EXAMPLES, 'casa_ebins.txt')
 
 
+pipeline = xPipeline(clobber=False)
+
+
 def get_sel_file_path(i):
     """
     """
@@ -45,46 +48,31 @@ def get_mcube_file_path(i):
     """
     return os.path.join(XIMPOL_DATA, 'casa_reg%04d_mcube.fits' % i)
 
-
-pipeline = xPipeline()
-
 def generate():
     """
     """
-    if not os.path.exists(evt_file_path):
-        logger.info('Generating event file...')
-        pipeline.xpobssim(configfile=cfg_file_path, duration=100000)
-    else:
-        logger.info('Event file exists, skipping...')
+    pipeline.xpobssim(configfile=cfg_file_path, duration=100000)
 
 def select_and_bin():
     """
     """
+    logger.info('Opening region file %s...' % reg_file_path)
     regions = pyregion.open(reg_file_path)
-    number_of_regions=len(regions)
-    logger.info('Found %d regions...' % number_of_regions)
+    logger.info('Found %d regions...' % len(regions))
     for i, region in enumerate(regions):
         ra, dec, rad = region.coord_list
         rad *= 60.
         logger.info('Analyzing region at ra = %s, dec = %s' % (ra, dec))
         sel_file_path = get_sel_file_path(i)
         mcube_file_path = get_mcube_file_path(i)
-        if not os.path.exists(sel_file_path):
-            pipeline.xpselect(evt_file_path, ra=ra, dec=dec, rad=rad,
-                              outfile=sel_file_path)
-        else:
-            logger.info('Data sub-selection exists, skipping...')
-        if not os.path.exists(mcube_file_path):
-            pipeline.xpbin(sel_file_path, algorithm='MCUBE', ebinalg='FILE',
-                           ebinfile=ebins_file_path, outfile = mcube_file_path)
-        else:
-            logger.info('Binned file exists, skipping...')
-
+        pipeline.xpselect(evt_file_path, ra=ra, dec=dec, rad=rad,
+                          outfile=sel_file_path)
+        pipeline.xpbin(sel_file_path, algorithm='MCUBE', ebinalg='FILE',
+                       ebinfile=ebins_file_path, outfile = mcube_file_path)
 
 def plot(save=False):
     logger.info('Plotting stuff...')
-    if not os.path.exists(map_file_path):
-        pipeline.xpbin(evt_file_path, algorithm='CMAP', outfile=map_file_path)
+    pipeline.xpbin(evt_file_path, algorithm='CMAP', outfile=map_file_path)
     regions = pyregion.open(reg_file_path)
     full_map = xBinnedMap(map_file_path)
     for i, region in enumerate(regions):
