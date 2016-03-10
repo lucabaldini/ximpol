@@ -22,12 +22,15 @@
 import numpy
 from astropy.io import fits
 from astropy import wcs
+import aplpy
+import os
 
 from ximpol.utils.logging_ import logger, abort
 #from ximpol.evt.event import xEventFile
 #from ximpol.core.fitsio import xPrimaryHDU, xBinTableHDUBase
 #from ximpol.irf.mrf import xAzimuthalResponseGenerator
 from ximpol.utils.matplotlib_ import pyplot as plt
+from ximpol import XIMPOL_CONFIG
 
 class xPolMapBase:
     ''' Base class for a polarization map
@@ -54,84 +57,79 @@ class xPolMapBase:
 
 class xPolMapRadial(xPolMapBase):
     ''' Radial polarization
-    '''    
-    def create(self):
-        """Overloaded method.
-        """
-        xref = self.get('xref')
-        yref = self.get('yref')
-        nxpix = self.get('nxpix')
-        pixsize = self.get('binsz')/3600.
-        proj = self.get('proj')
-        sidex = nxpix*pixsize
-        sidey = nxpix*pixsize
+    '''
+    def add_circle(self,ra,dec,radius,pmax,type='radial'):
         
-        logger.info('Output image dimensions are %.1f x %.1f arcmin.' %\
-                    (sidex*60, sidey*60))
-                    
-        logger.info('Center of the image is in R.A.=%.3f Dec.=%.3f' % (xref,yref))
-                    
-        binsx = numpy.linspace(0, nxpix, nxpix + 1)
-        binsy = numpy.linspace(0, nxpix, nxpix + 1)
-        # Build the WCS object
-        w = wcs.WCS(naxis=2)
-        w.wcs.crpix = [nxpix/2., nxpix/2.]
-        w.wcs.cdelt = [-pixsize, pixsize]
-        w.wcs.crval = [xref, yref]
-
-        #w.wcs.crpix = [0,0]
-        #w.wcs.cdelt = [pixsize, pixsize]
-        #w.wcs.crval = [xref - 0.5*sidex, yref - 0.5*sidey]
-        w.wcs.ctype = ['RA---%s' % proj, 'DEC--%s' % proj]
-        w.wcs.equinox = 2000.0
-        #w.wcs.radesys = 'ICRS'
-        header = w.to_header()
-        
-        pol_x=numpy.zeros((nxpix,nxpix))
-        pol_y=numpy.zeros((nxpix,nxpix))
-        
-        for i in range(nxpix):
-            for j in range(nxpix):
-                #posx=w.wcs.crval[0]+i*pixsize
-                #posy=w.wcs.crval[1]+j*pixsize
+        for i in range(self.nxpix):
+            for j in range(self.nxpix):
                 # radial:
                 #posx = nxpix/2.-i
                 #posy = -nxpix/2.+j
                 # circular:
-                posx = -nxpix/2.+j
-                posy = -nxpix/2.+i
-                                
-                ang = numpy.degrees(numpy.arctan2(posx,posy))
-                deg = numpy.sqrt(posx*posx+posy*posy)
-                                
-                if (deg>0.5*nxpix) or i==0 or j==0 or i==(nxpix-1) or j==(nxpix-1):
-                    posx=0
-                    posy=0
+                #p_x   = i #-nxpix+j
+                #p_y   = j #-nxpix+i
+                world = self.w.wcs_pix2world([[i,j]], 0)
+                w_ra  = world[0][0]          
+                w_dec = world[0][1]
+                dx    =  (w_ra-ra)*numpy.cos(numpy.deg2rad(dec)) # Effect of the projection
+                dy    =  w_dec-dec
+                p_x = -dy
+                p_y = +dx
+                dist = numpy.sqrt(dx*dx+dy*dy)
+                #print w_ra, w_dec, ra, dec, dist, radius
+                if (dist>radius):
+                    p_x=0
+                    p_y=0
                     pass
-                pol_x[i,j]=posx
-                pol_y[i,j]=posy           
+                self.pol_x[i,j]=p_x
+                self.pol_y[i,j]=p_y            
                 pass
             pass
-        pol_x=numpy.array(pol_x)
-        pol_y=numpy.array(pol_y)
-        pol_deg=numpy.sqrt(pol_x*pol_x+pol_y*pol_y)
-        pol_x/=pol_deg.max()
-        pol_y/=pol_deg.max()
+        pol_deg=numpy.sqrt(self.pol_x*self.pol_x+self.pol_y*self.pol_y)
+        self.pol_x*=pmax/pol_deg.max()
+        self.pol_y*=pmax/pol_deg.max()
+        pass
+    
+    def save(self):
         outfile=self.get('outfile')
         outfile_x=outfile.replace('.fits','_x.fits')
-        outfile_y=outfile.replace('.fits','_y.fits')
-            
-        hdu = fits.PrimaryHDU(pol_x, header=header)        
+        outfile_y=outfile.replace('.fits','_y.fits')            
+        hdu = fits.PrimaryHDU(self.pol_x, header=self.header)        
         logger.info('Writing binned Polarization X map in  %s...' % outfile_x)
         hdu.writeto(outfile_x, clobber=True)
-        
-        hdu = fits.PrimaryHDU(pol_y, header=header)        
+        hdu = fits.PrimaryHDU(self.pol_y, header=self.header)        
         logger.info('Writing binned Polarization Y map in  %s...' % outfile_y)
         hdu.writeto(outfile_y, clobber=True)
-        
         logger.info('Done.')
         pass
-    pass
+
+    def create(self):
+        """Overloaded method.
+        """
+        self.xref  = self.get('xref')
+        self.yref  = self.get('yref')
+        self.nxpix = self.get('nxpix')
+        self.binsz = self.get('binsz') # Dimension of the pimap (degrees)
+        self.proj = self.get('proj')
+
+        
+        sidex = self.nxpix*self.binsz
+        logger.info('Output image dimensions are %.1f x %.1f arcmin.' %\
+                    (sidex*60, sidex*60))
+                    
+        logger.info('Center of the image is in R.A.=%.3f Dec.=%.3f' % (self.xref,self.yref))                    
+        # Build the WCS object
+        self.w = wcs.WCS(naxis=2)
+        self.w.wcs.crpix = [(self.nxpix+1)/2,(self.nxpix+1)/2]
+        self.w.wcs.cdelt = [-self.binsz, self.binsz]
+        self.w.wcs.crval = [self.xref, self.yref]
+        self.w.wcs.ctype = ['RA---%s' % self.proj, 'DEC--%s' % self.proj]
+        self.w.wcs.equinox = 2000.0
+        #w.wcs.radesys = 'ICRS'
+        self.header = self.w.to_header()
+        self.pol_x=numpy.zeros((self.nxpix,self.nxpix))
+        self.pol_y=numpy.zeros((self.nxpix,self.nxpix))
+        pass
 
 def readMap(filename):
     # Load the FITS hdulist using astropy.io.fits
@@ -162,12 +160,14 @@ if __name__ == '__main__':
     from ximpol.utils.matplotlib_ import pyplot as plt
     from ximpol.utils.matplotlib_ import context_no_grids
     from ximpol.utils.logging_ import logger, startmsg
-    outfile='out.fits'
+    import pyregion
+    outfile=None
     ra=None
     dec=None
     rad=None
     regionfile=None
     npix=20
+    pmax=1.0
     for i,a in enumerate(sys.argv):
         if '-o' in a: outfile    = sys.argv[i+1]
         if '-r' in a: regionfile = sys.argv[i+1]
@@ -175,43 +175,72 @@ if __name__ == '__main__':
         if '-dec' in a: dec=float(sys.argv[i+1])
         if '-rad' in a: rad=float(sys.argv[i+1])
         if '-npx' in a: npix= int(sys.argv[i+1])
+        if '-pmax' in a: pmax= float(sys.argv[i+1])
         pass
-    # center of the map, in RA, Dec:
-    if regionfile is not None:
-        for l in file(regionfile,'r').readlines():
-            if 'circle(' in l:
-                ra,dec,rad=l.replace('circle(','').replace('")','').split(',')
-                break
-            pass
-        pass
-    
-    xref=float(ra)
-    yref=float(dec)
-    radius=float(rad)
-    # Number of pixels:
+    # First open the map (need for setting the geometry):
+    le_img_file_path = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_1p5_3p0_keV.fits')
+    he_img_file_path = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_4p0_6p0_keV.fits')
+    img_file_path=le_img_file_path
+    hdulist = fits.open(img_file_path)
+    CRPIX1   = hdulist[0].header['CRPIX1']
+    CRPIX2   = hdulist[0].header['CRPIX2']
+    CDELT1   = hdulist[0].header['CDELT1']
+    CDELT2   = hdulist[0].header['CDELT2']
+    NAXIS1   = hdulist[0].header['NAXIS1']
+    NAXIS2   = hdulist[0].header['NAXIS2']
+    CRVAL1   = hdulist[0].header['CRVAL1']
+    CRVAL2   = hdulist[0].header['CRVAL2']
+    SIZE1    = CDELT1*NAXIS1
+    SIZE2    = CDELT2*NAXIS2
+    DEC_0    = CRVAL2+(NAXIS2/2-CRPIX2)*CDELT2
+    # NOT SURE WHICH IS THE CORRECT PROJECTION...
+    RA_0     = CRVAL1+(NAXIS1/2-CRPIX1)*CDELT1/numpy.cos(numpy.deg2rad(CRVAL2))
+    #RA_0     = CRVAL1+(NAXIS1/2-CRPIX1)*CDELT1/numpy.cos(numpy.deg2rad(CRVAL2))
 
-    binsz  = 2.0*radius/npix
-    
-    myPolarizationMap = xPolMapRadial(xref=xref, yref=yref,nxpix=npix,nypix=npix,binsz=binsz,proj='TAN',outfile=outfile)
-    myPolarizationMap.create()
-    
-    outfile_x=outfile.replace('.fits','_x.fits')
-    outfile_y=outfile.replace('.fits','_y.fits')
-
-    import aplpy
-    import numpy
-    import os
-    from ximpol import XIMPOL_SRCMODEL
-
-    #gc = aplpy.FITSFigure(outfile_deg,figsize=(10,9))
-    gc = aplpy.FITSFigure(os.path.join(XIMPOL_SRCMODEL,'fits','casa_1p5_3p0_keV.fits'),figsize=(10,10))
+    gc = aplpy.FITSFigure(img_file_path,figsize=(10,10))
     gc.show_colorscale(stretch='sqrt')#'graphics/2MASS_arcsinh_color.png')
     gc.set_tick_labels_font(size='small')
     #gc.show_contour(outfile_deg,colors='white')
     gc.show_grid()
     gc.add_scalebar(1./60.,'1\'')
     gc.scalebar.set_color('white')
+    gc.show_markers([CRVAL1],[CRVAL2],c='m')#,marker='x')
+    gc.show_markers([RA_0],[DEC_0],c='g')#,marker='x')
 
+    xref  = RA_0
+    yref  = DEC_0
+    binsz = max(SIZE1,SIZE2)/npix
+    
+    # center of the map, in RA, Dec:
+    if regionfile is not None:
+        if outfile is None:
+            outfile = regionfile.replace('.reg','.fits')
+        else:
+            outfile='out.fits'
+            pass
+        regions = pyregion.open(regionfile)
+        region = regions[0]
+        ra, dec, rad = region.coord_list
+        pass
+    
+    myPolarizationMap = xPolMapRadial(xref=xref, yref=yref,nxpix=npix,nypix=npix,binsz=binsz,proj='TAN',outfile=outfile,pmax=pmax)
+    myPolarizationMap.create()
+    myPolarizationMap.add_circle(ra,dec,rad,pmax)
+    myPolarizationMap.save()
+    #rad*=3600
+    #logger.info(' Map center: %.3f,%.3f, radius=%.3f arcsec',ra,dec,rad)
+    #xref=float(ra)
+    #yref=float(dec)
+    #radius=float(rad)
+    # Number of pixels:
+    #binsz  = 2.0*radius/npix
+    
+    
+    outfile_x=outfile.replace('.fits','_x.fits')
+    outfile_y=outfile.replace('.fits','_y.fits')
+
+
+    #gc = aplpy.FITSFigure(outfile_deg,figsize=(10,9))
     #gc.scalebar.show(0.2)  # length in degrees
 
     if regionfile is not None: gc.show_regions(regionfile)
@@ -236,6 +265,9 @@ if __name__ == '__main__':
         pass
     
     gc.show_arrows(wx,wy,vx,vy,color='w',alpha='0.8')
-    gc.recenter(xref,yref,radius=1.2*radius/3600.0)
+    gc.show_markers(wx,wy,c='r')
+    gc.show_markers([xref],[yref],c='w')#,marker='x')
+
+    #gc.recenter(xref,yref,radius=1.2*radius/3600.0)
 
     plt.show()

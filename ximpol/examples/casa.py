@@ -84,7 +84,7 @@ def plot(save=False):
     
     for i, region in enumerate(regions):
         ra, dec, rad = region.coord_list
-        fig_all.show_circles(ra, dec, rad, lw=1)
+        #fig_all.show_circles(ra, dec, rad, lw=1)
 
         fig = full_map.plot(show=False, subplot=(1, 2, 1))
         plt.subplots_adjust(hspace=0.001)
