@@ -5,8 +5,6 @@ Release notes
 * Short version of the command-line switches removed from xpxspec, and all of
   them passed as keyword arguments (issue #71).
 * xpxspec added to the pipeline, and a new example added.
-
-
 * More tweaks to the Cas A analysis pipeline example.
 
 
