@@ -66,3 +66,7 @@ def version_info():
 """Release notes file.
 """
 XIMPOL_RELEASE_NOTES_PATH = os.path.join(XIMPOL_DOC, 'release_notes.rst')
+
+def xpColor(i):
+    XIMPOL_COLORS = ['b','g','r','c','m','y','k']
+    return XIMPOL_COLORS[i%(len(XIMPOL_COLORS))]

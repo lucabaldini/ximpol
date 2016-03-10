@@ -30,7 +30,7 @@ from ximpol.core.fitsio import xPrimaryHDU, xBinTableHDUBase
 from ximpol.irf.mrf import xAzimuthalResponseGenerator
 from ximpol.utils.matplotlib_ import pyplot as plt
 from ximpol.srcmodel.img import xFITSImage
-
+from ximpol import xpColor
 
 class xEventBinningBase:
 
@@ -629,7 +629,7 @@ class xBinnedModulationCube(xBinnedFileBase):
         plt.axis([0., 2*numpy.pi, 0., 1.2*self.phi_y[i].max()])
         plt.xlabel('Azimuthal angle [rad]')
         plt.ylabel('Counts/bin')
-        plt.text(0.02, 0.95, label, transform=plt.gca().transAxes)
+        plt.text(0.02, 0.92, label, transform=plt.gca().transAxes)
         if show:
             plt.show()
 
@@ -647,7 +647,7 @@ class xBinnedModulationCube(xBinnedFileBase):
             self.plot_bin(i, False, False)
             if fit:
                 _res = self.fit_bin(i)
-                _res.plot()
+                _res.plot(color=xpColor(i))
                 self.fit_results.append(_res)
         if analyze:
             fig = plt.figure('Polarization degree vs. energy')
