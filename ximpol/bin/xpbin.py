@@ -20,6 +20,8 @@
 __description__ = 'Bin event data in different flavors'
 
 
+import os
+
 from ximpol.utils.logging_ import logger, startmsg, abort
 from ximpol.evt.binning import xEventBinningPHA1
 from ximpol.evt.binning import xEventBinningLC
@@ -45,7 +47,9 @@ COORD_SYS = ['CEL', 'GAL']
 
 """Command-line switches.
 """
+import ast
 import argparse
+
 formatter = argparse.ArgumentDefaultsHelpFormatter
 PARSER = argparse.ArgumentParser(description=__description__,
                                  formatter_class=formatter)
@@ -93,6 +97,9 @@ PARSER.add_argument('--phibins', type=int, default=75,
                     help='number of bins for LIN/LOG phi binning')
 PARSER.add_argument('--mc', action='store_true', default=False,
                     help='use Monte Carlo information for binning')
+PARSER.add_argument('--clobber', type=ast.literal_eval, choices=[True, False],
+                    default=True,
+                    help='overwrite or do not overwrite existing output files')
 
 
 def xpbin(file_path, **kwargs):
@@ -102,8 +109,14 @@ def xpbin(file_path, **kwargs):
     http://fermi.gsfc.nasa.gov/ssc/data/analysis/scitools/help/gtbin.txt
     """
     assert(file_path.endswith('.fits'))
-    BIN_ALG_DICT[kwargs['algorithm']](file_path, **kwargs).bin_()
-    return kwargs['outfile']
+    event_binning = BIN_ALG_DICT[kwargs['algorithm']](file_path, **kwargs)
+    outfile = event_binning.get('outfile')
+    if os.path.exists(outfile) and not event_binning.get('clobber'):
+        logger.info('Output file %s already exists.' % outfile)
+        logger.info('Remove the file or set "clobber = True" to overwite it.')
+    else:
+        event_binning.bin_()
+    return outfile
 
 
 if __name__=='__main__':

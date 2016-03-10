@@ -20,6 +20,8 @@
 __description__ = 'Data selection interface'
 
 
+import os
+
 from ximpol.utils.logging_ import logger, startmsg, abort
 from ximpol.evt.select import xEventSelect
 
@@ -27,6 +29,8 @@ from ximpol.evt.select import xEventSelect
 """Command-line switches.
 """
 import argparse
+import ast
+
 formatter = argparse.ArgumentDefaultsHelpFormatter
 PARSER = argparse.ArgumentParser(description=__description__,
                                  formatter_class=formatter)
@@ -60,6 +64,9 @@ PARSER.add_argument('--mcsrcid', action='append', type=int, default=[],
                     help='the Monte Carlo source ID to select')
 PARSER.add_argument('--mc', action='store_true', default=False,
                     help='use Monte Carlo information for the selection')
+PARSER.add_argument('--clobber', type=ast.literal_eval, choices=[True, False],
+                    default=True,
+                    help='overwrite or do not overwrite existing output files')
 
 
 def xpselect(file_path, **kwargs):
@@ -69,7 +76,14 @@ def xpselect(file_path, **kwargs):
     http://fermi.gsfc.nasa.gov/ssc/data/analysis/scitools/help/gtselect.txt
     """
     assert(file_path.endswith('.fits'))
-    return xEventSelect(file_path, **kwargs).select()
+    event_select = xEventSelect(file_path, **kwargs)
+    outfile = event_select.get('outfile')
+    if os.path.exists(outfile) and not event_select.get('clobber'):
+        logger.info('Output file %s already exists.' % outfile)
+        logger.info('Remove the file or set "clobber = True" to overwite it.')
+    else:
+        event_select.select()
+    return outfile
 
 
 if __name__=='__main__':

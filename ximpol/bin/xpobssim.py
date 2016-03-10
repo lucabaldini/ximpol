@@ -35,7 +35,9 @@ from ximpol.srcmodel.spectrum import xCountSpectrum
 
 """Command-line switches.
 """
+import ast
 import argparse
+
 formatter = argparse.ArgumentDefaultsHelpFormatter
 PARSER = argparse.ArgumentParser(description=__description__,
                                  formatter_class=formatter)
@@ -53,6 +55,9 @@ PARSER.add_argument('--tsteps', type=int, default=100,
                     help='the number of steps for sampling the lightcurve')
 PARSER.add_argument('--seed', type=int, default=0,
                     help='the random seed for the simulation')
+PARSER.add_argument('--clobber', type=ast.literal_eval, choices=[True, False],
+                    default=True,
+                    help='overwrite or do not overwrite existing output files')
 
 
 class xSimulationInfo:
@@ -73,6 +78,10 @@ def xpobssim(**kwargs):
         mkdir(XIMPOL_DATA)
         kwargs['outfile'] = os.path.join(XIMPOL_DATA, outfile)
         logger.info('Setting output file path to %s...' % kwargs['outfile'])
+    if os.path.exists(kwargs['outfile']) and not kwargs['clobber']:
+        logger.info('Output file %s already exists.' % kwargs['outfile'])
+        logger.info('Remove the file or set "clobber = True" to overwite it.')
+        return
     chrono = xChrono()
     logger.info('Setting the random seed to %d...' % kwargs['seed'])
     numpy.random.seed(kwargs['seed'])

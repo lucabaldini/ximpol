@@ -2,6 +2,17 @@ Release notes
 =============
 
 
+*ximpol (0.35.4) - Wed, 09 Mar 2016 16:54:43 -0800*
+
+* Enforce data-type consistency in the output event files (issue #66).
+
+
+*ximpol (0.35.3) - Wed, 09 Mar 2016 14:01:52 -0800*
+
+* Clobber mechanism implemented at the single tool level and propagated to
+  the pipeline.
+
+
 *ximpol (0.35.2) - Wed, 09 Mar 2016 10:06:32 -0800*
 
 * Smoother version of the Cas A spectral models.

@@ -31,8 +31,6 @@ from xpselect import xpselect, PARSER as XPSELECT_PARSER
 from xpbin import xpbin, PARSER as XPBIN_PARSER
 
 
-
-
 from ximpol.utils.logging_ import logger
 from ximpol.utils.os_ import rm
 
@@ -40,11 +38,20 @@ from ximpol.utils.os_ import rm
 class xPipeline:
 
     """Class describing a simulation/analysis pipeline.
+
+    Args
+    ----
+    clobber : bool or None
+        Determines whether existing output files are overwritten. This global
+        setting overrides whatever is passed as an argument to the single
+        tools.
     """
 
-    def __init__(self, output_folder=None):
+    def __init__(self, clobber=None):
         """Constructor.
         """
+        assert clobber in [None, True, False]
+        self.clobber = clobber
         self.event_files = []
         self.binned_files = []
 
@@ -54,10 +61,11 @@ class xPipeline:
         for file_path in self.event_files:
             rm(file_path)
 
-    @classmethod
     def command_line(self, **kwargs):
         """Turn a dictionary into a string that is understood by argparse.
         """
+        if self.clobber is not None:
+            kwargs['clobber'] = self.clobber
         cmdline = ''
         for key, value in kwargs.items():
             cmdline += '--%s %s ' % (key, value)
@@ -66,6 +74,9 @@ class xPipeline:
 
     def xpobssim(self, **kwargs):
         """Generate an event file.
+
+        All command-line switches accepted by xpobbsim can be passed as
+        keyword arguments here.
         """
         switches = self.command_line(**kwargs).split()
         kwargs = XPOBSSIM_PARSER.parse_args(switches).__dict__
@@ -75,6 +86,9 @@ class xPipeline:
 
     def xpselect(self, file_path, **kwargs):
         """Generate an event file.
+
+        All command-line switches accepted by xpselect can be passed as
+        keyword arguments here.
         """
         switches = self.command_line(**kwargs).split() + [file_path]
         kwargs = XPSELECT_PARSER.parse_args(switches).__dict__
@@ -84,6 +98,9 @@ class xPipeline:
 
     def xpbin(self, file_path, **kwargs):
         """Bin an event file.
+
+        All command-line switches accepted by xpbin can be passed as
+        keyword arguments here.
         """
         switches = self.command_line(**kwargs).split() + [file_path]
         kwargs = XPBIN_PARSER.parse_args(switches).__dict__
