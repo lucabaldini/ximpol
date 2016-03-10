@@ -103,7 +103,9 @@ nonthermal_component = xExtendedSource('Cas A non-thermal', he_img_file_path,
 ROI_MODEL.add_sources(thermal_component, nonthermal_component)
 
 
-if __name__ == '__main__':
+def display():
+    """
+    """
     from ximpol.utils.matplotlib_ import pyplot as plt
     print(ROI_MODEL)
     fig = plt.figure('Energy spectrum')
@@ -118,3 +120,7 @@ if __name__ == '__main__':
     fig.add_label(0.1, 0.92, '4-6 keV', relative=True, size='xx-large',
                   color='white', horizontalalignment='left')
     plt.show()
+
+
+if __name__ == '__main__':
+    display()
