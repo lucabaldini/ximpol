@@ -40,7 +40,7 @@ BIN_ALG_DICT = {
 BIN_ALGS = BIN_ALG_DICT.keys()
 BIN_ALGS.sort()
 TBIN_ALGS = ['FILE', 'LIN', 'LOG']
-EBIN_ALGS = ['FILE', 'LIN', 'LOG', 'EQP']
+EBIN_ALGS = ['FILE', 'LIN', 'LOG', 'EQP', 'LIST']
 PRJCTS = ['AIT', 'ZEA', 'ARC', 'CAR', 'GLS', 'MER', 'NCP', 'SIN', 'STG', 'TAN']
 COORD_SYS = ['CEL', 'GAL']
 
@@ -93,6 +93,8 @@ PARSER.add_argument('--ebins', type=int, default=5,
                     help='number of bins for LIN/LOG energy binning')
 PARSER.add_argument('--ebinfile', type=str, default=None,
                     help='path to the optional energy bin definition file')
+PARSER.add_argument('--ebinning', type=ast.literal_eval, default=None,
+                    help='the list containing the bin edges')
 PARSER.add_argument('--phibins', type=int, default=75,
                     help='number of bins for LIN/LOG phi binning')
 PARSER.add_argument('--mc', action='store_true', default=False,

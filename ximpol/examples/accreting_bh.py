@@ -22,22 +22,31 @@ import os
 from ximpol import XIMPOL_CONFIG
 from ximpol.utils.logging_ import logger
 from ximpol.core.pipeline import xPipeline
+from ximpol.evt.binning import xBinnedModulationCube
+from ximpol.utils.matplotlib_ import pyplot as plt
+from ximpol.config.lamp_post_accreting_bh import pol_degree, pol_angle
 
 
 CFG_FILE = os.path.join(XIMPOL_CONFIG, 'lamp_post_accreting_bh.py')
-DURATION = 1000000.
+DURATION = 10000000.
+E_BINNING = [1., 2., 3., 5., 10.]
 
-pipeline = xPipeline()
-
-# Generate the events.
+pipeline = xPipeline(clobber=False)
 evt_file_path = pipeline.xpobssim(configfile=CFG_FILE, duration=DURATION)
+mcube_file_path = pipeline.xpbin(evt_file_path, algorithm='MCUBE',
+                                 ebinalg='LIST', ebinning=E_BINNING)
 
-# Select the data (for fun)
-pipeline.xpselect(evt_file_path, emin=2., emax=3.)
+mcube = xBinnedModulationCube(mcube_file_path)
+mcube.fit()
 
-# Bin the events in different flavors.
-pipeline.xpbin(evt_file_path, algorithm='CMAP')
-pipeline.xpbin(evt_file_path, algorithm='PHA1')
-pipeline.xpbin(evt_file_path, algorithm='LC')
-pipeline.xpbin(evt_file_path, algorithm='MCUBE')
-pipeline.delete_event_files()
+fig = plt.figure('Polarization degree')
+mcube.plot_polarization_degree(show=False, label='Data')
+pol_degree.plot(show=False, label='Model', linestyle='dashed')
+plt.legend(bbox_to_anchor=(0.30, 0.95))
+plt.axis([1, 10, None, None])
+fig = plt.figure('Polarization angle')
+mcube.plot_polarization_angle(show=False, label='Data')
+pol_angle.plot(show=False, label='Model', linestyle='dashed')
+plt.legend(bbox_to_anchor=(0.95, 0.95))
+plt.axis([1, 10, None, None])
+plt.show()

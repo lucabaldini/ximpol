@@ -6,7 +6,12 @@ Release notes
   them passed as keyword arguments (issue #71).
 * xpxspec added to the pipeline, and a new example added.
 * More tweaks to the Cas A analysis pipeline example.
-
+* ebinning LIST mode added to xpbin.
+* Significant refactoring of the ximpol.evt.binning.xBinnedModulationCube 
+  class to allow to reuse single analysis/plotting tasks externally.
+* Pretty much done with the lamp_post pipeline example.
+* A few interface tweaks.
+  
 
 *ximpol (0.35.4) - Wed, 09 Mar 2016 16:54:43 -0800*
 

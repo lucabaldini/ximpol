@@ -236,7 +236,7 @@ class xUnivariateSplineBase:
         return xInterpolatedUnivariateSplineLinear(_x, _y, **fmt)
 
     def plot(self, num_points=1000, overlay=False, logx=False, logy=False,
-             show=True, label=None):
+             show=True, **kwargs):
         """Plot the spline.
 
         Args
@@ -254,9 +254,9 @@ class xUnivariateSplineBase:
         _x = numpy.linspace(self.xmin(), self.xmax(), num_points)
         _y = self(_x)
         if overlay:
-            plt.plot(_x, _y, '-', self.x, self.y, 'o', label=label)
+            plt.plot(_x, _y, '-', self.x, self.y, 'o', **kwargs)
         else:
-            plt.plot(_x, _y, '-', label=label)
+            plt.plot(_x, _y, '-', **kwargs)
         if self.xname is not None:
             plt.xlabel(self.xlabel())
         if self.yname is not None:

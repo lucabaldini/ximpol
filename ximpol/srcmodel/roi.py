@@ -25,6 +25,9 @@ from ximpol.srcmodel.spectrum import xCountSpectrum
 from ximpol.evt.event import xMonteCarloEventList
 
 
+DEFAULT_MAX_VALIDITY_TIME = 10000000.
+
+
 class xModelComponentBase:
 
     """Base class for the source object.
@@ -52,7 +55,7 @@ class xModelComponentBase:
 
     def __init__(self, name, energy_spectrum, polarization_degree,
                  polarization_angle, identifier=None, min_validity_time=0.,
-                 max_validity_time=1000000.):
+                 max_validity_time=DEFAULT_MAX_VALIDITY_TIME):
         """Constructor.
         """
         self.name = name
@@ -182,7 +185,7 @@ class xPointSource(xModelComponentBase):
 
     def __init__(self, name, ra, dec, energy_spectrum, polarization_degree,
                  polarization_angle, min_validity_time=0.,
-                 max_validity_time=1000000.):
+                 max_validity_time=DEFAULT_MAX_VALIDITY_TIME):
         """Constructor.
         """
         xModelComponentBase.__init__(self, name, energy_spectrum,
@@ -212,7 +215,7 @@ class xEphemeris:
     """
 
     def __init__(self, t0, nu0, nudot=0., nuddot=0., min_validity_time=0.,
-                 max_validity_time=1000000.):
+                 max_validity_time=DEFAULT_MAX_VALIDITY_TIME):
         """Constructor.
         """
         self.t0 = t0
@@ -341,7 +344,7 @@ class xUniformDisk(xModelComponentBase):
 
     def __init__(self, name, ra, dec, radius, energy_spectrum,
                  polarization_degree, polarization_angle, min_validity_time=0.,
-                 max_validity_time=1000000.):
+                 max_validity_time=DEFAULT_MAX_VALIDITY_TIME):
         """Constructor.
         """
         xModelComponentBase.__init__(self, name, energy_spectrum,
@@ -399,7 +402,7 @@ class xGaussianDisk(xModelComponentBase):
 
     def __init__(self, name, ra, dec, sigma, energy_spectrum,
                  polarization_degree, polarization_angle, min_validity_time=0.,
-                 max_validity_time=1000000.):
+                 max_validity_time=DEFAULT_MAX_VALIDITY_TIME):
         """Constructor.
         """
         xModelComponentBase.__init__(self, name, energy_spectrum,
@@ -448,7 +451,7 @@ class xExtendedSource(xModelComponentBase):
 
     def __init__(self, name, img_file_path, energy_spectrum,
                  polarization_degree, polarization_angle, min_validity_time=0.,
-                 max_validity_time=1000000.):
+                 max_validity_time=DEFAULT_MAX_VALIDITY_TIME):
         """Constructor.
         """
         xModelComponentBase.__init__(self, name, energy_spectrum,

@@ -550,6 +550,10 @@ class xEventBinningMCUBE(xEventBinningBase):
             ebinfile = self.get('ebinfile')
             assert ebinfile is not None
             ebinning = self.read_binning(ebinfile)
+        elif ebinalg == 'LIST':
+            ebinning = self.get('ebinning')
+            assert isinstance(ebinning, list)
+            ebinning = numpy.array(ebinning, 'd')
         else:
             abort('ebinalg %s not implemented yet' % ebinalg)
         phibinning = numpy.linspace(0, 2*numpy.pi, self.get('phibins') + 1)
@@ -603,15 +607,29 @@ class xBinnedModulationCube(xBinnedFileBase):
         from ximpol.irf import load_mrf
         irf_name = self.hdu_list['PRIMARY'].header['IRFNAME']
         self.modf = load_mrf(irf_name)
+        self.fit_results = []
+
+    def __len__(self):
+        """Return the number of energy bins.
+        """
+        return len(self.emin)
 
     def fit_bin(self, i):
         """Fit the azimuthal distribution for the i-th energy slice.
         """
         hist = (self.phi_y[i], self.phi_binning, None)
-        fit_results = xAzimuthalResponseGenerator.fit_histogram(hist)
-        fit_results.set_polarization(self.modf(self.emean[i]))
-        logger.info(fit_results)
-        return fit_results
+        _fit_results = xAzimuthalResponseGenerator.fit_histogram(hist)
+        _fit_results.set_polarization(self.modf(self.emean[i]))
+        logger.info(_fit_results)
+        self.fit_results.append(_fit_results)
+        return _fit_results
+
+    def fit(self):
+        """Fit the azimuthal distribution for all the energy bins.
+        """
+        self.fit_results = []
+        for i in range(len(self)):
+            self.fit_bin(i)
 
     def plot_bin(self, i, show=True, fit=True):
         """Plot the azimuthal distribution for the i-th energy slice.
@@ -620,7 +638,6 @@ class xBinnedModulationCube(xBinnedFileBase):
         _emax = self.emax[i]
         _emean = self.emean[i]
         label = '%.2f$-$%.2f $<$%.3f$>$ keV' % (_emin, _emax, _emean)
-        #if fig is None: fig = plt.figure('Modulation curve (%s)' % label)
         plt.errorbar(self.phi_x, self.phi_y[i], yerr=numpy.sqrt(self.phi_y[i]),
                      fmt='o')
         if fit:
@@ -633,37 +650,55 @@ class xBinnedModulationCube(xBinnedFileBase):
         if show:
             plt.show()
 
+    def plot_polarization_degree(self, show=True, **kwargs):
+        """Plot the polarization degree as a function of energy.
+        """
+        if self.fit_results == []:
+            self.fit()
+        _x = self.emean
+        _dx = [self.emean - self.emin, self.emax - self.emean]
+        _y = [r.polarization_degree for r in self.fit_results]
+        _dy = [r.polarization_degree_error for r in self.fit_results]
+        plt.errorbar(_x, _y, _dy, _dx, fmt='o', **kwargs)
+        plt.xlabel('Energy [keV]')
+        plt.ylabel('Polarization degree')
+        if show:
+            plt.show()
+
+    def plot_polarization_angle(self, show=True, **kwargs):
+        """Plot the polarization angle as a function of energy.
+        """
+        if self.fit_results == []:
+            self.fit()
+        _x = self.emean
+        _dx = [self.emean - self.emin, self.emax - self.emean]
+        _y = [numpy.degrees(r.phase) for r in self.fit_results]
+        _dy = [numpy.degrees(r.phase_error) for r in self.fit_results]
+        plt.errorbar(_x, _y, _dy, _dx, fmt='o', **kwargs)
+        plt.xlabel('Energy [keV]')
+        plt.ylabel('Polarization angle [$^\circ$]')
+        if show:
+            plt.show()
+
     def plot(self, show=True, fit=True, analyze=True, xsubplot=0):
         """Plot the azimuthal distributions for all the energy bins.
         """
         if analyze:
             fit = True
-        self.fit_results = []
         for i, _emean in enumerate(self.emean):
-            if xsubplot==0:
+            if xsubplot == 0:
                 plt.figure()
             else:
-                plt.subplot(len(self.emean), xsubplot+1, (xsubplot+1)*(i+1))
+                plt.subplot(len(self.emean), xsubplot + 1,
+                            (xsubplot + 1)*(i + 1))
             self.plot_bin(i, False, False)
             if fit:
                 _res = self.fit_bin(i)
                 _res.plot(color=xpColor(i))
-                self.fit_results.append(_res)
         if analyze:
             fig = plt.figure('Polarization degree vs. energy')
-            _x = self.emean
-            _y = numpy.array([_res.polarization_degree for _res in \
-                              self.fit_results])
-            _dy = numpy.array([_res.polarization_degree_error for _res in \
-                               self.fit_results])
-            plt.errorbar(_x, _y, _dy, fmt='o')
-            plt.xlabel('Energy [keV]')
-            plt.ylabel('Polarization degree')
+            self.plot_polarization_degree(show=False)
             fig = plt.figure('Polarization angle vs. energy')
-            _y = [numpy.degrees(_res.phase) for _res in self.fit_results]
-            _dy = [numpy.degrees(_res.phase_error) for _res in self.fit_results]
-            plt.errorbar(_x, _y, _dy, fmt='o')
-            plt.xlabel('Energy [keV]')
-            plt.ylabel('Polarization angle [$^\circ$]')
+            self.plot_polarization_angle(show=False)
         if show:
             plt.show()

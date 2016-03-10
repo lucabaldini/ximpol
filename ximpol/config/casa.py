@@ -104,7 +104,7 @@ ROI_MODEL.add_sources(thermal_component, nonthermal_component)
 
 
 def display():
-    """
+    """Display the source model.
     """
     from ximpol.utils.matplotlib_ import pyplot as plt
     print(ROI_MODEL)

@@ -69,6 +69,9 @@ class xPipeline:
             kwargs['clobber'] = self.clobber
         cmdline = ''
         for key, value in kwargs.items():
+            # Need some extra care for lists...
+            if isinstance(value, list):
+                value = ('%s' % value).replace(' ', '')
             cmdline += '--%s %s ' % (key, value)
         cmdline.strip()
         return cmdline

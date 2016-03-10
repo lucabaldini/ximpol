@@ -98,8 +98,9 @@ source = xPointSource('MCG-6-30-15', RA, DEC, energy_spectrum,
 
 ROI_MODEL.add_source(source)
 
-
-if __name__=='__main__':
+def display():
+    """Display the source model.
+    """
     print(ROI_MODEL)
     from ximpol.utils.matplotlib_ import pyplot as plt
     fig = plt.figure('Energy spectrum')
@@ -109,3 +110,7 @@ if __name__=='__main__':
     fig = plt.figure('Polarization angle')
     pol_angle.plot(show=False)
     plt.show()
+
+
+if __name__=='__main__':
+    display()
