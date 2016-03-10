@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* More tweaks to the Cas A analysis pipeline example.
+
 
 *ximpol (0.35.4) - Wed, 09 Mar 2016 16:54:43 -0800*
 
