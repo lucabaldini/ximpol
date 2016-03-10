@@ -1,6 +1,9 @@
 Release notes
 =============
 
+* Initial stub at the ximpol gallery (issue #80).
+
+
 * More tweaks to the Cas A analysis pipeline example.
 
 

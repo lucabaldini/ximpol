@@ -111,4 +111,10 @@ if __name__ == '__main__':
     nonthermal_spectral_model.plot(logy=True, show=False, label='Non-thermal')
     thermal_spectral_model.plot(logy=True, show=False, label='Thermal')
     plt.legend(bbox_to_anchor=(0.95, 0.95))
+    fig = thermal_component.image.plot(show=False)
+    fig.add_label(0.1, 0.92, '1.5-3 keV', relative=True, size='xx-large',
+                  color='white', horizontalalignment='left')
+    fig = nonthermal_component.image.plot(show=False)
+    fig.add_label(0.1, 0.92, '4-6 keV', relative=True, size='xx-large',
+                  color='white', horizontalalignment='left')
     plt.show()

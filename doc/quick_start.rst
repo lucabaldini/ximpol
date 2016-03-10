@@ -1,6 +1,9 @@
 Quick start
 ===========
 
+.. warning:: This is now already obsolete and we should revamp it
+             to the latest ximpol versions.
+
 The main purpose of this simulation package is to simulate an observation
 of a given source model, based on suitable detector response functions. 
 
