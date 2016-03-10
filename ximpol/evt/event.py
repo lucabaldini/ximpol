@@ -27,6 +27,7 @@ from astropy.io import fits
 
 from ximpol.utils.logging_ import logger
 from ximpol.core.fitsio import xPrimaryHDU, xBinTableHDUBase
+from ximpol.core.fitsio import FITS_TO_NUMPY_TYPE_DICT
 
 
 class xBinTableHDUEvents(xBinTableHDUBase):
@@ -104,8 +105,9 @@ class xMonteCarloEventList(dict):
     def __init__(self):
         """Constructor.
         """
-        for name in xBinTableHDUMonteCarloEvents.spec_names():
-            self[name] = numpy.array([])
+        for name, dtype in xBinTableHDUMonteCarloEvents.spec_names_and_types():
+            dtype = FITS_TO_NUMPY_TYPE_DICT[dtype]
+            self[name] = numpy.array([], dtype)
         self.length = 0
 
     def __len__(self):
@@ -127,8 +129,9 @@ class xMonteCarloEventList(dict):
             that the `lenght` class member is defined.)
         """
         assert self.has_key(name)
+        dtype = self[name].dtype
         if isinstance(data, numbers.Number):
-            data = numpy.full(self.length, data)
+            data = numpy.full(self.length, data, dtype)
         if self.length > 0:
             assert(len(data) == self.length)
         else:

@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* Enforce data-type consistency in the output event files (issue #66).
+
 
 *ximpol (0.35.3) - Wed, 09 Mar 2016 14:01:52 -0800*
 

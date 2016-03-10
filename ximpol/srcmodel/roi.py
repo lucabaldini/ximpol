@@ -201,8 +201,8 @@ class xPointSource(xModelComponentBase):
         size : float
             The number of sky coordinate pairs to be generated.
         """
-        ra = numpy.full(size, self.ra, 'f')
-        dec = numpy.full(size, self.dec, 'f')
+        ra = numpy.full(size, self.ra)
+        dec = numpy.full(size, self.dec)
         return (ra, dec)
 
 

@@ -127,6 +127,14 @@ class xEnergyDispersionMatrix(xUnivariateAuxGenerator):
                    pdfname='Probability density')
         xUnivariateAuxGenerator.__init__(self, _aux, _rv, _pdf, **fmt)
 
+    def rvs(self, aux):
+        """Overloaded method.
+
+        We want to return an integer, here.
+        """
+        val = xUnivariateAuxGenerator.rvs(self, aux)
+        return  numpy.ndarray.astype(numpy.floor(val), numpy.int16)
+
 
 class xEnergyDispersionBounds(xInterpolatedUnivariateSplineLinear):
 
