@@ -91,7 +91,7 @@ def setup():
     matplotlib.rc('mathtext', fontset='cm')
     matplotlib.rc('axes',facecolor='white', edgecolor='bcbcbc', grid=True,
                   titlesize='x-large', labelsize='large')
-    matplotlib.rc('legend', fancybox=True, frameon=False)
+    matplotlib.rc('legend', fancybox=True, frameon=False, numpoints=1)
 
 
 setup()
