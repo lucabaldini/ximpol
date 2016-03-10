@@ -81,7 +81,7 @@ def xpobssim(**kwargs):
     if os.path.exists(kwargs['outfile']) and not kwargs['clobber']:
         logger.info('Output file %s already exists.' % kwargs['outfile'])
         logger.info('Remove the file or set "clobber = True" to overwite it.')
-        return
+        return kwargs['outfile']
     chrono = xChrono()
     logger.info('Setting the random seed to %d...' % kwargs['seed'])
     numpy.random.seed(kwargs['seed'])

@@ -29,6 +29,7 @@ sys.dont_write_bytecode = 1
 from xpobssim import xpobssim, PARSER as XPOBSSIM_PARSER
 from xpselect import xpselect, PARSER as XPSELECT_PARSER
 from xpbin import xpbin, PARSER as XPBIN_PARSER
+from xpxspec import xpxspec, PARSER as XPXSPEC_PARSER
 
 
 from ximpol.utils.logging_ import logger
@@ -107,3 +108,13 @@ class xPipeline:
         outfile = xpbin(file_path, **kwargs)
         self.binned_files.append(outfile)
         return outfile
+
+    def xpxspec(self, file_path, **kwargs):
+        """Analyze with XSPEC a PHA1 binned event file.
+
+        All command-line switches accepted by xpxspec can be passed as
+        keyword arguments here.
+        """
+        switches = self.command_line(**kwargs).split() + [file_path]
+        kwargs = XPXSPEC_PARSER.parse_args(switches).__dict__
+        xpxspec(file_path, **kwargs)

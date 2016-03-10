@@ -27,7 +27,23 @@ from ximpol import XIMPOL_IRF
 from ximpol.utils.logging_ import logger, startmsg
 
 
-def xpxspec(file_path, model_name):
+"""Command-line switches.
+"""
+import ast
+import argparse
+
+formatter = argparse.ArgumentDefaultsHelpFormatter
+PARSER = argparse.ArgumentParser(description=__description__)
+PARSER.add_argument('phafile', type=str,
+                    help='the path to the input .pha file')
+PARSER.add_argument('--model', type=str, default='powerlaw',
+                    help='the spectral model for the fit')
+PARSER.add_argument('--clobber', type=ast.literal_eval, choices=[True, False],
+                    default=True,
+                    help='overwrite or do not overwrite existing output files')
+
+
+def xpxspec(file_path, **kwargs):
     """Do a spectral fit in XSPEC
     """
     spec = xspec.Spectrum(file_path)
@@ -36,24 +52,15 @@ def xpxspec(file_path, model_name):
     spec.response.arf = os.path.join(XIMPOL_IRF, 'fits', 'xipe_baseline.arf')
     spec.ignore('**-0.5')
     spec.ignore('10.-**')
-
-    model = xspec.Model(model_name)
+    model = xspec.Model(kwargs['model'])
     xspec.Fit.perform()
     xspec.Fit.show()
-
     xspec.Plot.device = '/xs'
     xspec.Plot.xAxis = 'keV'
     xspec.Plot('ldata', 'resid')
 
 
 if __name__=='__main__':
-    import argparse
-    parser = argparse.ArgumentParser(description=__description__)
-    parser.add_argument('file_path', type=str,
-                        help='the path to the input .pha file')
-    parser.add_argument('-m', '--model', type=str, default='powerlaw',
-                        help='the spectral model for the fit')
-
-    args = parser.parse_args()
+    args = PARSER.parse_args()
     startmsg()
-    xpxspec(args.file_path, args.model)
+    xpxspec(args.phafile, **args.__dict__)
