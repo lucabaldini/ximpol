@@ -29,7 +29,7 @@ from ximpol.config.lamp_post_accreting_bh import pol_degree, pol_angle
 
 CFG_FILE = os.path.join(XIMPOL_CONFIG, 'lamp_post_accreting_bh.py')
 DURATION = 10000000.
-E_BINNING = [1., 2., 3., 5., 10.]
+E_BINNING = [1., 2., 3., 5., 7., 10.]
 
 pipeline = xPipeline(clobber=False)
 evt_file_path = pipeline.xpobssim(configfile=CFG_FILE, duration=DURATION)

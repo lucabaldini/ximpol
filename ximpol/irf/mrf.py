@@ -237,7 +237,7 @@ class xAzimuthalResponseGenerator(xUnivariateAuxGenerator):
         exp = []
         for _min, _max in zip(binning[:-1], binning[1:]):
             exp.append(spline.integral(_min, _max))
-        exp = numpy.array(exp)
+        exp = numpy.array(exp)[mask]
         chisquare = ((exp - obs)**2/exp).sum()
         # Horrible hack.
         if popt[0] < 0.:
