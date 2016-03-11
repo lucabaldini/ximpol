@@ -35,6 +35,7 @@ Contents:
    :maxdepth: 2
 
    showcase
+   architecture
    quick_start
    installation
    source_models

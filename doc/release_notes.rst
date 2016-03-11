@@ -12,7 +12,8 @@ Release notes
 * Pretty much done with the lamp_post pipeline example.
 * A few interface tweaks.
 * Fix for bug #77.
-
+* Getting started on documenting the architecture of the package.
+  
 
 *ximpol (0.35.4) - Wed, 09 Mar 2016 16:54:43 -0800*
 
