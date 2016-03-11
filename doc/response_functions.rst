@@ -1,3 +1,5 @@
+.. _response_functions:
+
 Instrument response functions (IRFs)
 ====================================
 

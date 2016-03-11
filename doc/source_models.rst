@@ -1,4 +1,6 @@
-Defining source models
+.. _source_models:
+
+Source models
 ======================
 
 .. warning:: This need to be though through and documented.
