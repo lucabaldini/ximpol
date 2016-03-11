@@ -1,0 +1,57 @@
+blockdiag {
+  orientation=portrait;
+  class fl [shape="note", color=lightgray];
+  class xp [shape=roundedbox, color=steelblue, textcolor=white, fontsize = 16];
+
+  // Set node metrix
+  //node_width = 200;  // default value is 128
+  //node_height = 100;  // default value is 40
+
+  // Set span metrix
+  //span_width = 240;  // default value is 64
+  //span_height = 120;  // default value is 40
+
+  // set default shape
+  default_shape = roundedbox;  // default value is 'box'
+
+  // set default colors
+  default_node_color = white;
+  default_group_color = white;
+  default_linecolor = black;
+  default_textcolor = black;
+
+  src [label="Source model (.py)", class="fl"];
+  irf [label="IRFs (.arf, .rmf, .mrf, .psf)", class="fl"];
+  evt [label="Photon list (.fits)", class="fl"];
+
+  group bin {
+    orientation=portrait;
+    color=white;
+    cmap  [label="Counts map [CMAP]", class="fl"];  
+    lc    [label="Light curve [LC]", class="fl"];
+    phasg [label="Phasogram [PHASG]", class="fl"];
+    mcube [label="Modcube [MCUBE]", class="fl"];
+    pha   [label="Spectrum [PHA1]", class="fl"];    
+    }
+
+  xpobssim [class="xp"];
+  xpselect [class="xp"];
+  xpbin [class="xp"];
+  //xpviewbin [class="xp"];
+
+  src -> xpobssim;
+  irf -> xpobssim;
+  xpobssim -> evt -> xpselect -> evt -> xpbin;
+  xpbin -> cmap;
+  xpbin -> lc;
+  xpbin -> phasg;
+  xpbin -> mcube;
+  xpbin -> pha;
+  pha -> XSPEC;
+  irf -> XSPEC;
+  //cmap -> xpviewbin [folded];
+  //lc -> xpviewbin [folded];
+  //phasg -> xpviewbin [folded];
+  //mcube -> xpviewbin [folded];
+  //pha -> xpviewbin [folded];
+}
