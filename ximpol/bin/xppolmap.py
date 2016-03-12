@@ -180,7 +180,11 @@ if __name__ == '__main__':
     # First open the map (need for setting the geometry):
     le_img_file_path = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_1p5_3p0_keV.fits')
     he_img_file_path = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_4p0_6p0_keV.fits')
-    img_file_path=le_img_file_path
+    tycho_img_file_path = os.path.join(XIMPOL_CONFIG, 'fits', 'tycho_4p1_6p1_keV.fits')
+    
+    #img_file_path=le_img_file_path
+    img_file_path=tycho_img_file_path
+    
     hdulist = fits.open(img_file_path)
     CRPIX1   = hdulist[0].header['CRPIX1']
     CRPIX2   = hdulist[0].header['CRPIX2']
@@ -264,7 +268,7 @@ if __name__ == '__main__':
             pass
         pass
     
-    gc.show_arrows(wx,wy,vx,vy,color='w',alpha='0.8')
+    gc.show_arrows(wx,wy,vx,vy,color='black',alpha='0.8')
     gc.show_markers(wx,wy,c='r')
     gc.show_markers([xref],[yref],c='w')#,marker='x')
 
