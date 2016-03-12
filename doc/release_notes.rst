@@ -15,6 +15,8 @@ Release notes
 * Getting started on documenting the architecture of the package.
 * Model for Tycho added.
 * Bug in the PSF fixed (issue #82).
+* A few files renamed (removed the leading test_) to prevent issues with the
+  unit testing.
   
 
 *ximpol (0.35.4) - Wed, 09 Mar 2016 16:54:43 -0800*
