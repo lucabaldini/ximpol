@@ -33,6 +33,7 @@ E_BINNING = [1., 2., 3., 5., 7., 10.]
 
 pipeline = xPipeline(clobber=False)
 evt_file_path = pipeline.xpobssim(configfile=CFG_FILE, duration=DURATION)
+pipeline.xpbin(evt_file_path, algorithm='CMAP')
 mcube_file_path = pipeline.xpbin(evt_file_path, algorithm='MCUBE',
                                  ebinalg='LIST', ebinning=E_BINNING)
 

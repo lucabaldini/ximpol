@@ -9,10 +9,13 @@ basic ximpol capabilities.
 
 .. _showcase_casa
 
-A tentative model for Cas A
----------------------------
+Cas A
+-----
 
-Full source model definition in `ximpol/config/casa.py <https://github.com/lucabaldini/ximpol/blob/master/ximpol/config/casa.py>`_.
+Full source model definition in `ximpol/config/casa.py
+<https://github.com/lucabaldini/ximpol/blob/master/ximpol/config/casa.py>`_.
+
+**Input model**
 
 The spectral model is taken (by hand) from Figure 5 of E.A. Helder and J. Vink,
 *"Characterizing the non-thermal emission of Cas A"*, Astrophys. J. 686 (2008)
@@ -36,10 +39,43 @@ between 4 and 6 keV).
 .. image:: figures/showcase/casa_model_he_image.png
    :width: 49.5%
 
-.. warning:: A polarization map for the non-thermal component is missing here.
-
+For the polarization, we assume that the thermal component is unpolarized,
+while for the non-thermal component we use a simple geometrical, radially
+symmetric model (loosely inspired from radio observations) where the
+polarization angle is tangential and the polarization degree is zero at the
+center of the source and increases toward the edges (see figure below).
+ 
+.. image:: figures/showcase/casa_model_he_polmap.png
+   :width: 75%
+   :align: center
+           
 Our total model of the region of interest is therefore the superposition of
 two indipendent components, with different spectral, morphological and
-polarimetric properties.
+polarimetric properties. Crude as it is, it's a good benchmark for the
+observation simulator.
 
-Below are some outputs of a 100 ks simulated observation of Cas A.
+
+**Simulation output**
+
+Below are some outputs of a 250 ks simulated observation of Cas A, based on the
+model described above. When the entire source is selected (correponding to the
+case where the polarimeter has no imaging capabilities), most of the
+polarization averages out.
+
+
+On the other hand, spatially- and energy-resolved polarimetry could in this
+case reveal much of the richness in the original polarization pattern.
+
+
+
+
+
+The Crab pulsar
+---------------
+
+
+The Crab complex
+----------------
+
+
+

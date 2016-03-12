@@ -33,7 +33,6 @@ rc('text', usetex=True)
 
 cfg_file_path = os.path.join(XIMPOL_CONFIG, 'casa.py')
 evt_file_path = os.path.join(XIMPOL_DATA, 'casa.fits')
-#reg_file_path = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_multiple.reg')
 reg_file_path = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_scan.reg')
 map_file_path = os.path.join(XIMPOL_DATA, 'casa_cmap.fits')
 ebins_file_path = os.path.join(XIMPOL_EXAMPLES, 'casa_ebins.txt')
@@ -56,11 +55,14 @@ def get_mcube_file_path(i):
 def generate():
     """
     """
-    pipeline.xpobssim(configfile=cfg_file_path, duration=100000)
+    pipeline.xpobssim(configfile=cfg_file_path, duration=250000)
 
 def select_and_bin():
     """
     """
+    logger.info('Creating the mapcube for the entire source...')
+    pipeline.xpbin(evt_file_path, algorithm='MCUBE', ebinalg='FILE',
+                   ebinfile=ebins_file_path)
     logger.info('Opening region file %s...' % reg_file_path)
     regions = pyregion.open(reg_file_path)
     logger.info('Found %d regions...' % len(regions))
@@ -81,7 +83,7 @@ def plot(save=False):
     regions = pyregion.open(reg_file_path)
     full_map = xBinnedMap(map_file_path)
     fig_all = full_map.plot(show=False)
-    
+
     for i, region in enumerate(regions):
         ra, dec, rad = region.coord_list
         #fig_all.show_circles(ra, dec, rad, lw=1)
@@ -92,15 +94,15 @@ def plot(save=False):
         mcube_file_path = get_mcube_file_path(i)
         mcube = xBinnedModulationCube(mcube_file_path)
         mcube.plot(show=False, analyze=False, xsubplot=1)
-        
+
         scale_x  = rad/numpy.cos(numpy.deg2rad(dec)) # This is to take into account the effect of the projection.
         scale_y  = rad
-        
+
         for j,fit in enumerate(mcube.fit_results):
             angle = fit.phase
             angle_error = fit.phase_error
             degree = fit.polarization_degree
-            
+
             #nangles=20
             #for t in range(nangles):
             #    dx = scale_x*numpy.cos(numpy.pi*2.0*t/float(nangles))#angle)
@@ -110,7 +112,7 @@ def plot(save=False):
 
             dx = scale_x*numpy.cos(angle)
             dy = scale_y*numpy.sin(angle)
-            
+
             dx1 = scale_x*degree*numpy.cos(angle+angle_error)
             dy1 = scale_y*degree*numpy.sin(angle+angle_error)
             dx2 = scale_x*degree*numpy.cos(angle-angle_error)
@@ -129,7 +131,7 @@ def plot(save=False):
             fig_all.show_arrows(ra, dec, -dx1, -dy1, color=xpColor(j), alpha=1, width=1,head_width=0, head_length=0)
             fig_all.show_arrows(ra, dec, dx2, dy2, color=xpColor(j), alpha=1, width=1,head_width=0, head_length=0)
             fig_all.show_arrows(ra, dec, -dx2, -dy2, color=xpColor(j), alpha=1, width=1,head_width=0, head_length=0)
-            
+
 
         if save:
             fig.save(mcube_file_path.replace('.fits', '.png'))

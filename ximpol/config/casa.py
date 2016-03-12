@@ -22,7 +22,7 @@ import os
 
 from ximpol.srcmodel.roi import xExtendedSource, xROIModel
 from ximpol.srcmodel.spectrum import power_law
-from ximpol.srcmodel.polarization import xPolMap, constant
+from ximpol.srcmodel.polarization import xPolarizationMap, constant
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
 from ximpol.utils.logging_ import logger
 from ximpol import XIMPOL_CONFIG
@@ -83,7 +83,7 @@ thermal_polarization_degree = constant(0.)
 # Read the polarization maps for the non-thermal component.
 pol_mapx_path = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_pol_x.fits')
 pol_mapy_path = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_pol_y.fits')
-polarization_map = xPolMap(pol_mapx_path, pol_mapy_path)
+polarization_map = xPolarizationMap(pol_mapx_path, pol_mapy_path)
 
 def nonthermal_polarization_angle(E, t, ra, dec):
     return polarization_map.polarization_angle(ra, dec)
@@ -107,6 +107,8 @@ def display():
     """Display the source model.
     """
     from ximpol.utils.matplotlib_ import pyplot as plt
+    from ximpol.srcmodel.img import xFITSImage
+
     print(ROI_MODEL)
     fig = plt.figure('Energy spectrum')
     total_spectral_model.plot(logy=True, show=False, label='Total')
@@ -117,6 +119,12 @@ def display():
     fig.add_label(0.1, 0.92, '1.5-3 keV', relative=True, size='xx-large',
                   color='white', horizontalalignment='left')
     fig = nonthermal_component.image.plot(show=False)
+    fig.add_label(0.1, 0.92, '4-6 keV', relative=True, size='xx-large',
+                  color='white', horizontalalignment='left')
+    img = xFITSImage(he_img_file_path)
+    fig = img.plot(show=False)
+    polarization_map.build_grid_sample(ROI_MODEL.ra, ROI_MODEL.dec)
+    polarization_map.overlay_arrows(fig)
     fig.add_label(0.1, 0.92, '4-6 keV', relative=True, size='xx-large',
                   color='white', horizontalalignment='left')
     plt.show()

@@ -16,11 +16,14 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+
 import numpy
+
 from astropy.io import fits
 from astropy import wcs
-from ximpol.core.spline import xInterpolatedBivariateSplineLinear
 
+from ximpol.core.spline import xInterpolatedBivariateSplineLinear
+from ximpol.srcmodel.img import xFITSImage
 
 
 def constant(C):
@@ -32,41 +35,49 @@ def constant(C):
     return _function
 
 
-class xPolMap:
-    '''Class for the polarization map
-    '''
-    def __init__(self, x_filepath,y_filepath):
-        self.x_wcs,self.x_map = self.readMap(x_filepath)
-        self.y_wcs,self.y_map = self.readMap(y_filepath)
+class xPolarizationMap:
+    """Read-mode interface for the polarization maps.
+    """
 
-        pass
+    def __init__(self, xmap_file_path, ymap_file_path):
+        """Constructor.
+        """
+        self.xmap_file_path = xmap_file_path
+        self.ymap_file_path = ymap_file_path
+        self.x_img = None
+        self.y_img = None
+        self.x_wcs, self.x_spline = self.__read_map(xmap_file_path)
+        self.y_wcs, self.y_spline = self.__read_map(ymap_file_path)
+        self.__reset_sample()
 
-    def readMap(self,filename):
-        # Load the FITS hdulist using astropy.io.fits
+    def __read_map(self,filename):
+        """Load the FITS hdulist using astropy.io.fits.
+        """
         w = wcs.WCS(filename)
         hdu = fits.open(filename)
-        data=hdu[0].data
-        nbinsx,nbinsy=data.shape
+        data = hdu[0].data
+        nbinsx, nbinsy = data.shape
         x = range(nbinsx)
         y = range(nbinsy)
-        spline=xInterpolatedBivariateSplineLinear(x,y,data)
-        return w,spline
+        spline = xInterpolatedBivariateSplineLinear(x, y, data)
+        return w, spline
 
-    def getPolarizationVector(self,ra,dec):
+    def polarization_vector(self, ra, dec):
+        """Return the polarization vector for a given (array of) RA and Dec
+        values.
         """
-        """
-        x_x,x_y = self.x_wcs.wcs_world2pix(ra,dec,0)
-        y_x,y_y = self.y_wcs.wcs_world2pix(ra,dec,0)
-        px = self.x_map(x_x,x_y)
-        py = self.y_map(y_x,y_y)
-        return px,py
+        x_x, x_y = self.x_wcs.wcs_world2pix(ra, dec, 0)
+        y_x, y_y = self.y_wcs.wcs_world2pix(ra, dec, 0)
+        px = self.x_spline(x_x, x_y)
+        py = self.y_spline(y_x, y_y)
+        return px, py
 
     def polarization_degree(self, ra, dec):
         """Return the polarization degree for a given direction in the sky.
 
         Warning
         -------
-        Note that we're calling the getPolarizationVector() function here and
+        Note that we're calling the polarization_vector() function here and
         in the polarization_angle() method, while we could in principle
         get away with just one function call. The issue is that downstream
         we need the polarization degree and angle separately, and if we want
@@ -74,71 +85,107 @@ class xPolMap:
         polarization() interface in the model components that is called
         consistently in rvs_event_list().
         """
-        px, py = self.getPolarizationVector(ra, dec)
+        px, py = self.polarization_vector(ra, dec)
         return numpy.sqrt(px*px + py*py)
 
     def polarization_angle(self, ra, dec):
         """Return the polarization angle for a given direction in the sky.
         """
-        px, py = self.getPolarizationVector(ra, dec)
+        px, py = self.polarization_vector(ra, dec)
         phi = numpy.arctan2(py, px)
         phi += (phi < 0.)*numpy.pi
         return phi
 
+    def __reset_sample(self):
+        """
+        """
+        self.__wx = []
+        self.__wy = []
+        self.__vx = []
+        self.__vy = []
+
+    def build_random_sample(self, ra0, dec0, num_points=1000, radius=5.):
+        """Calculate the polarization components on a random set of
+        points.
+
+        Warning
+        -------
+        This could be probably vectorized.
+        """
+        self.__reset_sample()
+        radius /= 60.
+        delta_ra = radius/numpy.cos(numpy.radians(dec0))
+        ra = numpy.random.uniform(ra0 - delta_ra, ra0 + delta_ra, num_points)
+        dec = numpy.random.uniform(dec0 - radius, dec0 + radius, num_points)
+        for _ra, _dec in zip(ra, dec):
+            px, py = self.polarization_vector(_ra, _dec)
+            if (px*px + py*py) > 0:
+                self.__wx.append(_ra)
+                self.__wy.append(_dec)
+                self.__vx.append(0.01*px)
+                self.__vy.append(0.01*py)
+
+    def build_grid_sample(self, ra0, dec0, num_points=25, radius=5.):
+        """Calculate the polarization components on a rectangular grid.
+
+        Warning
+        -------
+        This could be probably vectorized.
+        """
+        self.__reset_sample()
+        radius /= 60.
+        delta_ra = radius/numpy.cos(numpy.radians(dec0))
+        ra = numpy.linspace(ra0 - delta_ra, ra0 + delta_ra, num_points)
+        dec = numpy.linspace(dec0 - radius, dec0 + radius, num_points)
+        for _ra in ra:
+            for _dec in dec:
+                px, py = self.polarization_vector(_ra, _dec)
+                if (px*px + py*py) > 0:
+                    self.__wx.append(_ra)
+                    self.__wy.append(_dec)
+                    self.__vx.append(0.01*px)
+                    self.__vy.append(0.01*py)
+
+    def overlay_arrows(self, fig):
+        """Overlay the polarization map arrows over an existing aplpy figure.
+        """
+        fig.show_arrows(self.__wx, self.__wy, self.__vx, self.__vy,
+                        color='w', alpha=0.8)
+        fig.show_markers(self.__wx, self.__wy, marker='o')
+
+    def plot_xmap(self, overlay=True):
+        """Plot the x polarization map.
+        """
+        if self.x_img is None:
+            self.x_img = xFITSImage(self.xmap_file_path, build_cdf=False)
+        fig = self.x_img.plot(show=False)
+        if overlay:
+            self.overlay_arrows(fig)
+        return fig
+
+    def plot_ymap(self, overlay=True):
+        """Plot the y polarization map.
+        """
+        if self.y_img is None:
+            self.y_img = xFITSImage(self.ymap_file_path, build_cdf=False)
+        fig = self.y_img.plot(show=False)
+        if overlay:
+            self.overlay_arrows(fig)
+        return fig
+
 
 if __name__=='__main__':
     import os
-    import aplpy
-    from ximpol import XIMPOL_SRCMODEL
+    from ximpol import XIMPOL_CONFIG
     from ximpol.utils.matplotlib_ import pyplot as plt
-    import numpy.random
-
-    polarization_x_map = os.path.join(XIMPOL_SRCMODEL,'fits','casa_pol_x.fits')
-    polarization_y_map = os.path.join(XIMPOL_SRCMODEL,'fits','casa_pol_y.fits')
-    casa_map           = os.path.join(XIMPOL_SRCMODEL,'fits','casa_1p5_3p0_keV.fits')
-    polarization_map   = xPolMap(polarization_x_map,polarization_y_map)
-    my_ra  = 350.863
-    my_dec =  58.815
-    npoints=1000
-    delta=0.05
-    #ras  = numpy.linspace(my_ra-delta,my_ra+delta,npoints)
-    #decs = numpy.linspace(my_dec-delta,my_dec+delta,npoints)
-    ras   = numpy.random.uniform(my_ra -2*delta,my_ra+2*delta,npoints)
-    decs  = numpy.random.uniform(my_dec-delta,my_dec+delta,npoints)
-    wx=[]
-    wy=[]
-    vx=[]
-    vy=[]
-    for ra,dec in zip(ras,decs):
-        px,py = polarization_map.getPolarizationVector(ra,dec)
-        if (px*px+py*py)>0:
-            wx.append(ra)
-            wy.append(dec)
-            vx.append(0.01*px)
-            vy.append(0.01*py)
-            pass
-        pass
-    #aplpy.make_rgb_cube([polarization_x_map,polarization_y_map,casa_map],'thecube.fits')
-    #aplpy.make_rgb_image('thecube.fits','test.tif',stretch_r='linear',stretch_g='linear',stretch_b='arcsinh')
-    #aplpy.show_arrows(wx,wy,vx,vy,color='w',alpha=0.8)
-
-    gc = aplpy.FITSFigure(polarization_x_map,figsize=(10,10))
-    gc.show_colorscale(stretch='sqrt')
-    gc.show_arrows(wx,wy,vx,vy,color='w',alpha=0.8)
-    gc.show_markers(wx,wy,marker='o')
-    #gc.tick_labels.set_xformat('dd')
-    #gc.tick_labels.set_yformat('dd')
-
-    gc = aplpy.FITSFigure(polarization_y_map,figsize=(10,10))
-    gc.show_colorscale(stretch='sqrt')
-    gc.show_arrows(wx,wy,vx,vy,color='w',alpha=0.8)
-    gc.show_markers(wx,wy,marker='o')
-
-    gc = aplpy.FITSFigure(casa_map,figsize=(10,10))
-    gc.show_colorscale(stretch='sqrt')
-    gc.show_arrows(wx,wy,vx,vy,color='w',alpha=0.8)
-    gc.show_markers(wx,wy,marker='o')
-    #gc.tick_labels.set_xformat('dd')
-    #gc.tick_labels.set_yformat('dd')
-
+    file_path_x = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_pol_x.fits')
+    file_path_y = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_pol_y.fits')
+    img_file_path = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_1p5_3p0_keV.fits')
+    polarization_map = xPolarizationMap(file_path_x, file_path_y)
+    polarization_map.build_grid_sample(350.863, 58.815)
+    polarization_map.plot_xmap()
+    polarization_map.plot_ymap()
+    img = xFITSImage(img_file_path)
+    fig = img.plot(show=False)
+    polarization_map.overlay_arrows(fig)
     plt.show()
