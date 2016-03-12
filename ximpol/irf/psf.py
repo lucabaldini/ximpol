@@ -112,14 +112,14 @@ class xPointSpreadFunction(xUnivariateGenerator):
         """Smear a pair of coordinates for an arbitrary number of times.
         """
         delta_ra, delta_dec = self.delta(size=num_times)
-        return ra + delta_ra, dec + delta_dec
+        return ra + delta_ra/numpy.cos(numpy.radians(dec)), dec + delta_dec
 
     def smear(self, ra, dec):
         """Smear a pair of arrays of coordinates.
         """
         assert(ra.size == dec.size)
         delta_ra, delta_dec = self.delta(ra.size)
-        return ra + delta_ra, dec + delta_dec
+        return ra + delta_ra/numpy.cos(numpy.radians(dec)), dec + delta_dec
 
 
 def main():
