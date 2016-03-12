@@ -637,16 +637,17 @@ class xBinnedModulationCube(xBinnedFileBase):
         _emin = self.emin[i]
         _emax = self.emax[i]
         _emean = self.emean[i]
-        label = '%.2f$-$%.2f $<$%.3f$>$ keV' % (_emin, _emax, _emean)
+        label = '%.2f-%.2f <%.2f> keV' % (_emin, _emax, _emean)
         plt.errorbar(self.phi_x, self.phi_y[i], yerr=numpy.sqrt(self.phi_y[i]),
                      fmt='o')
         if fit:
             fit_results = self.fit_bin(i)
-            fit_results.plot()
+            fit_results.plot(label=label)
         plt.axis([0., 2*numpy.pi, 0., 1.2*self.phi_y[i].max()])
         plt.xlabel('Azimuthal angle [rad]')
         plt.ylabel('Counts/bin')
-        plt.text(0.02, 0.92, label, transform=plt.gca().transAxes)
+        plt.text(0.02, 0.92, label, transform=plt.gca().transAxes,
+                 fontsize=15)
         if show:
             plt.show()
 

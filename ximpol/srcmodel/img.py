@@ -114,7 +114,7 @@ class xFITSImage:
         import aplpy
         with context_no_grids():
             if subplot == (1, 1, 1):
-                fig = aplpy.FITSFigure(self.hdu_list[0])
+                fig = aplpy.FITSFigure(self.hdu_list[0], figure=plt.figure())
             else:
                 fig = aplpy.FITSFigure(self.hdu_list[0], figure=plt.figure(0,figsize=(10*subplot[1], 10*subplot[0])), subplot=subplot)
         fig.add_grid()
@@ -125,6 +125,14 @@ class xFITSImage:
             plt.show()
         return fig
 
+    @classmethod
+    def add_label(self, fig, text):
+        """Add a label to an image.
+
+        This is a shortcut to have all the formatting defined.
+        """
+        fig.add_label(0.1, 0.92, text, relative=True, size='large',
+                      color='white', horizontalalignment='left')
 
 
 def main():

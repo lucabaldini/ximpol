@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* First complete Cas A section in the gallery (issue #80).
+
 
 *ximpol (0.36.0) - Sat, 12 Mar 2016 06:03:59 -0800*
 

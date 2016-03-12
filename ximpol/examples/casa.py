@@ -26,9 +26,10 @@ from ximpol import xpColor
 from ximpol.utils.logging_ import logger
 from ximpol.core.pipeline import xPipeline
 from ximpol.evt.binning import xBinnedMap, xBinnedModulationCube
+from ximpol.srcmodel.img import xFITSImage
 from ximpol.utils.matplotlib_ import pyplot as plt
-from matplotlib import rc
-rc('text', usetex=True)
+#from matplotlib import rc
+#rc('text', usetex=True)
 
 
 CFG_FILE = os.path.join(XIMPOL_CONFIG, 'casa.py')
@@ -62,8 +63,8 @@ def select_and_bin():
     """
     """
     logger.info('Creating the mapcube for the entire source...')
-    pipeline.xpbin(evt_file_path, algorithm='MCUBE', ebinalg='FILE',
-                   ebinfile=ebins_file_path)
+    pipeline.xpbin(evt_file_path, algorithm='MCUBE', ebinalg='LIST',
+                       ebinning=E_BINNING)
     logger.info('Opening region file %s...' % reg_file_path)
     regions = pyregion.open(reg_file_path)
     logger.info('Found %d regions...' % len(regions))
@@ -142,8 +143,17 @@ def plot(save=False):
         pass
     fig_all.save(os.path.join(XIMPOL_DATA, 'casa_reg_all.png'))
 
+def plot_doc():
+    """
+    """
+    img = xFITSImage(os.path.join(XIMPOL_DATA, 'casa_cmap.fits'))
+    fig = img.plot(show=False)
+    xFITSImage.add_label(fig, 'XIPE 250 ks')
+    plt.show()
+
 
 if __name__ == '__main__':
     generate()
     select_and_bin()
     plot(True)
+    #plot_doc()

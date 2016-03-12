@@ -116,17 +116,13 @@ def display():
     thermal_spectral_model.plot(logy=True, show=False, label='Thermal')
     plt.legend(bbox_to_anchor=(0.95, 0.95))
     fig = thermal_component.image.plot(show=False)
-    fig.add_label(0.1, 0.92, '1.5-3 keV', relative=True, size='xx-large',
-                  color='white', horizontalalignment='left')
+    xFITSImage.add_label(fig, 'Chandra 1.5-3.0 keV')
     fig = nonthermal_component.image.plot(show=False)
-    fig.add_label(0.1, 0.92, '4-6 keV', relative=True, size='xx-large',
-                  color='white', horizontalalignment='left')
+    xFITSImage.add_label(fig, 'Chandra 4.0-6.0 keV')
     img = xFITSImage(he_img_file_path)
     fig = img.plot(show=False)
     polarization_map.build_grid_sample(ROI_MODEL.ra, ROI_MODEL.dec)
     polarization_map.overlay_arrows(fig)
-    fig.add_label(0.1, 0.92, '4-6 keV', relative=True, size='xx-large',
-                  color='white', horizontalalignment='left')
     plt.show()
 
 

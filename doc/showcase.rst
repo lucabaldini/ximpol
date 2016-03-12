@@ -35,9 +35,9 @@ and the latter to the non-thermal one (note the absence of spectral lines
 between 4 and 6 keV).
 
 .. image:: figures/showcase/casa_model_le_image.png
-   :width: 49.5%
+   :width: 49.6%
 .. image:: figures/showcase/casa_model_he_image.png
-   :width: 49.5%
+   :width: 49.6%
 
 For the polarization, we assume that the thermal component is unpolarized,
 while for the non-thermal component we use a simple geometrical, radially
@@ -57,18 +57,43 @@ observation simulator.
 
 **Simulation output**
 
-Below are some outputs of a 250 ks simulated observation of Cas A, based on the
-model described above. When the entire source is selected (correponding to the
-case where the polarimeter has no imaging capabilities), most of the
-polarization averages out.
+Below is a binned count map of a 250 ks simulated XIPE observation of Cas A,
+based on the model described above.
 
+.. image:: figures/showcase/casa_cmap.png
+   :width: 75%
+   :align: center
 
-On the other hand, spatially- and energy-resolved polarimetry could in this
+When the entire source is analyzed at once, most of the polarization averages
+out and even in the high-energy band, where the emission is predominantly
+non-thermal, the residual polarization degree resulting from the averaging
+of the different emission regions is of the order of 5%.
+
+.. image:: figures/showcase/casa_mod_le.png
+   :width: 49.6%
+.. image:: figures/showcase/casa_mod_he.png
+   :width: 49.6%
+
+On the other hand, spatially- and energy-resolved polarimetry would in this
 case reveal much of the richness in the original polarization pattern.
+Below is an example of the azimuthal distributions in the two energy bands
+for the circular region of interest indicated by the white circle in the left
+plot. (The green and blue lines in the ROI indicate the reconstructed
+polarization angle.) The comparison with the previous, spatially averaged
+distributions is striking.
 
+.. image:: figures/showcase/casa_reg0009_mcube.png
+   :width: 100%
 
+By mapping the entire field ov view with suitable regions of interest we can
+in fact (at least qualitatively) recover the input polarization pattern,
+as shown in the figre below. (Note that at the center of the image the
+polarization is close to zero and the arrows have little meaning.)
 
-
+.. image:: figures/showcase/casa_reg_all.png
+   :width: 75%
+   :align: center
+           
 
 The Crab pulsar
 ---------------

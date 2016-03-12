@@ -276,17 +276,22 @@ class xModulationFitResults:
         self.polarization_degree = self.visibility/modulation_factor
         self.polarization_degree_error = self.visibility_error/modulation_factor
 
-    def plot(self, show=False, stat=True, label=None, **options):
+    def plot(self, show=False, stat=True, text_size=15, **options):
         """Plot the fit results.
         """
         from ximpol.utils.matplotlib_ import pyplot as plt
         _x = numpy.linspace(0., 2*numpy.pi, 100)
         _y = xAzimuthalResponseGenerator.fit_function(_x, *self.popt)
         plt.plot(_x, _y, **options)
-        if label is not None:
-            plt.text(0.02, 0.1, label, transform=plt.gca().transAxes)
         if stat:
-            plt.text(0.02, 0.05, self.latex(), transform=plt.gca().transAxes,fontsize=15)
+            posh = 0.02
+            posv = 0.25
+            delv = 0.07
+            for text in self.latex().split(','):
+                text = text.strip()
+                plt.text(posh, posv, text, transform=plt.gca().transAxes,
+                         fontsize=text_size)
+                posv -= delv
         if show:
             plt.show()
 
@@ -299,7 +304,7 @@ class xModulationFitResults:
                 numpy.degrees(self.phase), numpy.degrees(self.phase_error),
                 self.chisquare, self.ndof)
         if self.polarization_degree is not None:
-            text += r', $p = %.3f \pm %.3f$' %\
+            text += r', $P = %.3f \pm %.3f$' %\
                     (self.polarization_degree, self.polarization_degree_error)
         return text
 
