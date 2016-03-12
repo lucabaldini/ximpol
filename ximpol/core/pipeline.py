@@ -29,14 +29,15 @@ sys.dont_write_bytecode = 1
 from xpobssim import xpobssim, PARSER as XPOBSSIM_PARSER
 from xpselect import xpselect, PARSER as XPSELECT_PARSER
 from xpbin import xpbin, PARSER as XPBIN_PARSER
-try:
-    from xpxspec import xpxspec, PARSER as XPXSPEC_PARSER
-except:
-    print 'No XSPEC avalilable!'
-
 
 from ximpol.utils.logging_ import logger
 from ximpol.utils.os_ import rm
+
+try:
+    from xpxspec import xpxspec, PARSER as XPXSPEC_PARSER
+except ImportError:
+    logger.warn('Could not import xpxspec.')
+
 
 
 class xPipeline:
