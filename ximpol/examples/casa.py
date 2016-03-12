@@ -31,12 +31,13 @@ from matplotlib import rc
 rc('text', usetex=True)
 
 
-cfg_file_path = os.path.join(XIMPOL_CONFIG, 'casa.py')
+CFG_FILE = os.path.join(XIMPOL_CONFIG, 'casa.py')
+DURATION = 250000.
+E_BINNING = [1., 4., 6.]
+
 evt_file_path = os.path.join(XIMPOL_DATA, 'casa.fits')
 reg_file_path = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_scan.reg')
 map_file_path = os.path.join(XIMPOL_DATA, 'casa_cmap.fits')
-ebins_file_path = os.path.join(XIMPOL_EXAMPLES, 'casa_ebins.txt')
-ebins_file_path = os.path.join(XIMPOL_EXAMPLES, 'casa_2ebins.txt')
 
 
 pipeline = xPipeline(clobber=False)
@@ -55,7 +56,7 @@ def get_mcube_file_path(i):
 def generate():
     """
     """
-    pipeline.xpobssim(configfile=cfg_file_path, duration=250000)
+    pipeline.xpobssim(configfile=CFG_FILE, duration=DURATION)
 
 def select_and_bin():
     """
@@ -74,8 +75,8 @@ def select_and_bin():
         mcube_file_path = get_mcube_file_path(i)
         pipeline.xpselect(evt_file_path, ra=ra, dec=dec, rad=rad,
                           outfile=sel_file_path)
-        pipeline.xpbin(sel_file_path, algorithm='MCUBE', ebinalg='FILE',
-                       ebinfile=ebins_file_path, outfile = mcube_file_path)
+        pipeline.xpbin(sel_file_path, algorithm='MCUBE', ebinalg='LIST',
+                       ebinning=E_BINNING, outfile = mcube_file_path)
 
 def plot(save=False):
     logger.info('Plotting stuff...')
