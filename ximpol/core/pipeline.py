@@ -124,4 +124,4 @@ class xPipeline:
         """
         switches = self.command_line(**kwargs).split() + [file_path]
         kwargs = XPXSPEC_PARSER.parse_args(switches).__dict__
-        xpxspec(file_path, **kwargs)
+        return xpxspec(file_path, **kwargs)

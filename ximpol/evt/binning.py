@@ -107,6 +107,24 @@ class xEventBinningBase:
         assert bin_edges.ndim == 1
         return (bin_edges[1:] - bin_edges[:-1])
 
+    @classmethod
+    def equipopulated_binning(self, num_bins, vector, min_value=None,
+                              max_value=None):
+        """
+        """
+        if min_value is None:
+            min_value = vector.min()
+        if max_value is None:
+            max_value = vector.max()
+        _vec = vector[(vector >= min_value)*(vector <= max_value)]
+        _vec.sort()
+        binning = [min_value]
+        for i in range(1, num_bins):
+            index = int(i*len(_vec)/float(num_bins))
+            binning.append(_vec[index])
+        binning.append(max_value)
+        return numpy.array(binning)
+
     def process_kwargs(self):
         """Check the keyword arguments.
         """

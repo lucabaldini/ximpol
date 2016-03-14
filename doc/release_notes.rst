@@ -1,6 +1,9 @@
 Release notes
 =============
 
+* Added a pipeline example for the Crab pulsar.
+* Equipopulated-binning code refactored (issue #93).
+
 
 *ximpol (0.36.1) - Sat, 12 Mar 2016 07:40:17 -0800*
 

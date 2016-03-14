@@ -54,10 +54,11 @@ def xpxspec(file_path, **kwargs):
     spec.ignore('10.-**')
     model = xspec.Model(kwargs['model'])
     xspec.Fit.perform()
-    xspec.Fit.show()
-    xspec.Plot.device = '/xs'
-    xspec.Plot.xAxis = 'keV'
-    xspec.Plot('ldata', 'resid')
+    #xspec.Fit.show()
+    #xspec.Plot.device = '/xs'
+    #xspec.Plot.xAxis = 'keV'
+    #xspec.Plot('ldata', 'resid')
+    return model
 
 
 if __name__=='__main__':

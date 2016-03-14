@@ -55,7 +55,7 @@ _phi0, _phi1, _index, _index_err, _norm,\
 _phi = 0.5*(_phi0 + _phi1)
 
 # Build the PL normalization as a function of the phase.
-fmt = dict(xname=r'$\phi$', yname='PL normalization',
+fmt = dict(xname='Pulsar phase', yname='PL normalization',
            yunits='cm$^{-2}$ s$^{-1}$ keV$^{-1}$')
 pl_normalization = xInterpolatedUnivariateSpline(_phi, _norm, k=3, **fmt)
 
@@ -69,7 +69,7 @@ p0 = [1., 1., 1., 1.]
 popt, pcov = curve_fit(ffit, _phi, _index, p0, _index_err)
 
 # And use tho best-fit parameters to build a proper spline.
-fmt = dict(xname=r'$\phi$', yname='PL index')
+fmt = dict(xname='Pulsar phase', yname='PL index')
 pl_index = xInterpolatedUnivariateSpline(_phi, ffit(_phi, *popt), k=2, **fmt)
 
 # Build the actual energy spectrum.
@@ -80,7 +80,7 @@ _phi, _pol_angle = numpy.loadtxt(PANG_FILE_PATH, unpack=True)
 _pol_angle = numpy.deg2rad(_pol_angle)
 # Filter the data points to reduce the noise.
 _pol_angle = scipy.signal.wiener(_pol_angle, 7)
-fmt = dict(xname=r'$\phi$', yname='Polarization angle [rad]')
+fmt = dict(xname='Pulsar phase', yname='Polarization angle [rad]')
 pol_angle = xInterpolatedUnivariateSpline(_phi, _pol_angle, k=1, **fmt)
 
 # Mind that you have to wrap this into a function to be used.
@@ -93,7 +93,7 @@ _phi, _pol_degree = numpy.loadtxt(PDEG_FILE_PATH, unpack=True)
 _pol_degree /= 100.
 # Filter the data points to reduce the noise.
 _pol_degree = scipy.signal.wiener(_pol_degree, 5)
-fmt = dict(xname=r'$\phi$', yname='Polarization degree')
+fmt = dict(xname='Pulsar phase', yname='Polarization degree')
 pol_degree = xInterpolatedUnivariateSpline(_phi, _pol_degree, k=1, **fmt)
 
 # And, again, this needs to be wrapped into a function.

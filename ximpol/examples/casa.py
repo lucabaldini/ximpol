@@ -57,7 +57,8 @@ def get_mcube_file_path(i):
 def generate():
     """
     """
-    pipeline.xpobssim(configfile=CFG_FILE, duration=DURATION)
+    pipeline.xpobssim(configfile=CFG_FILE, duration=DURATION,
+                      outfile=evt_file_path)
 
 def select_and_bin():
     """
