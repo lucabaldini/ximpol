@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.37.0) - Tue, 15 Mar 2016 15:15:36 -0700*
+
 * Added a pipeline example for the Crab pulsar.
 * Equipopulated-binning code refactored (issue #93).
 * evt.select.py renamed as evt.subselect.py (issue #96).
