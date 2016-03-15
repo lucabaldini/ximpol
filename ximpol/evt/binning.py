@@ -563,18 +563,10 @@ class xEventBinningMCUBE(xEventBinningBase):
                                       ebins + 1)
         elif ebinalg == 'EQP':
             if self.get('mc'):
-                energy = numpy.copy(self.event_data['MC_ENERGY'])
+                energy = self.event_data['MC_ENERGY']
             else:
-                energy = numpy.copy(self.event_data['ENERGY'])
-            mask = (energy > self.get('emin'))*(energy < self.get('emax'))
-            energy = energy[mask]
-            energy.sort()
-            ebinning = [emin]
-            for i in range(1, ebins):
-                index = int(i*len(energy)/float(ebins))
-                ebinning.append(energy[index])
-            ebinning.append(emax)
-            ebinning = numpy.array(ebinning)
+                energy = self.event_data['ENERGY']
+            ebinning = self.equipopulated_binning(ebins, energy, emin, emax)
         elif ebinalg == 'FILE':
             ebinfile = self.get('ebinfile')
             assert ebinfile is not None
