@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2015, the ximpol team.
+# Copyright (C) 2015--2016, the ximpol team.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU GengReral Public License as published by
@@ -24,6 +24,7 @@ import os
 import xspec
 
 from ximpol import XIMPOL_IRF
+from ximpol.evt.fitting import xSpectralFitter
 from ximpol.utils.logging_ import logger, startmsg
 
 
@@ -38,6 +39,13 @@ PARSER.add_argument('phafile', type=str,
                     help='the path to the input .pha file')
 PARSER.add_argument('--model', type=str, default='powerlaw',
                     help='the spectral model for the fit')
+PARSER.add_argument('--emin', type=float, default=0.5,
+                    help='minimum energy for the fit')
+PARSER.add_argument('--emax', type=float, default=10.,
+                    help='maximum energy for the fit')
+PARSER.add_argument('--plot', type=ast.literal_eval, choices=[True, False],
+                    default=True,
+                    help='plot the fit results')
 PARSER.add_argument('--clobber', type=ast.literal_eval, choices=[True, False],
                     default=True,
                     help='overwrite or do not overwrite existing output files')
@@ -46,19 +54,10 @@ PARSER.add_argument('--clobber', type=ast.literal_eval, choices=[True, False],
 def xpxspec(file_path, **kwargs):
     """Do a spectral fit in XSPEC
     """
-    spec = xspec.Spectrum(file_path)
-    # These must be loaded automagically.
-    spec.response = os.path.join(XIMPOL_IRF, 'fits', 'xipe_baseline.rmf')
-    spec.response.arf = os.path.join(XIMPOL_IRF, 'fits', 'xipe_baseline.arf')
-    spec.ignore('**-0.5')
-    spec.ignore('10.-**')
-    model = xspec.Model(kwargs['model'])
-    xspec.Fit.perform()
-    #xspec.Fit.show()
-    #xspec.Plot.device = '/xs'
-    #xspec.Plot.xAxis = 'keV'
-    #xspec.Plot('ldata', 'resid')
-    return model
+    fitter = xSpectralFitter(file_path, **kwargs)
+    if kwargs['plot']:
+        fitter.plot()
+    return fitter
 
 
 if __name__=='__main__':

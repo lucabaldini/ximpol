@@ -6,7 +6,7 @@ from ximpol.utils.logging_ import logger, startmsg, abort
 from ximpol.evt.binning import xBinnedCountSpectrum
 from ximpol.evt.binning import xBinnedMap
 from ximpol.evt.binning import xBinnedModulationCube
-from ximpol.evt.select import xEventSelect
+from ximpol.evt.subselect import xEventSelect
 from ximpol.evt.binning import xEventBinningMCUBE
 import os,sys
 from matplotlib import rc
@@ -42,23 +42,23 @@ for fit in binModulation.fit_results:
     print fit
     angle      = fit.phase
     angle_err  = fit.phase_error
-    
+
     visibility = fit.visibility
-    
+
     scale=10.
     dx1=visibility/scale*numpy.cos(angle+10*angle_err)
     dy1=visibility/scale*numpy.sin(angle+10*angle_err)
-    
+
     dx2=visibility/scale*numpy.cos(angle-10*angle_err)
     dy2=visibility/scale*numpy.sin(angle-10*angle_err)
-    
+
     print fit.phase,angle,dx1,dy1,dx2,dy2
 
     fig.show_arrows(ra,dec,dx1,dy1,color='g',alpha=1,width=1)
     fig.show_arrows(ra,dec,-dx1,-dy1,color='g',alpha=1,width=1)
-    
+
     fig.show_arrows(ra,dec,dx2,dy2,color='g',alpha=1,width=1)
-    fig.show_arrows(ra,dec,-dx2,-dy2,color='g',alpha=1,width=1)    
+    fig.show_arrows(ra,dec,-dx2,-dy2,color='g',alpha=1,width=1)
     pass
 
 fig.save(outfile)

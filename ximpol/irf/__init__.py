@@ -28,40 +28,38 @@ from ximpol.utils.logging_ import logger
 from ximpol.utils.os_ import check_input_file
 
 
+def irf_file_path(irf_name, irf_type, folder_path=None, check_file=True):
+    """Return the full file path to a particular IRF file.
+    """
+    if folder_path is None:
+        folder_path = os.path.join(XIMPOL_IRF, 'fits')
+    file_path = os.path.join(folder_path, '%s.%s' % (irf_name, irf_type))
+    if check_file:
+        check_input_file(file_path, irf_type)
+    return file_path
+
 def load_arf(irf_name, folder_path=None):
     """Facility to load the effective area for a given IRF set.
     """
-    if folder_path is None:
-        folder_path = os.path.join(XIMPOL_IRF,'fits')
-    file_path = os.path.join(folder_path, '%s.arf' % irf_name)
-    check_input_file(file_path, 'arf')
+    file_path = irf_file_path(irf_name, 'arf', folder_path, check_file=True)
     return xEffectiveArea(file_path)
 
 def load_psf(irf_name, folder_path=None):
     """Facility to load the point-spread function for a given IRF set.
     """
-    if folder_path is None:
-        folder_path = os.path.join(XIMPOL_IRF,'fits')
-    file_path = os.path.join(folder_path, '%s.psf' % irf_name)
-    check_input_file(file_path, 'psf')
+    file_path = irf_file_path(irf_name, 'psf', folder_path, check_file=True)
     return xPointSpreadFunction(file_path)
 
 def load_mrf(irf_name, folder_path=None):
     """Facility to load the modulation factor for a given IRF set.
     """
-    if folder_path is None:
-        folder_path = os.path.join(XIMPOL_IRF,'fits')
-    file_path = os.path.join(folder_path, '%s.mrf' % irf_name)
-    check_input_file(file_path, 'mrf')
+    file_path = irf_file_path(irf_name, 'mrf', folder_path, check_file=True)
     return xModulationFactor(file_path)
 
 def load_rmf(irf_name, folder_path=None):
     """Facility to load the energy dispersion for a given IRF set.
     """
-    if folder_path is None:
-        folder_path = os.path.join(XIMPOL_IRF,'fits')
-    file_path = os.path.join(folder_path, '%s.rmf' % irf_name)
-    check_input_file(file_path, 'rmf')
+    file_path = irf_file_path(irf_name, 'rmf', folder_path, check_file=True)
     return xEnergyDispersion(file_path)
 
 def load_irfs(irf_name, folder_path=None):

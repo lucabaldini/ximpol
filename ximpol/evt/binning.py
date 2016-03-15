@@ -32,6 +32,7 @@ from ximpol.utils.matplotlib_ import pyplot as plt
 from ximpol.srcmodel.img import xFITSImage
 from ximpol import xpColor
 
+
 class xEventBinningBase:
 
     """Base class for the event binning.
@@ -152,6 +153,16 @@ class xBinnedFileBase:
         logger.info('Opening input binned file %s...' % file_path)
         self.hdu_list = fits.open(file_path)
         self.hdu_list.info()
+
+    def primary_header(self):
+        """Return the primary header.
+        """
+        return self.hdu_list[0].header
+
+    def primary_header_keyword(self, key):
+        """Return the value of a primary header keyword.
+        """
+        return self.hdu_list[0].header[key]
 
     def plot(self, *args, **kwargs):
         """Do nothing method.

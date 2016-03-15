@@ -23,7 +23,7 @@ __description__ = 'Data selection interface'
 import os
 
 from ximpol.utils.logging_ import logger, startmsg, abort
-from ximpol.evt.select import xEventSelect
+from ximpol.evt.subselect import xEventSelect
 
 
 """Command-line switches.

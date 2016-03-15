@@ -3,6 +3,10 @@ Release notes
 
 * Added a pipeline example for the Crab pulsar.
 * Equipopulated-binning code refactored (issue #93).
+* evt.select.py renamed as evt.subselect.py (issue #96).
+* xpxspec refactored, with most of the code being moved to evt.fitting.py
+  (issue #92).
+* Some specific refactoring.
 
 
 *ximpol (0.36.1) - Sat, 12 Mar 2016 07:40:17 -0800*
