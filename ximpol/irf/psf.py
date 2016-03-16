@@ -97,7 +97,8 @@ class xPointSpreadFunction(xUnivariateGenerator):
              show=True):
         """Overloaded plot method (with default log scale on the y-axis).
         """
-        xUnivariateGenerator.plot(self, num_points, overlay, logx, logy, show)
+        xUnivariateGenerator.plot(self, num_points, overlay, logx, logy,
+                                  show=show)
 
     def delta(self, size=1):
         """Return an array of random offset (in ra, dec or L, B) due to the PSF.
