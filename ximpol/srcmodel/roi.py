@@ -269,7 +269,7 @@ class xPeriodicPointSource(xPointSource):
         # Create the event list and the count spectrum.
         event_list = xMonteCarloEventList()
         # Mind the count spectrum is made in phase!
-        sampling_phase = numpy.linspace(0, 1, 100)
+        sampling_phase = numpy.linspace(0., 1., 100)
         count_spectrum = xCountSpectrum(self.energy_spectrum, aeff,
                                         sampling_phase)
         # All this is not properly taking into account the ephemeris.

@@ -25,11 +25,16 @@ from ximpol.srcmodel.polarization import constant
 
 
 ROI_MODEL = xROIModel(90., 0.)
+PL_NORM = 10.
+PL_INDEX = 2.0
+POL_DEGREE = 0.5
+POL_ANGLE = numpy.radians(65.)
 
-energy_spectrum = power_law(10., 2.)
-polarization_degree = constant(0.5)
-polarization_angle = constant(numpy.radians(65.))
-src = xPointSource('Point source', 90., 0., energy_spectrum,
+energy_spectrum = power_law(PL_NORM, PL_INDEX)
+polarization_degree = constant(POL_DEGREE)
+polarization_angle = constant(POL_ANGLE)
+
+src = xPointSource('Point source', ROI_MODEL.ra, ROI_MODEL.dec, energy_spectrum,
                    polarization_degree, polarization_angle)
 
 ROI_MODEL.add_source(src)

@@ -19,14 +19,37 @@
 
 import os
 
-from ximpol import XIMPOL_CONFIG
+from ximpol import XIMPOL_CONFIG, XIMPOL_DATA, XIMPOL_DOC
 from ximpol.core.pipeline import xPipeline
+from ximpol.utils.logging_ import logger
+from ximpol.config.single_point_source import PL_NORM, PL_INDEX
 
 
-CFG_FILE = os.path.join(XIMPOL_CONFIG, 'test_single_point_source.py')
-DURATION = 10000.
+"""Script-wide simulation and analysis settings.
+"""
+CFG_FILE = os.path.join(XIMPOL_CONFIG, 'single_point_source.py')
+OUT_FILE_PATH_BASE = os.path.join(XIMPOL_DATA, 'single_point_source')
+EVT_FILE_PATH = '%s.fits' % OUT_FILE_PATH_BASE
+SIM_DURATION = 10000.
+OUTPUT_FOLDER = os.path.join(XIMPOL_DOC, 'figures', 'showcase')
 
-pipeline = xPipeline(clobber=False)
-evt_file_path = pipeline.xpobssim(configfile=CFG_FILE, duration=DURATION)
-ph1_file_path = pipeline.xpbin(evt_file_path, algorithm='PHA1')
-pipeline.xpxspec(ph1_file_path)
+
+"""Main pipeline object.
+"""
+PIPELINE = xPipeline(clobber=False)
+
+
+def run():
+    PIPELINE.xpobssim(configfile=CFG_FILE, duration=SIM_DURATION,
+                      outfile=EVT_FILE_PATH)
+    pha1_file_path = PIPELINE.xpbin(EVT_FILE_PATH, algorithm='PHA1')
+    spec_fitter = PIPELINE.xpxspec(pha1_file_path)
+    (index, index_err), (norm, norm_err) = spec_fitter.fit_parameters()
+    logger.info('Fitted PL norm = %.4f +- %4f (input = %.4f)' %\
+                (norm, norm_err, PL_NORM))
+    logger.info('Fitted PL index = %.4f +- %4f (input = %.4f)' %\
+                (index, index_err, PL_INDEX))
+
+
+if __name__ == '__main__':
+    run()

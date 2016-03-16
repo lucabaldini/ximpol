@@ -110,7 +110,7 @@ def analyze():
         _pol_angle = _fit_results.phase
         _pol_angle_err = _fit_results.phase_error
         _spec_fitter = PIPELINE.xpxspec(_pha1_file_path(i), plot=False)
-        (_index, _index_err), (_norm, _norm_err) =_spec_fitter.fit_parameters()
+        (_index, _index_err), (_norm, _norm_err) = _spec_fitter.fit_parameters()
         # The division by the phase interval is a workaround and we should
         # keep track of that in xpselect.
         _norm /= (_max - _min)
