@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* Crab pulsar added to the showcase.
+
 
 *ximpol (0.37.0) - Tue, 15 Mar 2016 15:15:36 -0700*
 
