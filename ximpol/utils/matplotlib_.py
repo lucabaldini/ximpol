@@ -61,7 +61,8 @@ def overlay_tag(x=0.95, y=0.95, color='black'):
     pyplot.text(x, y, text, color=color, size=10, horizontalalignment='right',
                 transform=pyplot.gca().transAxes)
 
-def save_current_figure(file_name, clear=True, show=False):
+def save_current_figure(file_name, folder=XIMPOL_DOC_FIGURES, clear=True,
+                        show=False):
     """Save the current matplotlib figure in `XIMPOL_DOC_FIGURES`.
 
     Arguments
@@ -72,7 +73,7 @@ def save_current_figure(file_name, clear=True, show=False):
     clear : bool
         If `True`, the current image is cleared after the fact.
     """
-    file_path = os.path.join(XIMPOL_DOC_FIGURES, file_name)
+    file_path = os.path.join(folder, file_name)
     logger.info('Saving current figure to %s...' % file_path)
     pyplot.savefig(file_path, transparent=True)
     if show:

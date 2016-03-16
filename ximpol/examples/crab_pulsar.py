@@ -20,12 +20,13 @@
 import os
 import numpy
 
-from ximpol import XIMPOL_CONFIG, XIMPOL_DATA
+from ximpol import XIMPOL_CONFIG, XIMPOL_DATA, XIMPOL_DOC
 from ximpol.utils.logging_ import logger
 from ximpol.core.pipeline import xPipeline
 from ximpol.evt.binning import xBinnedModulationCube, xEventBinningBase
 from ximpol.evt.event import xEventFile
 from ximpol.utils.matplotlib_ import pyplot as plt
+from ximpol.utils.matplotlib_ import save_current_figure
 from ximpol.config.crab_pulsar import pol_degree_spline, pol_angle_spline,\
     pl_index_spline, pl_normalization_spline
 
@@ -40,6 +41,7 @@ SIM_DURATION = 100000.
 NUM_PHASE_BINS = 20
 PHASE_BINNING = None
 E_BINNING = [1., 10.]
+OUTPUT_FOLDER = os.path.join(XIMPOL_DOC, 'figures', 'showcase')
 
 
 """Main pipeline object.
@@ -121,7 +123,7 @@ def analyze():
         analysis_file.write(_line)
     analysis_file.close()
 
-def plot():
+def plot(save=False):
     """Plot the stuff in the analysis file.
     """
     sim_label = 'XIPE %s ks' % (SIM_DURATION/1000.)
@@ -135,24 +137,32 @@ def plot():
     pol_degree_spline.plot(show=False, label=mod_label)
     plt.axis([None, None, 0., 0.4])
     plt.legend(bbox_to_anchor=(0.45, 0.95))
+    if save:
+        save_current_figure('crab_polarization_degree', OUTPUT_FOLDER, False)
     plt.figure('Polarization angle')
     plt.errorbar(_phase, _pol_angle, xerr=_phase_err, yerr=_pol_angle_err,
                  fmt='o', label=sim_label)
     pol_angle_spline.plot(show=False, label=mod_label)
     plt.legend(bbox_to_anchor=(0.45, 0.95))
+    if save:
+        save_current_figure('crab_polarization_angle', OUTPUT_FOLDER, False)
     plt.figure('PL normalization')
     plt.errorbar(_phase, _norm, xerr=_phase_err, yerr=_norm_err, fmt='o',
                  label=sim_label)
     pl_normalization_spline.plot(show=False, label=mod_label)
     plt.legend(bbox_to_anchor=(0.45, 0.95))
+    if save:
+        save_current_figure('crab_pl_norm', OUTPUT_FOLDER, False)
     plt.figure('PL index')
     plt.errorbar(_phase, _index, xerr=_phase_err, yerr=_index_err, fmt='o',
                  label=sim_label)
     pl_index_spline.plot(show=False, label=mod_label)
     plt.legend(bbox_to_anchor=(0.45, 0.95))
+    if save:
+        save_current_figure('crab_pl_index', OUTPUT_FOLDER, False)
     plt.show()
 
-def run():
+def run(save_plots=False):
     """Run all the tasks.
     """
     if os.path.exists(ANALYSIS_FILE_PATH):
@@ -164,8 +174,8 @@ def run():
         PHASE_BINNING = _phase_binning()
         prepare()
         analyze()
-    plot()
+    plot(save_plots)
 
 
 if __name__ == '__main__':
-    run()
+    run(True)

@@ -12,10 +12,10 @@ basic ximpol capabilities.
 Cas A
 -----
 
+**Input model**
+
 Full source model definition in `ximpol/config/casa.py
 <https://github.com/lucabaldini/ximpol/blob/master/ximpol/config/casa.py>`_.
-
-**Input model**
 
 The spectral model is taken (by hand) from Figure 5 of E.A. Helder and J. Vink,
 *"Characterizing the non-thermal emission of Cas A"*, Astrophys. J. 686 (2008)
@@ -56,6 +56,9 @@ observation simulator.
 
 
 **Simulation output**
+
+Generation/analysis pipeline in `ximpol/examples/casa.py
+<https://github.com/lucabaldini/ximpol/blob/master/ximpol/examples/casa.py>`_.
 
 Below is a binned count map of a 250 ks simulated XIPE observation of Cas A,
 based on the model described above.
@@ -98,9 +101,50 @@ polarization is close to zero and the arrows have little meaning.)
 The Crab pulsar
 ---------------
 
+**Input model**
 
-The Crab complex
-----------------
+Full source model definition in `ximpol/config/crab_pulsar.py
+<https://github.com/lucabaldini/ximpol/blob/master/ximpol/config/crab_pulsar.py>`_.
+
+.. warning:: We should add all the proper references here.
+
+The input model consists of tabulated models for the phase-resolved
+polarization angle and degree and spectral parameters. For any specific phase
+value the polarization angle and degree are energy-independent (and, in the
+absence of X-ray data, we just assume that they are the same as the values
+measured in optical) and the spectral model is a simple power law (with the
+normalization and spectra depending on the phase).
+
+The input spatial model is simply a point source.
 
 
+**Simulation output**
 
+Generation/analysis pipeline in `ximpol/examples/crab_pulsar.py
+<https://github.com/lucabaldini/ximpol/blob/master/ximpol/examples/crab_pulsar.py>`_.
+
+All the plots below refer to a 100 ks simulation of the Crab pulsar.
+(It is worth emphasizing that in this particular context we only simulate the
+pulsar---not the nebula. Simulating the Crab complex can surely be done within
+the current capabilities of the framework, but for this particular example
+we did not want to make the downstream analysis too complicated.)
+
+We splitted the sample into 20 equipopulated phase bins and created counts
+spectra (PHA1 files) and modulation cubes for each of the phase bins.
+
+We fitted the count spectra in each phase bin with XSPEC, and the fitted
+normalization is tracking, as expected, the input model, as shown in the
+figure below.
+
+.. image:: figures/showcase/crab_pl_norm.png
+   :width: 75%
+   :align: center
+
+We measure the average polarization degree and angle in each phase bin
+(we remind that the input polarization model is energy-independent) and,
+again, model and simulation agree well across all the phase values.
+
+.. image:: figures/showcase/crab_polarization_degree.png
+   :width: 49.6%
+.. image:: figures/showcase/crab_polarization_angle.png
+   :width: 49.6%
