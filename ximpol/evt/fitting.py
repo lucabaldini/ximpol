@@ -31,6 +31,7 @@ class xSpectralFitter:
     def __init__(self, file_path, **kwargs):
         """
         """
+        xspec.AllData.clear()
         self.count_spectrum = xBinnedCountSpectrum(file_path)
         irf_name = self.count_spectrum.primary_header_keyword('IRFNAME')
         self.spectrum = xspec.Spectrum(file_path)
