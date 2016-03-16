@@ -38,7 +38,8 @@ OUT_FILE_PATH_BASE = os.path.join(XIMPOL_DATA, 'crab_pulsar')
 EVT_FILE_PATH = '%s.fits' % OUT_FILE_PATH_BASE
 ANALYSIS_FILE_PATH = '%s_analysis.txt' % OUT_FILE_PATH_BASE
 SIM_DURATION = 100000.
-NUM_PHASE_BINS = 20
+NUM_PHASE_BINS = 25
+EQP_BINNING = False
 PHASE_BINNING = None
 E_BINNING = [1., 10.]
 OUTPUT_FOLDER = os.path.join(XIMPOL_DOC, 'figures', 'showcase')
@@ -68,11 +69,13 @@ def _phase_binning():
     """Read the input event file and create an equipopulated binning in the
     pulsar phase.
     """
-    evt_file = xEventFile(EVT_FILE_PATH)
-    phase = evt_file.event_data['PHASE']
-    bins = xEventBinningBase.equipopulated_binning(NUM_PHASE_BINS, phase, 0, 1)
-    logger.info('Phase binning: %s' % bins)
-    return bins
+    if EQP_BINNING:
+        evt_file = xEventFile(EVT_FILE_PATH)
+        phase = evt_file.event_data['PHASE']
+        return xEventBinningBase.equipopulated_binning(NUM_PHASE_BINS, phase,
+                                                       0., 1.)
+    else:
+        return numpy.linspace(0., 1., NUM_PHASE_BINS)
 
 
 def generate():
@@ -128,26 +131,27 @@ def plot(save=False):
     """
     sim_label = 'XIPE %s ks' % (SIM_DURATION/1000.)
     mod_label = 'Input model'
-    lc_label = 'Input PL norm.'
+    lc_label = 'Light curve'
     _phase, _phase_err, _pol_deg, _pol_deg_err, _pol_angle,\
         _pol_angle_err, _index, _index_err, _norm,\
         _norm_err = numpy.loadtxt(ANALYSIS_FILE_PATH, unpack=True)
     plt.figure('Polarization degree')
+    pl_normalization_spline.plot(scale=0.12, show=False, color='lightgray',
+                                 label=lc_label)
     plt.errorbar(_phase, _pol_deg, xerr=_phase_err, yerr=_pol_deg_err, fmt='o',
                  label=sim_label)
     pol_degree_spline.plot(show=False, label=mod_label)
-    pl_normalization_spline.plot(scale=0.09, show=False, color='lightgray',
-                                 label=lc_label)
-    plt.axis([None, None, 0., 0.4])
+    plt.axis([0., 1., 0., 0.5])
     plt.legend(bbox_to_anchor=(0.45, 0.95))
     if save:
         save_current_figure('crab_polarization_degree', OUTPUT_FOLDER, False)
     plt.figure('Polarization angle')
+    pl_normalization_spline.plot(scale=0.4, offset=1.25, show=False,
+                                 color='lightgray', label=lc_label)
     plt.errorbar(_phase, _pol_angle, xerr=_phase_err, yerr=_pol_angle_err,
                  fmt='o', label=sim_label)
     pol_angle_spline.plot(show=False, label=mod_label)
-    pl_normalization_spline.plot(scale=0.6, offset=1.25, show=False,
-                                 color='lightgray', label=lc_label)
+    plt.axis([0., 1., 1.25, 3.])
     plt.legend(bbox_to_anchor=(0.45, 0.95))
     if save:
         save_current_figure('crab_polarization_angle', OUTPUT_FOLDER, False)
@@ -155,13 +159,17 @@ def plot(save=False):
     plt.errorbar(_phase, _norm, xerr=_phase_err, yerr=_norm_err, fmt='o',
                  label=sim_label)
     pl_normalization_spline.plot(show=False, label=mod_label)
+    plt.axis([0., 1., None, None])
     plt.legend(bbox_to_anchor=(0.45, 0.95))
     if save:
         save_current_figure('crab_pl_norm', OUTPUT_FOLDER, False)
     plt.figure('PL index')
+    pl_normalization_spline.plot(scale=0.18, offset=1.3, show=False,
+                                 color='lightgray', label=lc_label)
     plt.errorbar(_phase, _index, xerr=_phase_err, yerr=_index_err, fmt='o',
                  label=sim_label)
     pl_index_spline.plot(show=False, label=mod_label)
+    plt.axis([0., 1., 1.3, 2.1])
     plt.legend(bbox_to_anchor=(0.45, 0.95))
     if save:
         save_current_figure('crab_pl_index', OUTPUT_FOLDER, False)
@@ -183,4 +191,4 @@ def run(save_plots=False):
 
 
 if __name__ == '__main__':
-    run(True)
+    run(save_plots=True)

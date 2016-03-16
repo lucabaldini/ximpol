@@ -5,6 +5,8 @@ Release notes
 * A few tweaks and some cleanup.
 * Optional scale and offset parameters added to the plot() method for the
   univariates splines.
+* Bug fix for issue #97.
+* Crab pulsar example revamped.
 
 
 *ximpol (0.37.1) - Tue, 15 Mar 2016 17:10:54 -0700*
