@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.38.0) - Wed, 16 Mar 2016 15:48:56 -0700*
+
 * One more unit test added.
 * A few tweaks and some cleanup.
 * Optional scale and offset parameters added to the plot() method for the
