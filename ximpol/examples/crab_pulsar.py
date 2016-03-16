@@ -128,6 +128,7 @@ def plot(save=False):
     """
     sim_label = 'XIPE %s ks' % (SIM_DURATION/1000.)
     mod_label = 'Input model'
+    lc_label = 'Input PL norm.'
     _phase, _phase_err, _pol_deg, _pol_deg_err, _pol_angle,\
         _pol_angle_err, _index, _index_err, _norm,\
         _norm_err = numpy.loadtxt(ANALYSIS_FILE_PATH, unpack=True)
@@ -135,6 +136,8 @@ def plot(save=False):
     plt.errorbar(_phase, _pol_deg, xerr=_phase_err, yerr=_pol_deg_err, fmt='o',
                  label=sim_label)
     pol_degree_spline.plot(show=False, label=mod_label)
+    pl_normalization_spline.plot(scale=0.09, show=False, color='lightgray',
+                                 label=lc_label)
     plt.axis([None, None, 0., 0.4])
     plt.legend(bbox_to_anchor=(0.45, 0.95))
     if save:
@@ -143,6 +146,8 @@ def plot(save=False):
     plt.errorbar(_phase, _pol_angle, xerr=_phase_err, yerr=_pol_angle_err,
                  fmt='o', label=sim_label)
     pol_angle_spline.plot(show=False, label=mod_label)
+    pl_normalization_spline.plot(scale=0.6, offset=1.25, show=False,
+                                 color='lightgray', label=lc_label)
     plt.legend(bbox_to_anchor=(0.45, 0.95))
     if save:
         save_current_figure('crab_polarization_angle', OUTPUT_FOLDER, False)

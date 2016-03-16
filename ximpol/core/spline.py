@@ -236,7 +236,7 @@ class xUnivariateSplineBase:
         return xInterpolatedUnivariateSplineLinear(_x, _y, **fmt)
 
     def plot(self, num_points=1000, overlay=False, logx=False, logy=False,
-             show=True, **kwargs):
+             scale=1., offset=0., show=True, **kwargs):
         """Plot the spline.
 
         Args
@@ -252,7 +252,7 @@ class xUnivariateSplineBase:
         """
         from ximpol.utils.matplotlib_ import pyplot as plt
         _x = numpy.linspace(self.xmin(), self.xmax(), num_points)
-        _y = self(_x)
+        _y = scale*self(_x) + offset
         if overlay:
             plt.plot(_x, _y, '-', self.x, self.y, 'o', **kwargs)
         else:
