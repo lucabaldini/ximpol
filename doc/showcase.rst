@@ -18,8 +18,8 @@ Full source model definition in `ximpol/config/casa.py
 <https://github.com/lucabaldini/ximpol/blob/master/ximpol/config/casa.py>`_.
 
 The spectral model is taken (by hand) from Figure 5 of E.A. Helder and J. Vink,
-*"Characterizing the non-thermal emission of Cas A"*, Astrophys. J. 686 (2008)
-1094--1102 (`arxiv link <http://arxiv.org/abs/0806.3748>`_). The spectrum of
+*"Characterizing the non-thermal emission of Cas A"*, `Astrophys. J. 686 (2008)
+1094--1102 <http://arxiv.org/abs/0806.3748>`_. The spectrum of
 Cas A is a complex superposition of thermal and non thermal emission, and
 for our purposes, we call *thermal* anything that is making up for the lines
 and *non-thermal* all the rest, as illustrated in the figure below.
@@ -106,19 +106,26 @@ The Crab pulsar
 Full source model definition in `ximpol/config/crab_pulsar.py
 <https://github.com/lucabaldini/ximpol/blob/master/ximpol/config/crab_pulsar.py>`_.
 
-.. warning:: We should add all the proper references here.
-
 The input model consists of tabulated models for the phase-resolved
-polarization angle and degree and spectral parameters.
+optical polarization angle and degree and X-ray spectral parameters.
+The main reference we used for the compilation is Weisskopf, M. C. et al.,
+*"Chandra Phase-Resolved X-Ray Spectroscopy of the Crab Pulsar"*, 
+`Astrophys. J. 743 (2011) 139--149 <http://arxiv.org/abs/1106.3270>`_
+and essentially all the data points come from Figure 4 of this paper.
+
+
 For any specific phase value the polarization angle and degree are
 energy-independent (and, in the absence of X-ray data, we just assume that
 they are the same as the values measured in optical) and the spectral model is
 a simple power law (with the normalization and spectra depending on the phase).
 The sinusoidal parametrization of the power-law index as a function of the
-pulsar phase is somewhat silly, but from our prospective is a good test
-of the simulation chain.
+pulsar phase, mutuated from the reference above, is somewhat unphysical, but
+from our prospective is a good test of the simulation chain.
 
-The input spatial model is simply a point source.
+The input spatial model is simply a point source. The timing ephemeris is
+taken from Weisskopf, M. C. et al., *"Chandra Phase-Resolved X-Ray
+Spectroscopy of the Crab Pulsar"*, `Astrophys. J. 601 (2004) 1050--1057
+<http://arxiv.org/abs/astro-ph/0310332>`_.
 
 
 **Simulation output**
