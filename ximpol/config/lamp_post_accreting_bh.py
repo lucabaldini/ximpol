@@ -63,6 +63,9 @@ def parse(file_path, emin=1., emax=15., flux_scale=6.0067e-2):
     """
     logger.info('Parsing input file %s...' % file_path)
     energy, flux, angle, degree = numpy.loadtxt(file_path, unpack=True)
+    de = energy[1:] - energy[:1]
+    de = numpy.append(de, de[-1])
+    flux /= de
     flux *= flux_scale
     _mask = (energy >= emin)*(energy <= emax)
     return energy[_mask], flux[_mask], angle[_mask], degree[_mask]
