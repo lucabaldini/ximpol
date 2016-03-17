@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* References for the Crab pulsar example added.
+
 
 *ximpol (0.38.0) - Wed, 16 Mar 2016 15:48:56 -0700*
 
