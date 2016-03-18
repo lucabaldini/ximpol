@@ -124,7 +124,7 @@ def energy_spectrum(E, t):
 def polarization_degree(E, t, ra, dec):
     return pol_degree_spline(t)
 
-polarization_angle = constant(0.)
+polarization_angle = constant(numpy.radians(28.))
 
 grb = xPointSource('GRB', GRB_RA, GRB_DEC, energy_spectrum, polarization_degree,
                    polarization_angle,
