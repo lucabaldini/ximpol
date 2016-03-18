@@ -47,41 +47,41 @@ def parse_spectral_model(file_name):
 
 ROI_MODEL = xROIModel(266.8, -28.46)
 
-spectral_model_b1 = parse_spectral_model('spec_model_SgrB1.txt')
+spectrum_spline_b1 = parse_spectral_model('spec_model_SgrB1.txt')
 
 def energy_spectrum_b1(E, t):
     """
     """
-    return spectral_model_b1(E)
+    return spectum_spline_b1(E)
 
 polarization_degree_b1 = constant(0.405)
 polarization_angle_b1 = constant(numpy.radians(88.3))
-SgrB1 = xUniformDisk('Sgr B1', 266.75833, -28.5325, angular_radius(6.),
+sgrb1 = xUniformDisk('Sgr B1', 266.75833, -28.5325, angular_radius(6.),
                      energy_spectrum_b1, polarization_degree_b1,
                      polarization_angle_b1)
 
-spectral_model_b2 = parse_spectral_model('spec_model_SgrB2.txt')
+spectrum_spline_b2 = parse_spectral_model('spec_model_SgrB2.txt')
 
 def energy_spectrum_b2(E, t):
     """
     """
-    return spectral_model_b2(E)
+    return spectrum_spline_b2(E)
 
 polarization_degree_b2 = constant(0.455)
 polarization_angle_b2 = constant(numpy.radians(84.4))
-SgrB2 = xUniformDisk('Sgr B2', 266.835, -28.38528, angular_radius(5.),
+sgrb2 = xUniformDisk('Sgr B2', 266.835, -28.38528, angular_radius(5.),
                      energy_spectrum_b2, polarization_degree_b2,
                      polarization_angle_b2)
 
-ROI_MODEL.add_sources(SgrB1, SgrB2)
+ROI_MODEL.add_sources(sgrb1, sgrb2)
 
 
 if __name__ == '__main__':
     print(ROI_MODEL)
     from ximpol.utils.matplotlib_ import pyplot as plt
     plt.figure('Sgr complex')
-    spectral_model_b1.plot(show=False, label='Sgr B1')
-    spectral_model_b2.plot(show=False, label='Sgr B2')
+    spectrum_spline_b1.plot(show=False, label='Sgr B1')
+    spectrum_spline_b2.plot(show=False, label='Sgr B2')
     plt.yscale('log')
     plt.axis([1, 10, 1e-7, 1e-3])
     plt.legend(bbox_to_anchor=(0.35, 0.85))
