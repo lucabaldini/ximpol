@@ -186,6 +186,17 @@ class xUnivariateSplineBase:
         """
         return len(self.x)
 
+    def scale(self, scale, yname=None, yunits=None):
+        """Scale the spline y values.
+        """
+        _x = numpy.copy(self.x)
+        _y = numpy.copy(self.y)*scale
+        if yname is None:
+            xname = self.yname
+        if yunits is None:
+            xname = self.units
+        return self.__class__(_x, _y, self.xname, self.xunits, yname, yunits)
+
     @classmethod
     def label(self, name, units=None):
         """Compose an axis label given a name and some units.
@@ -251,7 +262,11 @@ class xUnivariateSplineBase:
             If True, `plt.show()` is called at the end, interrupting the flow.
         """
         from ximpol.utils.matplotlib_ import pyplot as plt
-        _x = numpy.linspace(self.xmin(), self.xmax(), num_points)
+        if not logx:
+            _x = numpy.linspace(self.xmin(), self.xmax(), num_points)
+        else:
+            _x = numpy.logspace(numpy.log10(self.xmin()),
+                                numpy.log10(self.xmax()), num_points)
         _y = scale*self(_x) + offset
         if overlay:
             plt.plot(_x, _y, '-', self.x, self.y, 'o', **kwargs)
