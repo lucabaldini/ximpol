@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.39.0) - Fri, 18 Mar 2016 11:54:43 -0700*
+
 * GRB 130427 configuration file revamped.
 * Bug fix in the evt/binning.py for the LOG time binning.
 * Some more infrastructure in place for arbitrary source-based sampling times
