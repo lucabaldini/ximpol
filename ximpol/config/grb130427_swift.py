@@ -103,8 +103,9 @@ lc_file_path = os.path.join(XIMPOL_CONFIG, 'ascii/GRB130427_Swift.dat')
 integral_flux_spline = parse_light_curve(lc_file_path)
 # This needs to be fixed---the conversion between integral energy flux
 # and differential flux is wrong.
-scale_factor = (PL_INDEX - 1.)/(numpy.power(MIN_ENERGY, 1. - PL_INDEX) - \
-                                numpy.power(MAX_ENERGY, 1. - PL_INDEX))
+scale_factor = (2. - PL_INDEX)/(numpy.power(MAX_ENERGY, 2. - PL_INDEX) - \
+                                numpy.power(MIN_ENERGY, 2. - PL_INDEX))
+# Convert from erg to keV.
 scale_factor *= 6.242e8
 fmt = dict(yname='PL normalization', yunits='cm$^{-2}$ s$^{-1}$ keV$^{-1}$')
 pl_normalization_spline = integral_flux_spline.scale(scale_factor, **fmt)
@@ -118,7 +119,7 @@ fmt = dict(xname='Time', xunits='s', yname='Polarization degree')
 pol_degree_spline = xInterpolatedUnivariateSplineLinear(_t, _p, **fmt)
 
 def energy_spectrum(E, t):
-    return pl_normalization_spline(t)*numpy.power(E, PL_INDEX)
+    return pl_normalization_spline(t)*numpy.power(E, -PL_INDEX)
 
 def polarization_degree(E, t, ra, dec):
     return pol_degree_spline(t)
@@ -129,6 +130,12 @@ grb = xPointSource('GRB', GRB_RA, GRB_DEC, energy_spectrum, polarization_degree,
                    polarization_angle,
                    min_validity_time=integral_flux_spline.xmin(),
                    max_validity_time=integral_flux_spline.xmax())
+
+def sampling_time(tstart, tstop):
+    return numpy.logspace(numpy.log10(tstart), numpy.log10(tstop), 100)
+
+grb.sampling_time = sampling_time
+
 
 ROI_MODEL.add_source(grb)
 

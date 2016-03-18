@@ -23,6 +23,7 @@ from collections import OrderedDict
 from ximpol.srcmodel.img import xFITSImage
 from ximpol.srcmodel.spectrum import xCountSpectrum
 from ximpol.evt.event import xMonteCarloEventList
+from ximpol.utils.logging_ import logger
 
 
 DEFAULT_MAX_VALIDITY_TIME = 10000000.
@@ -63,6 +64,12 @@ class xModelComponentBase:
         self.identifier = identifier
         self.min_validity_time = min_validity_time
         self.max_validity_time = max_validity_time
+
+    @classmethod
+    def sampling_time(self, tstart, tstop):
+        """
+        """
+        return numpy.linspace(tstart, tstop, 100)
 
     def set_energy_spectrum(self, energy_spectrum):
         """Set the energy spectrum for the model component.
@@ -126,16 +133,18 @@ class xModelComponentBase:
                 (self.ra, self.dec)
         return text
 
-    def rvs_event_list(self, aeff, psf, modf, edisp, sampling_time):
+    def rvs_event_list(self, aeff, psf, modf, edisp, **kwargs):
         """Extract a random event list for the model component.
         """
         # Create the event list and the count spectrum.
         event_list = xMonteCarloEventList()
-        count_spectrum = xCountSpectrum(self.energy_spectrum, aeff,
-                                        sampling_time)
+        tsamples = self.sampling_time(kwargs['tstart'], kwargs['tstop'])
+        logger.info('Sampling times: %s' % tsamples)
+        count_spectrum = xCountSpectrum(self.energy_spectrum, aeff, tsamples)
         # Extract the number of events to be generated based on the integral
         # of the light curve over the simulation time.
         num_events = numpy.random.poisson(count_spectrum.light_curve.norm())
+        logger.info('About to generate %d events...' % num_events)
         # Extract the event times and sort them.
         col_time = count_spectrum.light_curve.rvs(num_events)
         col_time.sort()
@@ -259,7 +268,7 @@ class xPeriodicPointSource(xPointSource):
                               ephemeris.max_validity_time)
         self.ephemeris = ephemeris
 
-    def rvs_event_list(self, aeff, psf, modf, edisp, sampling_time):
+    def rvs_event_list(self, aeff, psf, modf, edisp, **kwargs):
         """Extract a random event list for the model component.
 
         TODO: here we should pass the sampling phase, instead?
@@ -551,7 +560,7 @@ class xROIModel(OrderedDict):
         """
         pass
 
-    def rvs_event_list(self, aeff, psf, modf, edisp, sampling_time):
+    def rvs_event_list(self, aeff, psf, modf, edisp, **kwargs):
         """Extract an event list for the full ROI.
 
         Arguments
@@ -580,6 +589,6 @@ class xROIModel(OrderedDict):
         event_list = xMonteCarloEventList()
         for source in self.values():
             event_list += source.rvs_event_list(aeff, psf, modf, edisp,
-                                                sampling_time)
+                                                **kwargs)
         event_list.sort()
         return event_list

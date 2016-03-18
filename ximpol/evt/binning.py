@@ -378,7 +378,7 @@ class xEventBinningLC(xEventBinningBase):
         if tbinalg == 'LIN':
             return numpy.linspace(tstart, tstop, tbins + 1)
         elif tbinalg == 'LOG':
-            return numpy.linspace(numpy.log10(tstart), numpy.log10(tstop),
+            return numpy.logspace(numpy.log10(tstart), numpy.log10(tstop),
                                   tbins + 1)
         elif tbinalg == 'FILE':
             tbinfile = self.get('tbinfile')
@@ -419,6 +419,7 @@ class xBinnedLightCurve(xBinnedFileBase):
         xBinnedFileBase.__init__(self, file_path)
         self.data = self.hdu_list['RATE'].data
         self.time = self.data['TIME']
+        self.timedel = self.data['TIMEDEL']
         self.counts = self.data['COUNTS']
         self.error = self.data['ERROR']
 
@@ -426,9 +427,10 @@ class xBinnedLightCurve(xBinnedFileBase):
         """Overloaded plot method.
         """
         fig = plt.figure('Light curve')
-        plt.errorbar(self.time, self.counts, yerr=self.error, fmt='o')
+        plt.errorbar(self.time, self.counts/self.timedel,
+                     yerr=self.error/self.timedel, fmt='o')
         plt.xlabel('Time [s]')
-        plt.ylabel('Counts/bin')
+        plt.ylabel('Rate [Hz]')
         if show:
             plt.show()
 

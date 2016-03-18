@@ -51,8 +51,6 @@ PARSER.add_argument('--duration', type=float, default=10,
                     help='the duration (in s) of the simulation')
 PARSER.add_argument('--tstart', type=float, default=0.,
                     help='the start time (MET in s) of the simulation')
-PARSER.add_argument('--tsteps', type=int, default=100,
-                    help='the number of steps for sampling the lightcurve')
 PARSER.add_argument('--seed', type=int, default=0,
                     help='the random seed for the simulation')
 PARSER.add_argument('--clobber', type=ast.literal_eval, choices=[True, False],
@@ -100,8 +98,8 @@ def xpobssim(**kwargs):
         tstop = ROI_MODEL.max_validity_time()
         logger.info('Simulation stop time set to %s...' % tstop)
     gti_list = [(kwargs['tstart'], tstop)]
-    sampling_time = numpy.linspace(kwargs['tstart'], tstop, kwargs['tsteps'])
-    event_list = ROI_MODEL.rvs_event_list(aeff, psf, modf, edisp, sampling_time)
+    kwargs['tstop'] = tstop
+    event_list = ROI_MODEL.rvs_event_list(aeff, psf, modf, edisp, **kwargs)
     logger.info('Done %s.' % chrono)
     simulation_info = xSimulationInfo()
     simulation_info.gti_list = gti_list
