@@ -63,10 +63,6 @@ def parse_light_curve_data(file_path):
     f = numpy.array(f)
     fp = numpy.array(fp)
     fm = numpy.array(fm)
-    # Convert from ergs to KeV
-    f *= 6.242e8
-    fp *= 6.242e8
-    fm *= 6.242e8
     return t, tp, tm, f, fp, fm
 
 def parse_light_curve(file_path, num_bins=150):
@@ -95,18 +91,21 @@ def parse_light_curve(file_path, num_bins=150):
     fave = spline(tave)
     tave = numpy.power(10., tave)
     fave = numpy.power(10., fave)
-    fmt = dict(xname='Time', xunits='s', yname='Integral flux',
-               yunits='cm$^{-2}$ s$^{-1}$')
+    fmt = dict(xname='Time', xunits='s',
+               yname='Energy integral flux 0.3-10 keV',
+               yunits='erg cm$^{-2}$ s$^{-1}$')
     return xInterpolatedUnivariateSplineLinear(tave, fave, **fmt)
-
 
 
 ROI_MODEL = xROIModel(GRB_RA, GRB_DEC)
 
 lc_file_path = os.path.join(XIMPOL_CONFIG, 'ascii/GRB130427_Swift.dat')
 integral_flux_spline = parse_light_curve(lc_file_path)
+# This needs to be fixed---the conversion between integral energy flux
+# and differential flux is wrong.
 scale_factor = (PL_INDEX - 1.)/(numpy.power(MIN_ENERGY, 1. - PL_INDEX) - \
                                 numpy.power(MAX_ENERGY, 1. - PL_INDEX))
+scale_factor *= 6.242e8
 fmt = dict(yname='PL normalization', yunits='cm$^{-2}$ s$^{-1}$ keV$^{-1}$')
 pl_normalization_spline = integral_flux_spline.scale(scale_factor, **fmt)
 
