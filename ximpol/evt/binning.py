@@ -666,7 +666,10 @@ class xBinnedModulationCube(xBinnedFileBase):
         if fit:
             fit_results = self.fit_bin(i)
             fit_results.plot(label=label)
-        plt.axis([0., 2*numpy.pi, 0., 1.2*self.phi_y[i].max()])
+        view_range = 1.5 * (self.phi_y[i].max() - self.phi_y[i].min())
+        view_ymin = self.phi_y[i].min() - view_range
+        view_ymax = self.phi_y[i].max() + view_range 
+        plt.axis([0., 2*numpy.pi, view_ymin, view_ymax])
         plt.xlabel('Azimuthal angle [rad]')
         plt.ylabel('Counts/bin')
         plt.text(0.02, 0.92, label, transform=plt.gca().transAxes,
