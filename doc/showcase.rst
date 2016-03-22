@@ -43,7 +43,8 @@ For the polarization, we assume that the thermal component is unpolarized,
 while for the non-thermal component we use a simple geometrical, radially
 symmetric model (loosely inspired from radio observations) where the
 polarization angle is tangential and the polarization degree is zero at the
-center of the source and increases toward the edges (see figure below).
+center of the source and increases toward the edges reaching about
+80% on the outer rim of the source (see figure below).
  
 .. image:: figures/showcase/casa_model_he_polmap.png
    :width: 75%
@@ -82,8 +83,9 @@ case reveal much of the richness in the original polarization pattern.
 Below is an example of the azimuthal distributions in the two energy bands
 for the circular region of interest indicated by the white circle in the left
 plot. (The green and blue lines in the ROI indicate the reconstructed
-polarization angle.) The comparison with the previous, spatially averaged
-distributions is striking.
+polarization angle.) For reference, the corresponding flux integrated in the
+region is about 3.5% of that of the entire source. The comparison with the
+previous, spatially averaged distributions is striking.
 
 .. image:: figures/showcase/casa_reg0009_mcube.png
    :width: 100%
@@ -96,7 +98,14 @@ polarization is close to zero and the arrows have little meaning.)
 .. image:: figures/showcase/casa_reg_all.png
    :width: 75%
    :align: center
-           
+
+
+And below is a short animation illustrating the whole thing.
+
+.. image:: figures/showcase/casa_movie.gif
+
+
+.. _showcase_crab_pulsar
 
 The Crab pulsar
 ---------------
@@ -165,6 +174,8 @@ again, model and simulation agree well across all the phase values.
    :width: 75%
    :align: center
 
+
+.. _showcase_grb130427a
 
 GRB 130427A
 -----------
