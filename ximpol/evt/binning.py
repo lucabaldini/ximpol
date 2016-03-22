@@ -660,7 +660,7 @@ class xBinnedModulationCube(xBinnedFileBase):
         _emin = self.emin[i]
         _emax = self.emax[i]
         _emean = self.emean[i]
-        label = '%.2f-%.2f <%.2f> keV' % (_emin, _emax, _emean)
+        label = '%.2f-%.2f $<$%.2f$>$ keV' % (_emin, _emax, _emean)
         plt.errorbar(self.phi_x, self.phi_y[i], yerr=numpy.sqrt(self.phi_y[i]),
                      fmt='o')
         if fit:

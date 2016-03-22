@@ -28,9 +28,6 @@ from ximpol.core.pipeline import xPipeline
 from ximpol.evt.binning import xBinnedMap, xBinnedModulationCube
 from ximpol.srcmodel.img import xFITSImage
 from ximpol.utils.matplotlib_ import pyplot as plt
-#from matplotlib import rc
-#rc('text', usetex=True)
-
 
 CFG_FILE = os.path.join(XIMPOL_CONFIG, 'casa.py')
 DURATION = 250000.
