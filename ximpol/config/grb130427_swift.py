@@ -142,8 +142,14 @@ ROI_MODEL.add_source(grb)
 
 if __name__=='__main__':
     from ximpol.utils.matplotlib_ import pyplot as plt
+    from ximpol.utils.matplotlib_ import save_current_figure
+    from ximpol import XIMPOL_DOC
+    output_folder = os.path.join(XIMPOL_DOC, 'figures', 'showcase')
+
     fig = plt.figure()
     integral_flux_spline.plot(logx=True, logy=True, show=False)
+    if True:
+        save_current_figure('grb130427_swift_input_lc', output_folder, False)
     fig = plt.figure()
     pl_normalization_spline.plot(logx=True, logy=True, show=False)
     fig = plt.figure()

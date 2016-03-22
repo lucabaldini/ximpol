@@ -164,3 +164,53 @@ again, model and simulation agree well across all the phase values.
 .. image:: figures/showcase/crab_polarization_angle.png
    :width: 75%
    :align: center
+
+
+GRB 130427A
+-----------
+
+**Input model**
+
+Full source model definition in `ximpol/config/grb130427_swift.py
+<https://github.com/lucabaldini/ximpol/blob/master/ximpol/config/grb130427_swift.py>`_.
+
+This example is meant to illustrate the simulation of a time-dependent source
+model. GRB 130427A (at z = 0.34) is one of the brightest GRBs ever observed in
+X-rays. The data points to build the light curve (shown below) are taken
+from the `Swift XRT light-curve catalog
+<http://www.swift.ac.uk/xrt_curves/00554620/>`_.
+
+.. image:: figures/showcase/grb130427_swift_input_lc.png
+   :width: 75%
+   :align: center
+
+For the polarization, we made up a model where the polarization degree
+is decreasing with time (starting at about 40% and reaching about 10% 1 Ms
+after the burst) and the polarization angle is constant (see the input
+models in the simulation output below).
+
+
+**Simulation output**
+
+We simulated a 1 Ms observation of the GRB with XIPE. The plot below shows
+the count rate as a function of time.
+
+.. image:: figures/showcase/grb130427_swift_lc.png
+   :width: 75%
+   :align: center
+
+We subselected the event file into non-overlapping time slices whose
+width is increasing logaritmically with time. Below are the reconstructed
+polarization degree and angle in each of the time bins, with the corresponding
+input model overlaid. Most notably, if we were able to repoint the
+telescope to the GRB direction within a day from the burst, we would still
+be sensitive to a 10--20% polarization degree in an intergration time of the
+order of 100 ks.
+
+           
+.. image:: figures/showcase/grb130427_swift_polarization_degree.png
+   :width: 75%
+   :align: center
+.. image:: figures/showcase/grb130427_swift_polarization_angle.png
+   :width: 75%
+   :align: center
