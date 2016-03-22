@@ -2,6 +2,7 @@ Release notes
 =============
 
 * Added a GRB example to the gallery.
+* Added the Cas A movie.
 
 
 *ximpol (0.39.0) - Fri, 18 Mar 2016 11:54:43 -0700*
