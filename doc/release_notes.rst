@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* Cas A movie updated.
+
 
 *ximpol (0.39.1) - Tue, 22 Mar 2016 13:59:13 -0700*
 
