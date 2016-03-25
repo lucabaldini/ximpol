@@ -44,7 +44,7 @@ while for the non-thermal component we use a simple geometrical, radially
 symmetric model (loosely inspired from radio observations) where the
 polarization angle is tangential and the polarization degree is zero at the
 center of the source and increases toward the edges reaching about
-80% on the outer rim of the source (see figure below).
+50% on the outer rim of the source (see figure below).
  
 .. image:: figures/showcase/casa_model_he_polmap.png
    :width: 75%
