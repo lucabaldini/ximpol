@@ -282,8 +282,10 @@ class xPeriodicPointSource(xPointSource):
         count_spectrum = xCountSpectrum(self.energy_spectrum, aeff,
                                         sampling_phase)
         # All this is not properly taking into account the ephemeris.
-        min_time = sampling_time[0]
-        max_time = sampling_time[-1]
+        min_time = kwargs['tstart']
+        max_time = kwargs['tstop']
+        #min_time=sampling_time[0]
+        #max_time = sampling_time[-1]
         delta_time = (max_time - min_time)
         period = self.ephemeris.period(min_time)
         # This is not accurate, as we are effectively discarding the last
