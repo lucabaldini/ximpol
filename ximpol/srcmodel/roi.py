@@ -171,8 +171,9 @@ class xModelComponentBase:
         event_list.set_column('PE_ANGLE', col_pe_angle)
         # Set the source ID.
         event_list.set_column('MC_SRC_ID', self.identifier)
-        # Set the phase to -1 for all non-periodic sources.
-        event_list.set_column('PHASE', -1.)
+        # Set the phase to rnd [0-1] for all non-periodic sources.
+        phase=numpy.random.uniform(0,1,len(col_pe_angle))
+        event_list.set_column('PHASE', phase)
         return event_list
 
 
