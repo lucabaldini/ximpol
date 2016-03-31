@@ -54,6 +54,8 @@ class xFITSImage:
         self.hdu_list.info()
         self.wcs = wcs.WCS(self.hdu_list['PRIMARY'].header)
         self.data = self.hdu_list['PRIMARY'].data.transpose()
+        self.vmin=None
+        self.vmax=None
         if build_cdf:
             self.build_cdf()
 
@@ -118,7 +120,7 @@ class xFITSImage:
             else:
                 fig = aplpy.FITSFigure(self.hdu_list[0], figure=plt.figure(0,figsize=(10*subplot[1], 10*subplot[0])), subplot=subplot)
         fig.add_grid()
-        fig.show_colorscale(cmap = 'afmhot')
+        fig.show_colorscale(cmap = 'afmhot',vmin=self.vmin,vmax=self.vmax)
         fig.add_colorbar()
         fig.colorbar.set_axis_label_text(zlabel)
         if show:
