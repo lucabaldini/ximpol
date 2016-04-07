@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.39.4) - Thu, 07 Apr 2016 13:59:05 +0200*
+
 * Cas A example tweaked.
 
 
