@@ -90,7 +90,7 @@ class xPointSpreadFunction(xUnivariateGenerator):
         _r = numpy.linspace(0, rmax, 100)
         _psf = W*numpy.exp(-(_r**2/(2*sigma**2))) + N*(1 + (_r/r_c)**2)**(-eta)
         fmt = dict(rvname='r', rvunits='arcsec', pdfname='PSF',
-                   pdfunits='sr$^-1$')
+                   pdfunits='sr$^{-1}$')
         xUnivariateGenerator.__init__(self, _r, _psf, **fmt)
 
     def plot(self, num_points=1000, overlay=False, logx=False, logy=True,

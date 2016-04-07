@@ -115,7 +115,7 @@ class xEffectiveArea(xInterpolatedUnivariateSplineLinear):
         _y = self.hdu_list['VIGNETTING'].data['THETA'][0]
         _z = self.hdu_list['VIGNETTING'].data['VIGNETTING'][0]
         fmt = dict(xname='Energy', xunits='keV', yname='Off-axis angle',
-                   yunits='arcmin')
+                   yunits='arcmin', zname='Vignetting')
         self.vignetting = xInterpolatedBivariateSplineLinear(_x, _y, _z, **fmt)
 
     def eval_(self, energy, theta):
