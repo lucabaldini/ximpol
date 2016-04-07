@@ -1,6 +1,10 @@
 Release notes
 =============
 
+* Added minimal support for log scale on the the z axis when plotting
+  bivariate splines.
+* Added doc/scripts folder (work in progress).
+
 
 *ximpol (0.39.2) - Tue, 22 Mar 2016 14:51:31 -0700*
 
