@@ -89,12 +89,12 @@ def setup():
     matplotlib.rc('lines', linewidth=2.0)
     matplotlib.rc('patch', linewidth=0.5, facecolor='blue', edgecolor='eeeeee',
                   antialiased=True)
-    matplotlib.rc('text', hinting_factor=8,usetex=True)
+    matplotlib.rc('text', hinting_factor=8, usetex=True)
     matplotlib.rc('mathtext', fontset='cm')
     matplotlib.rc('axes',facecolor='white', edgecolor='bcbcbc', grid=True,
                   titlesize='x-large', labelsize='large')
     matplotlib.rc('legend', fancybox=True, frameon=False, numpoints=1)
 
- 
+
 
 setup()

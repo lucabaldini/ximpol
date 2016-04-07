@@ -65,7 +65,7 @@ class xCountSpectrum(xUnivariateAuxGenerator):
         flux values as a function of time.
         """
         fmt = dict(rvname=self.xname, rvunits=self.xunits,
-                   pdfname='Light curve', pdfunits='s$^{-1}$')
+                   pdfname='Counting rate', pdfunits='Hz')
         _f = numpy.array([self.slice(_t).norm() for _t in self.x])
         return xUnivariateGenerator(self.x, _f, **fmt)
 
