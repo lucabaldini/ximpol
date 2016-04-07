@@ -111,7 +111,7 @@ class xEventSelect:
         roi_hdu = self.event_file.hdu_list['ROITABLE']
         hdu_list = fits.HDUList([primary_hdu, events_hdu, gti_hdu, roi_hdu])
         hdu_list.info()
-        logger.info('Writing data subselectionto %s...' % self.get('outfile'))
+        logger.info('Writing data subselection to %s...' % self.get('outfile'))
         hdu_list.writeto(self.get('outfile'), clobber=True)
         logger.info('Done.')
         return self.get('outfile')
