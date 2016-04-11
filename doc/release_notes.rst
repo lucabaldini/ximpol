@@ -1,6 +1,31 @@
 Release notes
 =============
 
+* Initial implementation of the Cyg-X1 config/example.
+
+
+*ximpol (0.39.4) - Thu, 07 Apr 2016 13:59:05 +0200*
+
+* Cas A example tweaked.
+
+
+*ximpol (0.39.3) - Thu, 07 Apr 2016 07:00:47 +0200*
+
+* Added minimal support for log scale on the the z axis when plotting
+  bivariate splines.
+* Added doc/scripts folder (work in progress).
+
+
+*ximpol (0.39.2) - Tue, 22 Mar 2016 14:51:31 -0700*
+
+* Cas A movie updated.
+
+
+*ximpol (0.39.1) - Tue, 22 Mar 2016 13:59:13 -0700*
+
+* Added a GRB example to the gallery.
+* Added the Cas A movie.
+
 
 *ximpol (0.39.0) - Fri, 18 Mar 2016 11:54:43 -0700*
 

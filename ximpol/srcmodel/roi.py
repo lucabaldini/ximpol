@@ -171,8 +171,9 @@ class xModelComponentBase:
         event_list.set_column('PE_ANGLE', col_pe_angle)
         # Set the source ID.
         event_list.set_column('MC_SRC_ID', self.identifier)
-        # Set the phase to -1 for all non-periodic sources.
-        event_list.set_column('PHASE', -1.)
+        # Set the phase to rnd [0-1] for all non-periodic sources.
+        phase=numpy.random.uniform(0,1,len(col_pe_angle))
+        event_list.set_column('PHASE', phase)
         return event_list
 
 
@@ -282,8 +283,10 @@ class xPeriodicPointSource(xPointSource):
         count_spectrum = xCountSpectrum(self.energy_spectrum, aeff,
                                         sampling_phase)
         # All this is not properly taking into account the ephemeris.
-        min_time = sampling_time[0]
-        max_time = sampling_time[-1]
+        min_time = kwargs['tstart']
+        max_time = kwargs['tstop']
+        #min_time=sampling_time[0]
+        #max_time = sampling_time[-1]
         delta_time = (max_time - min_time)
         period = self.ephemeris.period(min_time)
         # This is not accurate, as we are effectively discarding the last

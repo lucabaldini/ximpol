@@ -23,10 +23,11 @@ import numpy
 from ximpol import XIMPOL_CONFIG, XIMPOL_DATA, XIMPOL_EXAMPLES, XIMPOL_DOC
 from ximpol.utils.logging_ import logger
 from ximpol.core.pipeline import xPipeline
-from ximpol.evt.binning import xBinnedMap, xBinnedModulationCube
+from ximpol.evt.binning import xBinnedMap, xBinnedModulationCube,\
+    xBinnedLightCurve
 from ximpol.utils.matplotlib_ import pyplot as plt
 from ximpol.config.grb130427_swift import pol_degree_spline,\
-    polarization_angle, PL_INDEX
+    polarization_angle, PL_INDEX, pl_normalization_spline
 from ximpol.utils.matplotlib_ import save_current_figure
 from ximpol.evt.event import xEventFile
 from ximpol.core.spline import xInterpolatedUnivariateSpline
@@ -50,6 +51,11 @@ OUTPUT_FOLDER = os.path.join(XIMPOL_DOC, 'figures', 'showcase')
 """
 PIPELINE = xPipeline(clobber=False)
 
+
+def _lc_file_path():
+    """Return the path to the binned light curve.
+    """
+    return '%s_lc.fits' % OUT_FILE_PATH_BASE
 
 def _sel_file_path(i):
     """Return the path to the i-th xpselct output file.
@@ -123,12 +129,26 @@ def analyze():
 def plot(save=False):
     """Plot the stuff in the analysis file.
     """
+
+    def draw_time_grid(color='blue'):
+        """
+        """
+        times = [3600., 3600.*24., 3600.*24.*7.]
+        labels = ['1 hour', '1 day', '1 week']
+        for t, l in zip(times, labels):
+            plt.axvline(t, linestyle='dashed', color=color)
+            ymin, ymax = plt.gca().get_ylim()
+            y = ymin + 1.05*(ymax - ymin)
+            plt.text(t, y, l, ha='center', color=color)
+
     sim_label = 'XIPE'
     mod_label = 'Input model'
     lc_label = 'Light curve'
     _time, _time_errp, _time_errm, _pol_deg, _pol_deg_err, _pol_angle,\
         _pol_angle_err, _index, _index_err, _norm,\
         _norm_err = numpy.loadtxt(ANALYSIS_FILE_PATH, unpack=True)
+    logger.info(_time)
+    logger.info((_time_errp + _time_errm)/3600.)
     _pol_angle = numpy.degrees(_pol_angle)
     _pol_angle_err = numpy.degrees(_pol_angle_err)
     plt.figure('Polarization degree')
@@ -136,7 +156,8 @@ def plot(save=False):
     plt.errorbar(_time, _pol_deg, xerr=[_time_errm, _time_errp],
                  yerr=_pol_deg_err, fmt='o', label=sim_label)
     plt.axis([100., 1e6, 0., 0.6])
-    plt.legend(bbox_to_anchor=(0.45, 0.95))
+    plt.legend(bbox_to_anchor=(0.4, 0.95))
+    draw_time_grid()
     if save:
         save_current_figure('grb130427_swift_polarization_degree',
                             OUTPUT_FOLDER, False)
@@ -151,7 +172,8 @@ def plot(save=False):
     plt.errorbar(_time, _pol_angle, xerr=[_time_errm, _time_errp],
                  yerr=_pol_angle_err, fmt='o', label=sim_label)
     plt.axis([100., 1e6, None, None])
-    plt.legend(bbox_to_anchor=(0.45, 0.95))
+    plt.legend(bbox_to_anchor=(0.4, 0.95))
+    draw_time_grid()
     if save:
         save_current_figure('grb130427_swift_polarization_angle',
                             OUTPUT_FOLDER, False)
@@ -163,19 +185,29 @@ def plot(save=False):
     plt.errorbar(_time, _index, xerr=[_time_errm, _time_errp], yerr=_index_err,
                  fmt='o', label=sim_label)
     plt.axis([100., 1e6, None, None])
-    plt.legend(bbox_to_anchor=(0.45, 0.95))
+    plt.legend(bbox_to_anchor=(0.4, 0.95))
+    draw_time_grid()
     if save:
         save_current_figure('grb130427_swift_pl_index', OUTPUT_FOLDER, False)
-    """
-    plt.figure('PL normalization')
-    plt.errorbar(_phase, _norm, xerr=_phase_err, yerr=_norm_err, fmt='o',
-                 label=sim_label)
-    pl_normalization_spline.plot(show=False, label=mod_label)
-    plt.axis([0., 1., None, None])
-    plt.legend(bbox_to_anchor=(0.45, 0.95))
+    #plt.figure('PL normalization')
+    #plt.errorbar(_time, _norm, xerr=[_time_errm, _time_errp], yerr=_norm_err,
+    #             fmt='o', label=sim_label)
+    #pl_normalization_spline.plot(show=False, label=mod_label)
+    #plt.axis([100., 1e6, None, None])
+    #plt.legend(bbox_to_anchor=(0.4, 0.95))
+    #draw_time_grid()
+    #if save:
+    #    save_current_figure('grb130427_swift_pl_norm', OUTPUT_FOLDER, False)
+    plt.figure('Light curve')
+    lc = xBinnedLightCurve(_lc_file_path())
+    lc.plot(show=False)
+    # This should be implemented in the binned LC class.
+    plt.xscale('log')
+    plt.yscale('log')
+    plt.axis([100., 1e6, None, None])
+    draw_time_grid()
     if save:
-        save_current_figure('crab_pl_norm', OUTPUT_FOLDER, False)
-    """
+        save_current_figure('grb130427_swift_lc', OUTPUT_FOLDER, False)
     plt.show()
 
 

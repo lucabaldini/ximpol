@@ -59,7 +59,7 @@ class xPolMapRadial(xPolMapBase):
     ''' Radial polarization
     '''
     def add_circle(self,ra,dec,radius,pmax,type='radial'):
-        
+        logger.info('add a circle at ra=%f, dec=%f, radius=%f. PMAX=%f'%(ra,dec,rad,pmax))
         for i in range(self.nxpix):
             for j in range(self.nxpix):
                 # radial:
@@ -167,7 +167,7 @@ if __name__ == '__main__':
     rad=None
     regionfile=None
     npix=20
-    pmax=1.0
+    pmax=0.5
     for i,a in enumerate(sys.argv):
         if '-o' in a: outfile    = sys.argv[i+1]
         if '-r' in a: regionfile = sys.argv[i+1]
@@ -183,8 +183,9 @@ if __name__ == '__main__':
     tycho_img_file_path = os.path.join(XIMPOL_CONFIG, 'fits', 'tycho_4p1_6p1_keV.fits')
     
     #img_file_path=le_img_file_path
-    img_file_path=tycho_img_file_path
-    
+    img_file_path=he_img_file_path
+    #img_file_path=tycho_img_file_path
+        
     hdulist = fits.open(img_file_path)
     CRPIX1   = hdulist[0].header['CRPIX1']
     CRPIX2   = hdulist[0].header['CRPIX2']
@@ -218,15 +219,15 @@ if __name__ == '__main__':
     # center of the map, in RA, Dec:
     if regionfile is not None:
         if outfile is None:
-            outfile = regionfile.replace('.reg','.fits')
+            outfile = regionfile.replace('.reg','_%d.fits' %(100*pmax))
         else:
-            outfile='out.fits'
+            outfile='out_%d.fits' %(100*pmax)
             pass
         regions = pyregion.open(regionfile)
         region = regions[0]
         ra, dec, rad = region.coord_list
         pass
-    
+    print '====>', ra,dec,rad
     myPolarizationMap = xPolMapRadial(xref=xref, yref=yref,nxpix=npix,nypix=npix,binsz=binsz,proj='TAN',outfile=outfile,pmax=pmax)
     myPolarizationMap.create()
     myPolarizationMap.add_circle(ra,dec,rad,pmax)
@@ -268,9 +269,9 @@ if __name__ == '__main__':
             pass
         pass
     
-    gc.show_arrows(wx,wy,vx,vy,color='black',alpha='0.8')
-    gc.show_markers(wx,wy,c='r')
-    gc.show_markers([xref],[yref],c='w')#,marker='x')
+    gc.show_arrows(wx,wy,vx,vy,color='w',alpha='1.0',linewidth=2)
+    #gc.show_markers(wx,wy,c='r')
+    #gc.show_markers([xref],[yref],c='w')#,marker='x')
 
     #gc.recenter(xref,yref,radius=1.2*radius/3600.0)
 

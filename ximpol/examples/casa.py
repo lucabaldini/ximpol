@@ -28,16 +28,16 @@ from ximpol.core.pipeline import xPipeline
 from ximpol.evt.binning import xBinnedMap, xBinnedModulationCube
 from ximpol.srcmodel.img import xFITSImage
 from ximpol.utils.matplotlib_ import pyplot as plt
-#from matplotlib import rc
-#rc('text', usetex=True)
-
 
 CFG_FILE = os.path.join(XIMPOL_CONFIG, 'casa.py')
 DURATION = 250000.
 E_BINNING = [1., 4., 6.]
 
 evt_file_path = os.path.join(XIMPOL_DATA, 'casa.fits')
-reg_file_path = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_scan.reg')
+#casa_scan.reg contains 42 regions without the global one.
+#reg_file_path = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_scan.reg')
+#casa_multiple.reg contains 13 regions, including the global one
+reg_file_path = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_multiple.reg')
 map_file_path = os.path.join(XIMPOL_DATA, 'casa_cmap.fits')
 
 
@@ -87,6 +87,15 @@ def plot(save=False):
     full_map = xBinnedMap(map_file_path)
     fig_all = full_map.plot(show=False)
 
+    #First make the global plot
+    fig_global = full_map.plot(show=False, subplot=(1, 2, 1))
+    plt.subplots_adjust(hspace=0.001)
+    global_mcube_file_path = os.path.join(XIMPOL_DATA, 'casa_mcube.fits' )
+    mcube = xBinnedModulationCube(global_mcube_file_path)
+    mcube.plot(show=False, analyze=False, xsubplot=1)
+    fig_global.save(os.path.join(XIMPOL_DATA, 'casa_global.png'))
+    plt.clf()
+    
     for i, region in enumerate(regions):
         ra, dec, rad = region.coord_list
         #fig_all.show_circles(ra, dec, rad, lw=1)
@@ -143,7 +152,8 @@ def plot(save=False):
             plt.show()
         pass
     fig_all.save(os.path.join(XIMPOL_DATA, 'casa_reg_all.png'))
-
+    
+    
 def plot_doc():
     """
     """

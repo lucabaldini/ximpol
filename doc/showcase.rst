@@ -43,7 +43,8 @@ For the polarization, we assume that the thermal component is unpolarized,
 while for the non-thermal component we use a simple geometrical, radially
 symmetric model (loosely inspired from radio observations) where the
 polarization angle is tangential and the polarization degree is zero at the
-center of the source and increases toward the edges (see figure below).
+center of the source and increases toward the edges reaching about
+50% on the outer rim of the source (see figure below).
  
 .. image:: figures/showcase/casa_model_he_polmap.png
    :width: 75%
@@ -82,8 +83,9 @@ case reveal much of the richness in the original polarization pattern.
 Below is an example of the azimuthal distributions in the two energy bands
 for the circular region of interest indicated by the white circle in the left
 plot. (The green and blue lines in the ROI indicate the reconstructed
-polarization angle.) The comparison with the previous, spatially averaged
-distributions is striking.
+polarization angle.) For reference, the corresponding flux integrated in the
+region is about 3.5% of that of the entire source. The comparison with the
+previous, spatially averaged distributions is striking.
 
 .. image:: figures/showcase/casa_reg0009_mcube.png
    :width: 100%
@@ -96,7 +98,14 @@ polarization is close to zero and the arrows have little meaning.)
 .. image:: figures/showcase/casa_reg_all.png
    :width: 75%
    :align: center
-           
+
+
+And below is a short animation illustrating the whole thing.
+
+.. image:: figures/showcase/casa_movie.gif
+
+
+.. _showcase_crab_pulsar
 
 The Crab pulsar
 ---------------
@@ -162,5 +171,57 @@ again, model and simulation agree well across all the phase values.
    :width: 75%
    :align: center
 .. image:: figures/showcase/crab_polarization_angle.png
+   :width: 75%
+   :align: center
+
+
+.. _showcase_grb130427a
+
+GRB 130427A
+-----------
+
+**Input model**
+
+Full source model definition in `ximpol/config/grb130427_swift.py
+<https://github.com/lucabaldini/ximpol/blob/master/ximpol/config/grb130427_swift.py>`_.
+
+This example is meant to illustrate the simulation of a time-dependent source
+model. GRB 130427A (at z = 0.34) is one of the brightest GRBs ever observed in
+X-rays. The data points to build the light curve (shown below) are taken
+from the `Swift XRT light-curve catalog
+<http://www.swift.ac.uk/xrt_curves/00554620/>`_.
+
+.. image:: figures/showcase/grb130427_swift_input_lc.png
+   :width: 75%
+   :align: center
+
+For the polarization, we made up a model where the polarization degree
+is decreasing with time (starting at about 40% and reaching about 10% 1 Ms
+after the burst) and the polarization angle is constant (see the input
+models in the simulation output below).
+
+
+**Simulation output**
+
+We simulated a 1 Ms observation of the GRB with XIPE. The plot below shows
+the count rate as a function of time.
+
+.. image:: figures/showcase/grb130427_swift_lc.png
+   :width: 75%
+   :align: center
+
+We subselected the event file into non-overlapping time slices whose
+width is increasing logaritmically with time. Below are the reconstructed
+polarization degree and angle in each of the time bins, with the corresponding
+input model overlaid. Most notably, if we were able to repoint the
+telescope to the GRB direction within a day from the burst, we would still
+be sensitive to a 10--20% polarization degree in an intergration time of the
+order of 100 ks.
+
+           
+.. image:: figures/showcase/grb130427_swift_polarization_degree.png
+   :width: 75%
+   :align: center
+.. image:: figures/showcase/grb130427_swift_polarization_angle.png
    :width: 75%
    :align: center

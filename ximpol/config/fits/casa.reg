@@ -1,5 +1,5 @@
 # Region file format: DS9 version 4.1
-# Filename: /Users/omodei/GRBWorkDir/MY_PYTHON_MODULES/ximpol/ximpol/config/fits/casa_4p0_6p0_keV.fits
+# Filename: /Users/omodei/GRBWorkDir/MY_PYTHON_MODULES/ximpol/ximpol/config/fits/casa_1p5_3p0_keV.fits
 global color=green dashlist=8 3 width=1 font="helvetica 10 normal" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1
 fk5
-circle(350.86327,58.815332,147.76355")
+circle(350.86842,58.815154,168.39882")

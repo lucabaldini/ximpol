@@ -565,7 +565,7 @@ class xInterpolatedBivariateSplineLinear(xBivariateSplineBase,
         return xInterpolatedBivariateSplineLinear(_x, _y, _z, **fmt)
 
     def plot(self, num_pointsx=100, num_pointsy=100, num_contours=75,
-             show=True):
+             logz=False, show=True):
         """Plot the spline.
 
         Args
@@ -587,7 +587,12 @@ class xInterpolatedBivariateSplineLinear(xBivariateSplineBase,
         _y = numpy.linspace(self.ymin(), self.ymax(), num_pointsy)
         _x, _y = numpy.meshgrid(_x, _y)
         _z = self(_x, _y, grid=False)
-        contour = plt.contourf(_x, _y, _z, num_contours)
+        if logz:
+            from matplotlib.colors import LogNorm
+            _levels = numpy.logspace(-4, numpy.log10(_z.max()), num_contours)
+            contour = plt.contourf(_x, _y, _z, levels=_levels, norm = LogNorm())
+        else:
+            contour = plt.contourf(_x, _y, _z, num_contours)
         bar = plt.colorbar()
         if self.xname is not None:
             plt.xlabel(self.xlabel())
