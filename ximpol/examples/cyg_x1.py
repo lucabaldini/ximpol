@@ -37,7 +37,7 @@ OUT_FILE_PATH_BASE = os.path.join(XIMPOL_DATA, 'cyg_x1')
 MCUBE_FILE_PATH = os.path.join(XIMPOL_DATA, 'cyg_x1_mcube.fits')
 ANALYSIS_FILE_PATH = '%s_analysis.txt' % OUT_FILE_PATH_BASE
 EVT_FILE_PATH = '%s.fits' % OUT_FILE_PATH_BASE
-SIM_DURATION = 100000.
+SIM_DURATION = 50000.
 
 
 E_BINNING = [2.0, 4.0, 6.0, 8.0]
@@ -50,7 +50,7 @@ def run():
     #First simulate the events
     PIPELINE.xpobssim(configfile=CFG_FILE, duration=SIM_DURATION,
                       outfile=EVT_FILE_PATH)
-    #Bin into PHA1 format for xspec 
+    #Bin into PHA1 format for xspec
     #pha1_file_path = PIPELINE.xpbin(EVT_FILE_PATH, algorithm='PHA1')
     #spec_fitter = PIPELINE.xpxspec(pha1_file_path,emin=1.0)
     #Fit with xspec
@@ -62,7 +62,7 @@ def run():
     #make the mcube
     PIPELINE.xpbin(EVT_FILE_PATH, algorithm='MCUBE', ebinalg='LIST',
                        ebinning=E_BINNING)
-    
+
 def analyze():
 
     """Analyze the data.Testing this method, but I must be missing something, it does not work yet.
@@ -88,7 +88,7 @@ def analyze():
     analysis_file.close()
 
 
-    
+
 def view():
     #_energy_mean,_emin, _emax, _pol_deg, _pol_deg_err, _pol_angle, \
     #    _pol_angle_err = \
@@ -98,18 +98,19 @@ def view():
     _fit_results = _mcube.fit_results[0]
     plt.figure('Polarization degree')
     _mcube.plot_polarization_degree(show=False, color='blue')
-    pol_degree_spline.plot(color='lightgray',label='Model')
-    
+    pol_degree_spline.plot(color='lightgray',label='Model', show=False)
+
     #plt.errorbar(_energy_mean, _pol_deg, yerr=_pol_deg_err, color='blue',marker='o')
-    
-    
+
+
     plt.figure('Polarization angle')
-    _mcube.plot_polarization_angle(show=False, color='blue')
-    pol_angle_spline.plot(color='lightgray',label='Model')
-    #plt.errorbar(_energy_mean,_pol_angle, yerr= _pol_angle_err,color='blue',marker='o')    
+    _mcube.plot_polarization_angle(show=False, color='blue', degree=False)
+    pol_angle_spline.plot(color='lightgray',label='Model', show=False)
+    #plt.errorbar(_energy_mean,_pol_angle, yerr= _pol_angle_err,color='blue',marker='o')
 
     plt.legend()
-    
+    plt.show()
+
 if __name__ == '__main__':
     run()
     #analyze()

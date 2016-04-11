@@ -32,7 +32,7 @@ from ximpol import XIMPOL_CONFIG
 from ximpol.utils.logging_ import logger
 
 #Not sure that I have the right ra and dec for the source, check!!
-CYGX1_RA = 7.56 
+CYGX1_RA = 7.56
 CYGX1_DEC = 6.59
 
 MIN_ENERGY = 0.1
@@ -50,10 +50,10 @@ FLUX_FILE_PATH = os.path.join(XIMPOL_CONFIG, 'ascii', 'CygX1_flux_model.txt')
 
 
 def polarization_degree(E, t, ra, dec):
-    return pol_degree_spline(t)
+    return pol_degree_spline(E)
 
 def polarization_angle(E, t, ra, dec):
-    return pol_angle_spline(t)
+    return pol_angle_spline(E)
 
 def energy_spectrum(E, t):
     return _energy_spectrum(E)
@@ -115,8 +115,11 @@ ROI_MODEL.add_source(src)
 
 if __name__ == '__main__':
     print(ROI_MODEL)
-    #pol_angle_spline.plot()
-    #_energy_spectrum.plot()
-    #print _energy_spectrum.norm()
-    #_energy_spectrum.plot()
-    pol_degree_spline.plot()
+    from ximpol.utils.matplotlib_ import pyplot as plt
+    fig = plt.figure('Spectrum')
+    _energy_spectrum.plot(show=False)
+    fig = plt.figure('Polarization angle')
+    pol_angle_spline.plot(show=False)
+    fig = plt.figure('Polarization degree')
+    pol_degree_spline.plot(show=False)
+    plt.show()
