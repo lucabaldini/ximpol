@@ -689,15 +689,19 @@ class xBinnedModulationCube(xBinnedFileBase):
         if show:
             plt.show()
 
-    def plot_polarization_angle(self, show=True, **kwargs):
+    def plot_polarization_angle(self, show=True, degree=True, **kwargs):
         """Plot the polarization angle as a function of energy.
         """
         if self.fit_results == []:
             self.fit()
         _x = self.emean
         _dx = [self.emean - self.emin, self.emax - self.emean]
-        _y = [numpy.degrees(r.phase) for r in self.fit_results]
-        _dy = [numpy.degrees(r.phase_error) for r in self.fit_results]
+        if degree:
+            _y = [numpy.degrees(r.phase) for r in self.fit_results]
+            _dy = [numpy.degrees(r.phase_error) for r in self.fit_results]
+        else:
+            _y = [(r.phase) for r in self.fit_results]
+            _dy = [(r.phase_error) for r in self.fit_results]
         plt.errorbar(_x, _y, _dy, _dx, fmt='o', **kwargs)
         plt.xlabel('Energy [keV]')
         plt.ylabel('Polarization angle [$^\circ$]')
