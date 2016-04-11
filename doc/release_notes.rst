@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* Initial implementation of the Cyg-X1 config/example.
+
 
 *ximpol (0.39.4) - Thu, 07 Apr 2016 13:59:05 +0200*
 
