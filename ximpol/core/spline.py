@@ -443,6 +443,7 @@ class xBivariateSplineBase:
         """
         self.x = x
         self.y = y
+        self.z = z
         self.xname = xname
         self.xunits = xunits
         self.yname = yname
