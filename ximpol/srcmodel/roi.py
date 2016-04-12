@@ -73,7 +73,7 @@ class xModelComponentBase:
         t = self.min_validity_time
         flux_ergcms = self.integral_flux(emin, emax, t)
         flux_mcrab = ergcms2mcrab(flux_ergcms)
-        self.flux_label = 'Flux @ t = %d: %.3e erg/cm2/s (%.3f mcrab)' %\
+        self.flux_label = 'Flux @ t = %d: %.3e erg/cm2/s (%.2f mcrab)' %\
                           (t, flux_ergcms, flux_mcrab)
 
     def integral_flux(self, emin=2.0, emax=8.0, t=None):

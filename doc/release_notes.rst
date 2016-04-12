@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* Minor fix in the MDP calculator output.
+
 
 *ximpol (0.41.0) - Tue, 12 Apr 2016 16:28:11 +0200*
 
