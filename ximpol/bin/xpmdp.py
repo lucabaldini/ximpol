@@ -24,7 +24,7 @@ import os
 import numpy
 import imp
 
-from ximpol.irf import load_irfs
+from ximpol.irf import load_arf, load_mrf
 from ximpol.srcmodel.spectrum import xCountSpectrum
 from ximpol.utils.logging_ import logger, startmsg, abort
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
@@ -97,11 +97,14 @@ def xpmdp(**kwargs):
     """Calculate the MDP.
     """
     logger.info('Loading the instrument response functions...')
-    aeff, psf, modf, edisp = load_irfs(kwargs['irfname'])
+    aeff = load_arf(kwargs['irfname'])
+    modf = load_mrf(kwargs['irfname'])
     module_name = os.path.basename(kwargs['configfile']).replace('.py', '')
     ROI_MODEL = imp.load_source(module_name, kwargs['configfile']).ROI_MODEL
     logger.info(ROI_MODEL)
+
     # This is copied from xpobbsim and should probably be factored out.
+    # Actually, this should be a method of the ROI class. TBD
     if kwargs['tstart'] < ROI_MODEL.min_validity_time():
         kwargs['tstart'] = ROI_MODEL.min_validity_time()
         logger.info('Simulation start time set to %s...' % kwargs['tstart'])
@@ -110,32 +113,36 @@ def xpmdp(**kwargs):
         tstop = ROI_MODEL.max_validity_time()
         logger.info('Simulation stop time set to %s...' % tstop)
     kwargs['tstop'] = tstop
+
     # This is copied from roi.py and should probably be factored out.
+    # Again, the ROI class should be able to sum the count spectra of all the
+    # component and expose the result.
     sources = ROI_MODEL.values()
     if len(sources) > 1:
         abort('Multiple sources not implemented, yet.')
     source = sources[0]
     tsamples = source.sampling_time(kwargs['tstart'], kwargs['tstop'])
     logger.info('Sampling times: %s' % tsamples)
+
     count_spectrum = xCountSpectrum(source.energy_spectrum, aeff, tsamples)
-    # The fun begins...
+    time_integrated_spectrum = count_spectrum.build_time_integral()
+
+    # Thuis should be a callable method in the binning module.
     ebinning =_make_binning(kwargs['ebinalg'], kwargs['emin'], kwargs['emax'],
                             kwargs['ebins'], kwargs['ebinning'])
-    # Integrate the count spectrum in time.
-    _f = numpy.array([count_spectrum.hslice(_E).norm() for \
-                      _E in count_spectrum.y])
-    count_spectrum = xInterpolatedUnivariateSplineLinear(count_spectrum.y,_f)
-    _x = count_spectrum.x
-    _y = count_spectrum.y*modf(_x)
+
+    # And this might be implemented in the irf.mrf module.
+    _x = time_integrated_spectrum.x
+    _y = time_integrated_spectrum.y*modf(_x)
     mu_spectrum = xInterpolatedUnivariateSplineLinear(_x, _y)
-    for _emin, _emax in zip(ebinning[:-1], ebinning[1:]):
-        # This is copied from srcmodel/spectrum.py and should probably be
-        # factored out.
-        num_expected = count_spectrum.integral(_emin, _emax)
-        mu_average = mu_spectrum.integral(_emin, _emax)/num_expected
-        mdp = 4.29/mu_average/numpy.sqrt(num_expected)
+
+    for _emin, _emax in zip(ebinning[:-1], ebinning[1:]) +\
+        [(ebinning[0], ebinning[-1])]:
+        num_counts = count_spectrum.num_expected_counts(emin=_emin, emax=_emax)
+        mu_average = mu_spectrum.integral(_emin, _emax)/num_counts
+        mdp = 4.29/mu_average/numpy.sqrt(num_counts)
         logger.info('%.2f--%.2f keV: %d counts, MDP %.4f%%' %\
-                    (_emin, _emax, num_expected, mdp))
+                    (_emin, _emax, num_counts, mdp))
 
 
 
