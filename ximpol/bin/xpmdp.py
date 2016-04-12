@@ -113,6 +113,7 @@ def xpmdp(**kwargs):
         tstop = ROI_MODEL.max_validity_time()
         logger.info('Simulation stop time set to %s...' % tstop)
     kwargs['tstop'] = tstop
+    observation_time = kwargs['tstop'] - kwargs['tstart']
 
     # This is copied from roi.py and should probably be factored out.
     # Again, the ROI class should be able to sum the count spectra of all the
@@ -141,8 +142,8 @@ def xpmdp(**kwargs):
         num_counts = count_spectrum.num_expected_counts(emin=_emin, emax=_emax)
         mu_average = mu_spectrum.integral(_emin, _emax)/num_counts
         mdp = 4.29/mu_average/numpy.sqrt(num_counts)
-        logger.info('%.2f--%.2f keV: %d counts, MDP %.4f%%' %\
-                    (_emin, _emax, num_counts, mdp))
+        logger.info('%.2f--%.2f keV: %d counts in %d s, MDP %.2f%%' %\
+                    (_emin, _emax, num_counts, observation_time, 100*mdp))
 
 
 
