@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.40.0) - Tue, 12 Apr 2016 13:38:08 +0200*
+
 * Initial implementation of the Cyg-X1 config/example.
 * First implementation of a script for the calculation of the MDP.
 * Significant refactoring of the srcmodel/spectrum.py module.
