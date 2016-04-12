@@ -55,7 +55,7 @@ class xCountSpectrum(xUnivariateAuxGenerator):
     calculated when a class object is instantiated.
     """
 
-    def __init__(self, dNdE, aeff, t):
+    def __init__(self, source_spectrum, aeff, t):
         """Constructor.
         """
         fmt = dict(auxname='Time', auxunits='s', rvname='Energy',
@@ -66,7 +66,7 @@ class xCountSpectrum(xUnivariateAuxGenerator):
             """Return the convolution between the effective area and
             the input photon spectrum.
             """
-            return dNdE(E, t)*numpy.tile(aeff(E[0]), (t.shape[0], 1))
+            return source_spectrum(E, t)*numpy.tile(aeff(E[0]), (t.shape[0], 1))
 
         xUnivariateAuxGenerator.__init__(self, t, aeff.x, _pdf, **fmt)
         self.light_curve = self.build_light_curve()
@@ -149,7 +149,7 @@ def main():
     from ximpol import XIMPOL_IRF
     from ximpol.irf.arf import xEffectiveArea
 
-    def dNdE(E, t):
+    def source_spectrum(E, t):
         """Function defining a time-dependent energy spectrum.
         """
         return 10.0*(1.0 + numpy.cos(t))*numpy.power(E, (-2.0 + 0.01*t))
@@ -157,7 +157,7 @@ def main():
     file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.arf')
     aeff = xEffectiveArea(file_path)
     t = numpy.linspace(0, 25, 100)
-    c = xCountSpectrum(dNdE, aeff, t)
+    c = xCountSpectrum(source_spectrum, aeff, t)
     c.light_curve.plot()
     c.plot()
 
