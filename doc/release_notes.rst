@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.41.0) - Tue, 12 Apr 2016 16:28:11 +0200*
+
 * New utils/units_.py module added.
 * Configuration file for Abell 85 (along with its configuration file) added.
 * Source model string formatting improved (issue #101).
