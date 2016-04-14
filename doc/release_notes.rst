@@ -1,8 +1,25 @@
 Release notes
 =============
 
-* Initial implementation of the Cyg-X1 config/example.
 
+*ximpol (0.41.1) - Tue, 12 Apr 2016 16:54:48 +0200*
+
+* Minor fix in the MDP calculator output.
+
+
+*ximpol (0.41.0) - Tue, 12 Apr 2016 16:28:11 +0200*
+
+* New utils/units_.py module added.
+* Configuration file for Abell 85 (along with its configuration file) added.
+* Source model string formatting improved (issue #101).
+
+
+*ximpol (0.40.0) - Tue, 12 Apr 2016 13:38:08 +0200*
+
+* Initial implementation of the Cyg-X1 config/example.
+* First implementation of a script for the calculation of the MDP.
+* Significant refactoring of the srcmodel/spectrum.py module.
+  
 
 *ximpol (0.39.4) - Thu, 07 Apr 2016 13:59:05 +0200*
 

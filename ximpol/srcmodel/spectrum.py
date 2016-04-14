@@ -41,10 +41,21 @@ def power_law(C, Gamma):
 class xCountSpectrum(xUnivariateAuxGenerator):
 
     """Class representing a count spectrum, i.e., the convolution of the
-    source photon spectrum and the detector effective area.
+    source photon spectrum and the detector effective area
+
+    .. math::
+       \\mathcal{C}(E, t) = \\mathcal{S}(E, t) \\times A_{\\rm eff}(E)
+       \\quad [\\text{s}^{-1}~\\text{keV}^{-1}].
+
+    This is a subclass of xUnivariateAuxGenerator, providing all the facilities
+    implemented in a bivariate spline, along with the capability of
+    extracting random numbers.
+
+    Note that the light curve corresponding to the count spectrum is
+    calculated when a class object is instantiated.
     """
 
-    def __init__(self, dNdE, aeff, t):
+    def __init__(self, source_spectrum, aeff, t):
         """Constructor.
         """
         fmt = dict(auxname='Time', auxunits='s', rvname='Energy',
@@ -55,22 +66,80 @@ class xCountSpectrum(xUnivariateAuxGenerator):
             """Return the convolution between the effective area and
             the input photon spectrum.
             """
-            return dNdE(E, t)*numpy.tile(aeff(E[0]), (t.shape[0], 1))
+            return source_spectrum(E, t)*numpy.tile(aeff(E[0]), (t.shape[0], 1))
 
         xUnivariateAuxGenerator.__init__(self, t, aeff.x, _pdf, **fmt)
         self.light_curve = self.build_light_curve()
 
-    def build_light_curve(self):
-        """Build the light curve, i.e., a linear spline of the integral
-        flux values as a function of time.
+    def build_time_integral(self, tmin=None, tmax=None):
+        """Build the time-integrated count spectrum, i.e.
+
+        .. math::
+           \\int_{t_{\\rm min}}^{t_{\\rm max}} \\mathcal{C}(E, t) dt \\quad
+           [\\text{keV}^{-1}].
+
+        The output is stored in the form of a xUnivariateGenerator, featuring
+        all the spline facilities, along with the capability of extracting
+        random numbers.
         """
+        if tmin is None:
+            tmin = self.xmin()
+        if tmax is None:
+            tmax = self.xmax()
+        _x = self.y
+        _y = numpy.array([self.hslice(_E).integral(tmin, tmax) for _E in _x])
+        fmt = dict(rvname=self.yname, rvunits=self.yunits,
+                   pdfname='Time-integrated (%d--%d s) spectrum' %\
+                   (tmin, tmax), pdfunits='keV$^{-1}$')
+        return xUnivariateGenerator(_x, _y, **fmt)
+
+    def build_energy_integral(self, emin=None, emax=None):
+        """Build the energy-integrated count spectrum, i.e.
+
+        .. math::
+           \\int_{E_{\\rm min}}^{E_{\\rm max}} \\mathcal{C}(E, t) dE \\quad
+           [\\text{Hz}].
+
+        The output is stored in the form of a xUnivariateGenerator, featuring
+        all the spline facilities, along with the capability of extracting
+        random numbers.
+        """
+        if emin is None:
+            emin = self.ymin()
+        if emax is None:
+            emax = self.ymax()
+        _x = self.x
+        _y = numpy.array([self.vslice(_t).integral(emin, emax) for _t in _x])
         fmt = dict(rvname=self.xname, rvunits=self.xunits,
-                   pdfname='Counting rate', pdfunits='Hz')
-        _f = numpy.array([self.slice(_t).norm() for _t in self.x])
-        return xUnivariateGenerator(self.x, _f, **fmt)
+                   pdfname='Energy-integrated (%.2f--%.2f keV) spectrum' %\
+                   (emin, emax), pdfunits='Hz')
+        return xUnivariateGenerator(_x, _y, **fmt)
 
+    def build_light_curve(self):
+        """Build the light curve, i.e., the count spectrum, integrated over the
+        entire energy range, as a function of time.
+        """
+        return self.build_energy_integral(self.ymin(), self.ymax())
 
+    def num_expected_counts(self, tmin=None, tmax=None, emin=None, emax=None):
+        """Return the number of expected counts within a given time interval
+        and energy range
 
+        .. math::
+           \\int_{t_{\\rm min}}^{t_{\\rm max}}
+           \\int_{E_{\\rm min}}^{E_{\\rm max}}
+           \\mathcal{C}(E, t) dt dE
+
+        """
+        if tmin is None:
+            tmin = self.xmin()
+        if tmax is None:
+            tmax = self.xmax()
+        if emin is None:
+            emin = self.ymin()
+        if emax is None:
+            emax = self.ymax()
+        return self.integral(tmin, tmax, emin, emax)
 
 
 def main():
@@ -80,7 +149,7 @@ def main():
     from ximpol import XIMPOL_IRF
     from ximpol.irf.arf import xEffectiveArea
 
-    def dNdE(E, t):
+    def source_spectrum(E, t):
         """Function defining a time-dependent energy spectrum.
         """
         return 10.0*(1.0 + numpy.cos(t))*numpy.power(E, (-2.0 + 0.01*t))
@@ -88,7 +157,7 @@ def main():
     file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.arf')
     aeff = xEffectiveArea(file_path)
     t = numpy.linspace(0, 25, 100)
-    c = xCountSpectrum(dNdE, aeff, t)
+    c = xCountSpectrum(source_spectrum, aeff, t)
     c.light_curve.plot()
     c.plot()
 

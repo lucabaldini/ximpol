@@ -62,10 +62,10 @@ def energy_spectrum(E, t):
 # Build the polarization degree as a function of the energy.
 _energy, _pol_degree = numpy.loadtxt(POL_DEGREE_FILE_PATH, unpack=True)
 _pol_degree /= 100.
-print "Here are the energy and pol degree values"
-print _energy
-print
-print _pol_degree
+#print "Here are the energy and pol degree values"
+#print _energy
+#print
+#print _pol_degree
 # Filter the data points to reduce the noise.
 #_pol_degree = scipy.signal.wiener(_pol_degree, 5)
 _mask = (_energy >= MIN_ENERGY)*(_energy <= MAX_ENERGY)
@@ -78,10 +78,10 @@ pol_degree_spline = xInterpolatedUnivariateSpline(_energy, _pol_degree, k=1, **f
 # Build the polarization angle as a function of the energy.
 _energy, _pol_angle = numpy.loadtxt(POL_ANGLE_FILE_PATH, unpack=True)
 _pol_angle = numpy.deg2rad(_pol_angle)
-print "Here are the energy and pol angle values"
-print _energy
-print
-print _pol_angle
+#print "Here are the energy and pol angle values"
+#print _energy
+#print
+#print _pol_angle
 # Filter the data points to reduce the noise.
 #_pol_angle = scipy.signal.wiener(_pol_angle, 2)
 _mask = (_energy >= MIN_ENERGY)*(_energy <= MAX_ENERGY)

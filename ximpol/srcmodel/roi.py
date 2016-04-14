@@ -23,6 +23,8 @@ from collections import OrderedDict
 from ximpol.srcmodel.img import xFITSImage
 from ximpol.srcmodel.spectrum import xCountSpectrum
 from ximpol.evt.event import xMonteCarloEventList
+from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
+from ximpol.utils.units_ import keV2erg, ergcms2mcrab
 from ximpol.utils.logging_ import logger
 
 
@@ -64,6 +66,40 @@ class xModelComponentBase:
         self.identifier = identifier
         self.min_validity_time = min_validity_time
         self.max_validity_time = max_validity_time
+        # We cache here the integral flux, since we don't want to (potentially)
+        # recalculate the integral each time the __str__() method is called.
+        emin = 2.
+        emax = 8.
+        t = self.min_validity_time
+        flux_ergcms = self.integral_flux(emin, emax, t)
+        flux_mcrab = ergcms2mcrab(flux_ergcms)
+        self.flux_label = 'Flux @ t = %d: %.3e erg/cm2/s (%.2f mcrab)' %\
+                          (t, flux_ergcms, flux_mcrab)
+
+    def integral_flux(self, emin=2.0, emax=8.0, t=None):
+        """Return the integral source flux at a generic time.
+
+        This is achieved by taking a "slice" of the source spectrum
+        at that time and integrating between a minimum and maximum energy.
+
+        Arguments
+        ---------
+        emin : float
+            The minimum integration energy (default 2 keV).
+
+        emax : float
+            The maximum integration energy (default 2 keV).
+
+        t : float
+            The time (default is the minimum source validity time).
+        """
+        if t is None:
+            t = self.min_validity_time
+        _x = numpy.linspace(emin, emax, 100)
+        _y = _x*self.energy_spectrum(_x, t)
+        _flux = xInterpolatedUnivariateSplineLinear(_x, _y).integral(emin, emax)
+        _flux = keV2erg(_flux)
+        return _flux
 
     @classmethod
     def sampling_time(self, tstart, tstop):
@@ -131,6 +167,7 @@ class xModelComponentBase:
                 (self.min_validity_time, self.max_validity_time)
         text += '\n    Position: RA = %s deg, Dec = %s deg' %\
                 (self.ra, self.dec)
+        text += '\n    %s' % self.flux_label
         return text
 
     def rvs_event_list(self, aeff, psf, modf, edisp, **kwargs):
@@ -488,6 +525,7 @@ class xExtendedSource(xModelComponentBase):
                (self.__class__.__name__, self.name, self.identifier)
         text += '\n    Validity time: [%f--%f]'  %\
                 (self.min_validity_time, self.max_validity_time)
+        text += '\n    %s' % self.flux_label
         return text
 
 
