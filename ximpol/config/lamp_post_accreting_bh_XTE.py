@@ -50,6 +50,7 @@ corresponds to a different choice of the main input parameters.
 
 
 data_file_name = 'lamp_pol_1_30_004_reduced.dat'
+#corresponds to :  spin = 1, h =  4, inclination angle = 30 degree
 data_file_path = os.path.join (XIMPOL_CONFIG, 'ascii', data_file_name)
 
 
