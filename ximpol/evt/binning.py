@@ -69,13 +69,13 @@ class xEventBinningBase:
         return primary_hdu
 
     @classmethod
-    def read_binning(self, file_path):
+    def read_binning(cls, file_path):
         """Read a custom binning from file and return a numpy array.
         """
         return numpy.loadtxt(file_path)
 
     @classmethod
-    def bin_centers(self, bin_edges):
+    def bin_centers(cls, bin_edges):
         """Return an array of bin centers given an array of bin edges.
 
         Arguments
@@ -92,7 +92,7 @@ class xEventBinningBase:
         return 0.5*(bin_edges[:-1] + bin_edges[1:])
 
     @classmethod
-    def bin_widths(self, bin_edges):
+    def bin_widths(cls, bin_edges):
         """Return an array of bin widths given an array of bin edges.
 
         Arguments
@@ -109,7 +109,7 @@ class xEventBinningBase:
         return (bin_edges[1:] - bin_edges[:-1])
 
     @classmethod
-    def equipopulated_binning(self, num_bins, vector, min_value=None,
+    def equipopulated_binning(cls, num_bins, vector, min_value=None,
                               max_value=None):
         """
         """
@@ -531,14 +531,14 @@ class xBinTableHDUMCUBE(xBinTableHDUBase):
     ]
 
     @classmethod
-    def set_phi_spec(self, phibins):
+    def set_phi_spec(cls, phibins):
         """Add the specification for the PHIHIST field.
         """
         phi_specs = ('PHI_HIST', '%dJ' % phibins)
-        if 'PHI_HIST' in [spec[0] for spec in self.DATA_SPECS]:
-            self.DATA_SPECS[-1] = phi_specs
+        if 'PHI_HIST' in [spec[0] for spec in cls.DATA_SPECS]:
+            cls.DATA_SPECS[-1] = phi_specs
         else:
-            self.DATA_SPECS.append(phi_specs)
+            cls.DATA_SPECS.append(phi_specs)
 
 
 class xEventBinningMCUBE(xEventBinningBase):

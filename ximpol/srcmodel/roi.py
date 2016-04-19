@@ -102,7 +102,7 @@ class xModelComponentBase:
         return _flux
 
     @classmethod
-    def sampling_time(self, tstart, tstop):
+    def sampling_time(cls, tstart, tstop):
         """
         """
         return numpy.linspace(tstart, tstop, 100)

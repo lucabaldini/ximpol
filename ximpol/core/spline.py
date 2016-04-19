@@ -198,7 +198,7 @@ class xUnivariateSplineBase:
         return self.__class__(_x, _y, self.xname, self.xunits, yname, yunits)
 
     @classmethod
-    def label(self, name, units=None):
+    def label(cls, name, units=None):
         """Compose an axis label given a name and some units.
         """
         if units is None:

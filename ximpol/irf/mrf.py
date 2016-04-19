@@ -144,7 +144,7 @@ class xAzimuthalResponseGenerator(xUnivariateAuxGenerator):
                                          **fmt)
 
     @classmethod
-    def pdf(self, phi, visibility):
+    def pdf(cls, phi, visibility):
         """Evaluate the underlying one-dimensional pdf for a given value of the
         visibility, and assuming that the phase of the modulation is zero.
 
@@ -160,7 +160,7 @@ class xAzimuthalResponseGenerator(xUnivariateAuxGenerator):
                 visibility*numpy.power(numpy.cos(phi), 2.0))/numpy.pi
 
     @classmethod
-    def cdf(self, phi, visibility):
+    def cdf(cls, phi, visibility):
         """Evaluate the underlying one-dimensional cdf for a given value of the
         visibility, and assuming that the phase of the modulation is zero.
 
@@ -200,14 +200,14 @@ class xAzimuthalResponseGenerator(xUnivariateAuxGenerator):
         return numpy.mod(self.rvs(visibility) + phase, 2*numpy.pi)
 
     @classmethod
-    def fit_function(self, phi, visibility, phase, normalization):
+    def fit_function(cls, phi, visibility, phase, normalization):
         """Convenience function (with the phase back in) to allow histogram
         fitting.
         """
-        return normalization*self.pdf((phi - phase), visibility)
+        return normalization*cls.pdf((phi - phase), visibility)
 
     @classmethod
-    def fit_histogram(self, histogram, fit_normalization=False):
+    def fit_histogram(cls, histogram, fit_normalization=False):
         """Fit an azimuthal histogram.
         """
         from scipy.optimize import curve_fit
@@ -218,10 +218,10 @@ class xAzimuthalResponseGenerator(xUnivariateAuxGenerator):
             p0 = (0.5, 0.5)
             # Wrap the fit function, keeping the normalization frozen.
             def f(phi, visibility, phase):
-                return self.fit_function(phi, visibility, phase, norm)
+                return cls.fit_function(phi, visibility, phase, norm)
         else:
             p0 = (0.5, 0.5, norm)
-            f = self.fit_function
+            f = cls.fit_function
         popt, pcov = curve_fit(f, _x, _y, p0, numpy.sqrt(_y))
         if not fit_normalization:
             # Add back the normalization to the parameter vector and covariance
@@ -230,7 +230,7 @@ class xAzimuthalResponseGenerator(xUnivariateAuxGenerator):
             pcov = numpy.vstack((pcov, numpy.array([[0., 0.]])))
             pcov = numpy.hstack((pcov, numpy.array([[0., 0., 0.]]).transpose()))
         _xs = numpy.linspace(0, 2*numpy.pi, 250)
-        _ys = self.fit_function(_xs, *popt)/(binning[1] - binning[0])
+        _ys = cls.fit_function(_xs, *popt)/(binning[1] - binning[0])
         spline = xInterpolatedUnivariateSplineLinear(_xs, _ys)
         mask = _y > 0.
         obs = _y[mask]

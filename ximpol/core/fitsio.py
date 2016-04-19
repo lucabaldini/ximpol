@@ -187,18 +187,18 @@ class xBinTableHDUBase(fits.BinTableHDU, xHDUBase):
                 self.set_keyword_comment('TTYPE%d' % (i + 1), comment)
 
     @classmethod
-    def spec_names(self):
+    def spec_names(cls):
         """Return the name of the data fields specified in the SPEC class
         member.
         """
-        return [item[0] for item in self.DATA_SPECS]
+        return [item[0] for item in cls.DATA_SPECS]
 
     @classmethod
-    def spec_names_and_types(self):
+    def spec_names_and_types(cls):
         """Return the name of the data fields specified in the SPEC class
         member.
         """
-        return [item[0:2] for item in self.DATA_SPECS]
+        return [item[0:2] for item in cls.DATA_SPECS]
 
     def set_ext_name(self, name):
         """Set the extension name for the binary table.

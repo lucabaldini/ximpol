@@ -128,7 +128,7 @@ class xFITSImage:
         return fig
 
     @classmethod
-    def add_label(self, fig, text):
+    def add_label(cls, fig, text):
         """Add a label to an image.
 
         This is a shortcut to have all the formatting defined.
