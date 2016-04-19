@@ -188,14 +188,20 @@ class xUnivariateSplineBase:
 
     def scale(self, scale, yname=None, yunits=None):
         """Scale the spline y values.
+
+        Warning
+        -------
+        Need to set the names and units properly---the main issue is ths for
+        derived classes the names of the corresponding members can be
+        different.
         """
         _x = numpy.copy(self.x)
         _y = numpy.copy(self.y)*scale
         if yname is None:
-            xname = self.yname
+            yname = self.yname
         if yunits is None:
-            xname = self.units
-        return self.__class__(_x, _y, self.xname, self.xunits, yname, yunits)
+            yunits = self.yunits
+        return self.__class__(_x, _y)
 
     @classmethod
     def label(cls, name, units=None):
@@ -485,6 +491,11 @@ class xBivariateSplineBase:
         """Return the z-label for a plot.
         """
         return xUnivariateSplineBase.label(self.zname, self.zunits)
+
+    def scale(self, scale_factor):
+        """
+        """
+        return self.__class__(self.x.copy(), self.y.copy(), self.z*scale_factor)
 
 
 class xInterpolatedBivariateSplineLinear(xBivariateSplineBase,

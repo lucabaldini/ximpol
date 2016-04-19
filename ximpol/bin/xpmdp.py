@@ -26,6 +26,7 @@ import imp
 
 from ximpol.irf import load_arf, load_mrf
 from ximpol.srcmodel.spectrum import xCountSpectrum
+from ximpol.srcmodel.roi import xPeriodicPointSource
 from ximpol.utils.logging_ import logger, startmsg, abort
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
 from ximpol.core.spline import xInterpolatedBivariateSplineLinear
@@ -52,6 +53,10 @@ PARSER.add_argument('--duration', type=float, default=10,
                     help='the duration (in s) of the simulation')
 PARSER.add_argument('--tstart', type=float, default=0.,
                     help='the start time (MET in s) of the simulation')
+PARSER.add_argument('--phasemin', type=float, default=0.,
+                    help='minimum phase')
+PARSER.add_argument('--phasemax', type=float, default=1.,
+                    help='maximum phase')
 PARSER.add_argument('--ebinalg', choices=EBIN_ALGS, default='LIN',
                     help='energy binning specification')
 PARSER.add_argument('--emin', type=float, default=1.,
@@ -122,11 +127,18 @@ def xpmdp(**kwargs):
     if len(sources) > 1:
         abort('Multiple sources not implemented, yet.')
     source = sources[0]
-    tsamples = source.sampling_time(kwargs['tstart'], kwargs['tstop'])
-    logger.info('Sampling times: %s' % tsamples)
-
-    count_spectrum = xCountSpectrum(source.energy_spectrum, aeff, tsamples)
-    time_integrated_spectrum = count_spectrum.build_time_integral()
+    if isinstance(source, xPeriodicPointSource):
+        psamples = numpy.linspace(kwargs['phasemin'], kwargs['phasemax'], 100)
+        logger.info('Sampling phases: %s' % psamples)
+        scale_fact = observation_time/source.ephemeris.period(kwargs['tstart'])
+        count_spectrum = xCountSpectrum(source.energy_spectrum, aeff, psamples,
+                                        scale=scale_fact)
+        time_integrated_spectrum = count_spectrum.build_time_integral()
+    else:
+        tsamples = source.sampling_time(kwargs['tstart'], kwargs['tstop'])
+        logger.info('Sampling times: %s' % tsamples)
+        count_spectrum = xCountSpectrum(source.energy_spectrum, aeff, tsamples)
+        time_integrated_spectrum = count_spectrum.build_time_integral()
 
     # Thuis should be a callable method in the binning module.
     ebinning =_make_binning(kwargs['ebinalg'], kwargs['emin'], kwargs['emax'],

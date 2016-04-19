@@ -55,8 +55,15 @@ class xCountSpectrum(xUnivariateAuxGenerator):
     calculated when a class object is instantiated.
     """
 
-    def __init__(self, source_spectrum, aeff, t):
+    def __init__(self, source_spectrum, aeff, t, scale=1.):
         """Constructor.
+
+        Warning
+        -------
+        Do we really want the option to pass a scale here?
+        This was a workaround for running the MDP script on a pulsar,
+        where we sample in phase and then have to multiply by the
+        number of periods.
         """
         fmt = dict(auxname='Time', auxunits='s', rvname='Energy',
                    rvunits='keV',  pdfname='dN/dE $\\times$ aeff',
@@ -66,7 +73,7 @@ class xCountSpectrum(xUnivariateAuxGenerator):
             """Return the convolution between the effective area and
             the input photon spectrum.
             """
-            return source_spectrum(E, t)*numpy.tile(aeff(E[0]), (t.shape[0], 1))
+            return scale*source_spectrum(E, t)*numpy.tile(aeff(E[0]), (t.shape[0], 1))
 
         xUnivariateAuxGenerator.__init__(self, t, aeff.x, _pdf, **fmt)
         self.light_curve = self.build_light_curve()
