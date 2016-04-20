@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* xpmdp.py adapted (via brute-force) to periodic sources.
+
 
 *ximpol (0.41.1) - Tue, 12 Apr 2016 16:54:48 +0200*
 

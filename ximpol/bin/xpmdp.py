@@ -130,9 +130,8 @@ def xpmdp(**kwargs):
     if isinstance(source, xPeriodicPointSource):
         psamples = numpy.linspace(kwargs['phasemin'], kwargs['phasemax'], 100)
         logger.info('Sampling phases: %s' % psamples)
-        scale_fact = observation_time/source.ephemeris.period(kwargs['tstart'])
         count_spectrum = xCountSpectrum(source.energy_spectrum, aeff, psamples,
-                                        scale=scale_fact)
+                                        scale=observation_time)
         time_integrated_spectrum = count_spectrum.build_time_integral()
     else:
         tsamples = source.sampling_time(kwargs['tstart'], kwargs['tstop'])
