@@ -43,7 +43,7 @@ class TestCrabPulsarSpectrum(unittest.TestCase):
     """
 
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         """Setup method.
         """
         pass

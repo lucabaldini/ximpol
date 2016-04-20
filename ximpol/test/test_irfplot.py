@@ -34,12 +34,12 @@ class TestIrfPlot(unittest.TestCase):
     """
 
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         """Setup.
         """
-        self.irf_name = 'xipe_baseline'
-        self.aeff, self.psf, self.modf, self.edisp = load_irfs(self.irf_name)
-        self.interactive = sys.flags.interactive
+        cls.irf_name = 'xipe_baseline'
+        cls.aeff, cls.psf, cls.modf, cls.edisp = load_irfs(cls.irf_name)
+        cls.interactive = sys.flags.interactive
 
     def test_irfplot(self):
         """Plot all the instrument response functions and save images.
