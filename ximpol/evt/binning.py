@@ -525,9 +525,12 @@ class xBinTableHDUMCUBE(xBinTableHDUBase):
     NAME = 'MODULATION'
     HEADER_KEYWORDS = []
     DATA_SPECS = [
-        ('ENERGY_LO'  , 'E', 'keV'),
-        ('ENERGY_HI'  , 'E', 'keV'),
-        ('ENERGY_MEAN', 'E', 'keV')
+        ('ENERGY_LO'   , 'E', 'keV'),
+        ('ENERGY_HI'   , 'E', 'keV'),
+        ('ENERGY_MEAN' , 'E', 'keV'),
+        ('EFFECTIVE_MU', 'E'),
+        ('COUNTS'      , 'J'),
+        ('MDP 99%'     , 'E')
     ]
 
     @classmethod
@@ -585,20 +588,35 @@ class xEventBinningMCUBE(xEventBinningBase):
     def bin_(self):
         """Overloaded method.
         """
+        from ximpol.irf import load_mrf
+        from ximpol.irf.mrf import mdp99
+        modf = load_mrf(self.event_file.irf_name())
         evt_header = self.event_file.hdu_list['PRIMARY'].header
         if self.get('mc'):
             energy = self.event_data['MC_ENERGY']
         else:
             energy = self.event_data['ENERGY']
         phi = self.event_data['PE_ANGLE']
-        counts, xedges, yedges = numpy.histogram2d(energy, phi,
-                                                   bins=self.make_binning())
+        phi_hist, xedges, yedges = numpy.histogram2d(energy, phi,
+                                                     bins=self.make_binning())
         primary_hdu = self.build_primary_hdu()
         emin, emax = xedges[:-1], xedges[1:]
         emean = []
+        effmu = []
+        ncounts = []
+        mdp = []
         for _emin, _emax in zip(emin, emax):
-            emean.append(numpy.mean(energy[(energy > _emin)*(energy < _emax)]))
-        data = [emin, emax, emean, counts]
+            _mask = (energy > _emin)*(energy < _emax)
+            _energy = energy[_mask]
+            _emean = numpy.mean(_energy)
+            _effmu = modf.weighted_average(_energy)
+            _ncounts = len(_energy)
+            _mdp = mdp99(_effmu, _ncounts)
+            emean.append(_emean)
+            effmu.append(_effmu)
+            ncounts.append(_ncounts)
+            mdp.append(_mdp)
+        data = [emin, emax, emean, effmu, ncounts, mdp, phi_hist]
         xBinTableHDUMCUBE.set_phi_spec(self.get('phibins'))
         mcube_hdu = xBinTableHDUMCUBE(data)
         mcube_hdu.setup_header(self.event_file.primary_keywords())
