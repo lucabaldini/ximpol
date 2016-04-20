@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.42.1) - Wed, 20 Apr 2016 21:11:25 +0200*
+
 * Team updated.
 
 
