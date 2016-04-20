@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.42.0) - Wed, 20 Apr 2016 11:30:41 +0200*
+
 * xpmdp.py adapted (via brute-force) to periodic sources.
 * MDP information added to the xpbin output in MCUBE mode.
 
