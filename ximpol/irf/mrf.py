@@ -28,6 +28,13 @@ from ximpol.core.rand import xUnivariateAuxGenerator
 from ximpol.core.spline import optimize_grid_linear
 
 
+def mdp99(eff_mu, num_sig, num_bkg=0.):
+    """Return the MDP at the 99% confidence level.
+    """
+    assert num_sig > 0
+    return 4.292/eff_mu*numpy.sqrt(num_sig + num_bkg)/num_sig
+
+
 class xBinTableHDUMODFRESP(xBinTableHDUBase):
 
     """Binary table for the MODFRESP extension of a mrf file.
@@ -406,10 +413,23 @@ class xModulationFactor(xInterpolatedUnivariateSplineLinear):
         polarization_angle : array or float
             The polarization angle, in radians. (This can either be a vector or
             an array of the same length as `energy`.)
-
         """
         visibility = self(energy)*polarization_degree
         return self.generator.rvs_phi(visibility, polarization_angle)
+
+    def weighted_average(self, energy):
+        """Return the weighted average of the mudulation factor given an
+        array of energies.
+
+        .. math::
+        \\mu_{\\rm eff} = 
+
+        Arguments
+        ---------
+        energy : array
+            An array of energy values.
+        """
+        return self(energy).sum()/len(energy)
 
 
 def main():

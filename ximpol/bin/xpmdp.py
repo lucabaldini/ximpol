@@ -153,8 +153,9 @@ def xpmdp(**kwargs):
         num_counts = count_spectrum.num_expected_counts(emin=_emin, emax=_emax)
         mu_average = mu_spectrum.integral(_emin, _emax)/num_counts
         mdp = 4.29/mu_average/numpy.sqrt(num_counts)
-        logger.info('%.2f--%.2f keV: %d counts in %d s, MDP %.2f%%' %\
-                    (_emin, _emax, num_counts, observation_time, 100*mdp))
+        logger.info('%.2f--%.2f keV: %d counts in %d s, mu %.3f, MDP %.2f%%' %\
+                    (_emin, _emax, num_counts, observation_time, mu_average,
+                     100*mdp))
 
 
 
