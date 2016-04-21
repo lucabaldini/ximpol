@@ -29,7 +29,7 @@ from ximpol import XIMPOL_CONFIG
 ROI_MODEL = xROIModel(83.633083, 22.014500)
 
 img_file_path = os.path.join(XIMPOL_CONFIG, 'fits', 'crab_0p3_10p0_keV.fits')
-energy_spectrum = power_law(10., 2.)
+energy_spectrum = power_law(9.59, 2.108)
 polarization_degree = constant(0.157)
 polarization_angle = constant(numpy.radians(161.1))
 crab_nebula = xExtendedSource('Crab nebula', img_file_path, energy_spectrum,
