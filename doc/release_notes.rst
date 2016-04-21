@@ -1,6 +1,7 @@
 Release notes
 =============
 
+* Added effective mu, source counts and mdp to the xBinnedModulationCube class in evt/binning.py
 
 *ximpol (0.42.1) - Wed, 20 Apr 2016 21:11:25 +0200*
 
