@@ -50,12 +50,12 @@ class TestModulationFactor(unittest.TestCase):
     """
 
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         """Setup---here we essentially create the modulation factor.
         """
-        self.measx, self.measy = numpy.loadtxt(GPD_MODF_FILE_PATH, unpack=True)
-        self.modf = load_mrf(IRF_NAME)
-        self.interactive = sys.flags.interactive
+        cls.measx, cls.measy = numpy.loadtxt(GPD_MODF_FILE_PATH, unpack=True)
+        cls.modf = load_mrf(IRF_NAME)
+        cls.interactive = sys.flags.interactive
 
     def test_constant(self, num_events=1000000, polarization_degree=1.,
                       polarization_angle=numpy.radians(20.)):

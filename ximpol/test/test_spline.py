@@ -34,21 +34,21 @@ class TestSplineLinear(unittest.TestCase):
     """
 
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         """Setup.
 
         Create a few objects to be used for testing.
         """
-        self.num_points = 100
-        self.x1 = numpy.linspace(0, 2*numpy.pi, self.num_points)
-        self.y1 = numpy.sin(self.x1)
-        self.x2 = numpy.linspace(0, numpy.pi, self.num_points)
-        self.y2 = numpy.sin(self.x2)
-        self.x3 = numpy.linspace(0, 10, 100)
-        self.y3 = 3*self.x3
-        self.s1 = xInterpolatedUnivariateSplineLinear(self.x1, self.y1)
-        self.s2 = xInterpolatedUnivariateSplineLinear(self.x2, self.y2)
-        self.s3 = xInterpolatedUnivariateSplineLinear(self.x3, self.y3)
+        cls.num_points = 100
+        cls.x1 = numpy.linspace(0, 2*numpy.pi, cls.num_points)
+        cls.y1 = numpy.sin(cls.x1)
+        cls.x2 = numpy.linspace(0, numpy.pi, cls.num_points)
+        cls.y2 = numpy.sin(cls.x2)
+        cls.x3 = numpy.linspace(0, 10, 100)
+        cls.y3 = 3*cls.x3
+        cls.s1 = xInterpolatedUnivariateSplineLinear(cls.x1, cls.y1)
+        cls.s2 = xInterpolatedUnivariateSplineLinear(cls.x2, cls.y2)
+        cls.s3 = xInterpolatedUnivariateSplineLinear(cls.x3, cls.y3)
 
     def test_len(self):
         """Test the basic object instantiation.

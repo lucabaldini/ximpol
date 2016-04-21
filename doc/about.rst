@@ -8,6 +8,8 @@ Team
 * Luca Baldini (luca.baldini@pi.infn.it)
 * Nicola Omodei (nicola.omodei@stanford.edu)
 * Melissa Pesce-Rollins (melissa.pesce.rollins@pi.infn.it)
+* Niccolo' Di Lalla (niccolo.dilalla@pi.infn.it)
+* Alberto Manfreda (alberto.manfreda@pi.infn.it)
 
 
 License

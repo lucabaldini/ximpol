@@ -39,12 +39,12 @@ class TestXipeRmf(unittest.TestCase):
     """
 
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         """Setup.
 
         Create a few objects to be used for testing.
         """
-        self.edisp = load_rmf(IRF_NAME)
+        cls.edisp = load_rmf(IRF_NAME)
 
     def test_xipe_rmf_matrix_norm(self):
         """Test the XIPE energy dispersion normalization.

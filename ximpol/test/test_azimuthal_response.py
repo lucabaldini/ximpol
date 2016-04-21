@@ -42,11 +42,11 @@ class TestAzimuthalResponse(unittest.TestCase):
     """
 
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         """Setup---here we essentially create the effective area.
         """
-        self.generator = xAzimuthalResponseGenerator()
-        self.interactive = sys.flags.interactive
+        cls.generator = xAzimuthalResponseGenerator()
+        cls.interactive = sys.flags.interactive
 
     def test_pdf(self):
         """Test the one-dimensional azimuthal response underlying pdf.

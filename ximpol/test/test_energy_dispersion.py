@@ -45,12 +45,12 @@ class TestEnergyDispersion(unittest.TestCase):
     """
 
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         """Setup---here we essentially create the modulation factor.
         """
-        self.measx, self.measy = numpy.loadtxt(GPD_ERES_FILE_PATH, unpack=True)
-        self.edisp = load_rmf(IRF_NAME)
-        self.interactive = sys.flags.interactive
+        cls.measx, cls.measy = numpy.loadtxt(GPD_ERES_FILE_PATH, unpack=True)
+        cls.edisp = load_rmf(IRF_NAME)
+        cls.interactive = sys.flags.interactive
 
     def test_rvs(self, num_events=100000):
         """

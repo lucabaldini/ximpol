@@ -2,6 +2,11 @@ Release notes
 =============
 
 
+*ximpol (0.42.1) - Wed, 20 Apr 2016 21:11:25 +0200*
+
+* Team updated.
+
+
 *ximpol (0.42.0) - Wed, 20 Apr 2016 11:30:41 +0200*
 
 * xpmdp.py adapted (via brute-force) to periodic sources.

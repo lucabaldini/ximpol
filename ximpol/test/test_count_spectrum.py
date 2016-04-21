@@ -44,15 +44,15 @@ class TestCountSpectrum(unittest.TestCase):
     """
 
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         """Setup---here we essentially create the effective area.
 
         >>> file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.arf')
-        >>> self.aeff = xEffectiveArea(file_path)
+        >>> cls.aeff = xEffectiveArea(file_path)
         """
         file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.arf')
-        self.aeff = xEffectiveArea(file_path)
-        self.interactive = sys.flags.interactive
+        cls.aeff = xEffectiveArea(file_path)
+        cls.interactive = sys.flags.interactive
 
     def test_power_law_stationary(self):
         """Test a time-independent power law.
