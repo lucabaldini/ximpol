@@ -642,6 +642,9 @@ class xBinnedModulationCube(xBinnedFileBase):
         self.emax = self.data['ENERGY_HI']
         self.emean = self.data['ENERGY_MEAN']
         self.phi_y = self.data['PHI_HIST']
+        self.effective_mu = self.data['EFFECTIVE_MU']
+        self.counts = self.data['COUNTS']
+        self.mdp99 = self.data['MDP 99%']
         phibins = self.phi_y.shape[1]
         self.phi_binning = numpy.linspace(0, 2*numpy.pi, phibins + 1)
         self.phi_x = 0.5*(self.phi_binning[:-1] + self.phi_binning[1:])
