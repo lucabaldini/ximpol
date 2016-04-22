@@ -37,20 +37,21 @@ def parse_spectral_model(file_name, emin=0.5, emax=15.):
     """
     file_path = os.path.join(XIMPOL_CONFIG, 'ascii', file_name)
     logger.info('Parsing input file %s...' % file_path)
-    _energy, _flux = numpy.loadtxt(file_path, delimiter=',', unpack=True)
+    _energy, _binw, _flux, _fluxerr, _mod, _a, _b = numpy.loadtxt(file_path, 
+                                                                  unpack=True)
     _mask = (_energy >= emin)*(_energy <= emax)
     _energy = _energy[_mask]
-    _flux = _flux[_mask]
-    _flux /= _energy**2.
+    _mod = _mod[_mask]
+    _mod /= _energy**2.
     fmt = dict(xname='Energy', xunits='keV', yname='Flux',
                yunits='cm$^{-2}$ s$^{-1}$ keV$^{-1}$')
-    return xInterpolatedUnivariateSplineLinear(_energy, _flux, **fmt)
+    return xInterpolatedUnivariateSplineLinear(_energy, _mod, **fmt)
 
 
 ROI_MODEL = xROIModel(10.4075, -9.3425)
 
 # Read in the spectral models.
-spectral_model_spline = parse_spectral_model('abell_85.csv')
+spectral_model_spline = parse_spectral_model('Abell_85.txt')
 
 def energy_spectrum(E, t):
     return spectral_model_spline(E)
