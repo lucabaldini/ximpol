@@ -51,11 +51,16 @@ NEBULA_MCUBE_FILE_PATH = '%s_nebula_mcube.fits' % OUT_FILE_PATH_BASE
 
 SIM_DURATION = 10000
 
-PHASE_BINS = [(0.,1.0), (0.03,0.33), (0.33, 0.43)]#, (0.95, 0.03)]
+PHASE_BINS = [(0.,0.05), (0.05,0.25), (0.25, 0.45), (0.45, 0.9), (0.9,1.0)]
+#NUM_PHASE_BINS = 25
+#PHASE_BINS = numpy.linspace(0., 1., NUM_PHASE_BINS)
 
-E_BINNING = [1.6, 6.]
+E_BINNING = [1.0, 3., 5., 8., 10.]
+#E_BINNING = numpy.linspace(1., 10., 5)
 
+OUTPUT_FOLDER = '/data/work/ximpol/ximpol/examples/'
 
+MDP_OUTPUT_FILE = os.path.join(OUTPUT_FOLDER,'MDP_CrabPulsar_imaging_fE.txt')
 
 """Main pipeline object.
 """
@@ -85,6 +90,7 @@ def prepare_pulsar():
     """Prepare the event data for the actual analysis.
     """
     for i, (_min, _max) in enumerate(PHASE_BINS):
+            #zip(PHASE_BINS[:-1],PHASE_BINS[1:])):
         PIPELINE.xpselect(EVT_FILE_PATH, phasemin=_min,
                           phasemax=_max, mcsrcid=1,rad=0.25,
                           outfile=_sel_file_path(i))
@@ -104,43 +110,139 @@ def prepare_nebula():
 
 
 
-def calcMDP():
+def calcMDP(plot=False):
+    mdp_file = open(MDP_OUTPUT_FILE,'w')
+    mdp_file.write('#Simulation time %s sec \n'%SIM_DURATION)
+    mdp_file.write('#Phase Ave delta phase Mean energy  delta energy mdp99\n')
     nebula_mcube_file = xBinnedModulationCube(NEBULA_MCUBE_FILE_PATH)
     nebula_counts = nebula_mcube_file.counts
     nebula_mdp =  nebula_mcube_file.mdp99
     txt = "Pulsar phase\t Emin - Emax\t Pulsar counts\t Nebula counts\t MDP\n"
-    txt2 = "Pulsar phase\t Emin - Emax\t Pulsar MDP\t Nebula MDP\n"
+    MDP99_PULSAR = []
+    phase = []
+    phase_err = [] 
     for i, (_min, _max) in enumerate(PHASE_BINS):
+            #zip(PHASE_BINS[:-1],PHASE_BINS[1:])):
+
         pulse_diff = numpy.fabs(_max -_min)
+        _phase_ave = 0.5*(_min + _max)
+        phase.append(_phase_ave)
+        _phase_err = 0.5*(_max - _min)
+        phase_err.append(_phase_err)
         
         pulsar_phase_mcube_file = xBinnedModulationCube(_mcube_file_path(i))
-        pulsar_phase_counts = pulsar_phase_mcube_file.counts
+        
+        
         pulsar_emean = pulsar_phase_mcube_file.emean
-        pulsar_emin = pulsar_phase_mcube_file.emin
-        pulsar_emax = pulsar_phase_mcube_file.emax
-        pulsar_mdp = pulsar_phase_mcube_file.mdp99
-        #scale the nebula counts for the time used for the pulsar phase
-        scaled_nebula_counts = pulse_diff*nebula_counts
+        for j, _energy_mean in enumerate(pulsar_emean):
+            pulsar_emin = pulsar_phase_mcube_file.emin[j]
+            pulsar_emax = pulsar_phase_mcube_file.emax[j]
+            pulsar_e_err = 0.5*(pulsar_emax-pulsar_emin)
+            
+            pulsar_phase_counts = pulsar_phase_mcube_file.counts[j]
+            pulsar_mdp = pulsar_phase_mcube_file.mdp99[j]
+            #scale the nebula counts for the time used for the pulsar phase
+            scaled_nebula_counts = pulse_diff*nebula_counts[j]
         
-        count_sqrt = numpy.sqrt(pulsar_phase_counts + scaled_nebula_counts)
-        #count_ratio = count_sqrt/pulsar_phase_counts
-        eff_mu_pulsar =  pulsar_phase_mcube_file.effective_mu
-        print "Phase:%s\tEff_mu_pulsar:%s\t pulsar counts:%s"%(PHASE_BINS[i],eff_mu_pulsar,pulsar_phase_counts)
-   
-        mdp = 4.292/eff_mu_pulsar*count_sqrt/pulsar_phase_counts
+            count_sqrt = numpy.sqrt(pulsar_phase_counts + scaled_nebula_counts)
+       
+            eff_mu_pulsar =  pulsar_phase_mcube_file.effective_mu[j]
+            
+            mdp = 4.292/eff_mu_pulsar*count_sqrt/pulsar_phase_counts
+            MDP99_PULSAR.append(100*mdp)
+            _data = (_phase_ave, _phase_err, _energy_mean, pulsar_e_err, pulsar_e_err, mdp)
+            
+            _fmt = ('%.4e   ' * len(_data)).strip()
+            _fmt = '%s\n' % _fmt
+            _line = _fmt % _data
+            mdp_file.write(_line)
+           
+            #txt += "%s\t %s - %s\t %s\t %s\t %.3f\n"%(PHASE_BINS[i], pulsar_emin[0], pulsar_emax[0], pulsar_phase_counts[0], scaled_nebula_counts[0], 100*mdp)
         
-        
-        txt += "%s\t %s - %s\t %s\t %s\t %.3f\n"%(PHASE_BINS[i], pulsar_emin[0], pulsar_emax[0], pulsar_phase_counts[0], scaled_nebula_counts[0], 100*mdp)
-
-        txt2 +="%s\t %s - %s\t %.3f\t%.3f\n"%(PHASE_BINS[i], pulsar_emin[0], pulsar_emax[0],100*pulsar_mdp,100*nebula_mdp)
-        
-        
+    MDP99_PULSAR = numpy.array(MDP99_PULSAR)
+    PHASE = numpy.array(phase)
+    mdp_file.close()
+    if plot:
+        scale_factor = 10
+        sim_label = 'XIPE %s ks' % (SIM_DURATION*scale_factor/1000.)
+        lc_label = 'Light curve'
+        plt.errorbar(PHASE, MDP99_PULSAR*(1/numpy.sqrt(10)),xerr=phase_err, label=sim_label,fmt='o')
+        pl_normalization_spline.plot(scale=10., show=False,
+                                color='lightgray',label=lc_label)
+        plt.ylabel('MDP 99\%')
+        plt.legend()
+        plt.savefig('crab_complex_mdp_nonimaging_%i.png'%(SIM_DURATION*scale_factor/1000.))
+      
+        #plt.show()
     print txt
+   
+
+
+def makeMDPComparisonPlot(imaging_file_path):
+    
+    non_imaging_file_path = imaging_file_path.replace('_imaging.txt','_non_imaging.txt')
+    print "Using %s for non imaging file path"%non_imaging_file_path
+    
+    _phase_ave, _phase_err, mdp_imaging = numpy.loadtxt(imaging_file_path, unpack=True)
+    _phase_ave, _phase_err, mdp_nonimaging = numpy.loadtxt(non_imaging_file_path, unpack=True)
+    scale_factor = 10.
+    print "Improvement with imaging"
+    for i, phase in enumerate(_phase_ave):
+        imaging = 100*mdp_imaging[i]*(1/numpy.sqrt(scale_factor))
+        non_imaging = 100*mdp_nonimaging[i]*(1/numpy.sqrt(scale_factor))
+        print "%s\t Imaging (non):%s (%s) %s"%(phase,imaging,non_imaging,non_imaging/imaging)
+        
+   
+    sim_label_imaging = 'XIPE %s ks\n Imaging 15"' % (SIM_DURATION*scale_factor/1000.)
+    sim_label_nonimaging = 'Non imaging'
+    lc_label = 'Light curve'
+    plt.errorbar(_phase_ave, 100*mdp_imaging*(1/numpy.sqrt(scale_factor)),xerr=_phase_err, label=sim_label_imaging,fmt='o',markersize=6)
+    
+    plt.errorbar(_phase_ave, 100*mdp_nonimaging*(1/numpy.sqrt(scale_factor)),xerr=_phase_err, label=sim_label_nonimaging,fmt='v',markersize=6)
+    
+    pl_normalization_spline.plot(scale=10., show=False,
+                                color='darkgray',label=lc_label)
+    #on_phase = 0.25, 0.45
+    #off_phase = 0.45,0.9
+    plt.axvspan(0.25, 0.45, color='r', alpha=0.45, lw=0)
+    plt.axvspan(0.45, 0.9, color='gray', alpha=0.25, lw=0)
+    
+    plt.ylabel('MDP 99\%')
+    plt.legend()
+    plt.savefig('crab_complex_mdp_imaging_vs_nonimaging_%i_shaded.png'%(SIM_DURATION*scale_factor/1000.))
+    plt.show()
+
+
+def makeMDP_fE_ComparisonPlot(file_path):
+    scale_factor = 10.
+    
+    (_phase_ave, _phase_err, _energy_mean, pulsar_e_err, pulsar_e_err, mdp) =\
+                                                numpy.loadtxt(file_path, unpack=True)
+    print "Phase ave:",_phase_ave
     print
-    print txt2
+    print "Energy mean", _energy_mean
+    #phase_values = [0.025, 0.15, 0.35, 0.675, 0.95]
+    phase_values = [0.35,0.675]
+    on, on_phase_color = (0.35,'r')
+    off, off_phase_color = (0.675,'gray') 
+    #for phase in phase_values:
+        
+    plt.errorbar(_energy_mean[_phase_ave==on], 100*mdp[_phase_ave==on]*(1/numpy.sqrt(scale_factor)),xerr=pulsar_e_err[_phase_ave==on], label='On Phase',fmt='o',markersize=6,ls='--',color=on_phase_color)
+
+    plt.errorbar(_energy_mean[_phase_ave==off], 100*mdp[_phase_ave==off]*(1/numpy.sqrt(scale_factor)),xerr=pulsar_e_err[_phase_ave==off], label='Off Phase',fmt='o',markersize=6,ls='--',color=off_phase_color)
+    
+    plt.legend()
+    plt.ylabel('MPD 99\%')
+    plt.xlabel('Energy (keV)')
+    plt.savefig('crab_complex_mdp_imaging_fE_%i.png'%(SIM_DURATION*scale_factor/1000.))
+    plt.show()
+    
+    
 if __name__=='__main__':
     
-    generate()
-    prepare_pulsar()
-    prepare_nebula()
-    calcMDP()
+    #generate()
+    #prepare_pulsar()
+    #prepare_nebula()
+    #calcMDP(plot=False)
+    makeMDPComparisonPlot('MDP_CrabPulsar_imaging.txt')
+    makeMDP_fE_ComparisonPlot('MDP_CrabPulsar_imaging_fE.txt')
