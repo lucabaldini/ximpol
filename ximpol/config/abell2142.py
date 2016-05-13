@@ -32,19 +32,18 @@ from ximpol import XIMPOL_CONFIG
 """
 
 
-def parse_spectral_model(file_name, emin=0.5, emax=15.):
+def parse_spectral_model(file_name, emin=0.5, emax=11.):
     """Parse the input file with the spectral point.
     """
     file_path = os.path.join(XIMPOL_CONFIG, 'ascii', file_name)
     logger.info('Parsing input file %s...' % file_path)
-    _energy, _binw, _flux, _fluxerr, _mod = numpy.loadtxt(file_path, unpack=True)
+    _energy, _flux, _fluxerr = numpy.loadtxt(file_path, unpack=True)
     _mask = (_energy >= emin)*(_energy <= emax)
     _energy = _energy[_mask]
-    _mod = _mod[_mask]
-    _mod /= _energy**2.
+    _flux = _flux[_mask]
     fmt = dict(xname='Energy', xunits='keV', yname='Flux',
                yunits='cm$^{-2}$ s$^{-1}$ keV$^{-1}$')
-    return xInterpolatedUnivariateSplineLinear(_energy, _mod, **fmt)
+    return xInterpolatedUnivariateSplineLinear(_energy, _flux, **fmt)
 
 
 ROI_MODEL = xROIModel(239.5833, 27.2334)

@@ -20,7 +20,7 @@
 import numpy
 import os
 
-from ximpol.srcmodel.roi import xPointSource, xROIModel
+from ximpol.srcmodel.roi import xPointSource, xROIModel, xExtendedSource
 from ximpol.srcmodel.spectrum import power_law
 from ximpol.srcmodel.polarization import xPolarizationMap, constant
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
@@ -32,20 +32,18 @@ from ximpol import XIMPOL_CONFIG
 """
 
 
-def parse_spectral_model(file_name, emin=0.5, emax=15.):
+def parse_spectral_model(file_name, emin=0.5, emax=11.):
     """Parse the input file with the spectral point.
     """
     file_path = os.path.join(XIMPOL_CONFIG, 'ascii', file_name)
     logger.info('Parsing input file %s...' % file_path)
-    _energy, _binw, _flux, _fluxerr, _mod, _a, _b = numpy.loadtxt(file_path, 
-                                                                  unpack=True)
+    _energy, _flux, _fluxerr = numpy.loadtxt(file_path, unpack=True)
     _mask = (_energy >= emin)*(_energy <= emax)
     _energy = _energy[_mask]
-    _mod = _mod[_mask]
-    _mod /= _energy**2.
+    _flux = _flux[_mask]
     fmt = dict(xname='Energy', xunits='keV', yname='Flux',
                yunits='cm$^{-2}$ s$^{-1}$ keV$^{-1}$')
-    return xInterpolatedUnivariateSplineLinear(_energy, _mod, **fmt)
+    return xInterpolatedUnivariateSplineLinear(_energy, _flux, **fmt)
 
 
 ROI_MODEL = xROIModel(10.4075, -9.3425)
@@ -59,8 +57,13 @@ def energy_spectrum(E, t):
 polarization_degree = constant(0.)
 polarization_angle = constant(0.)
 
-abell85 = xPointSource('Abell 85', ROI_MODEL.ra, ROI_MODEL.dec,
-                       energy_spectrum, polarization_degree, polarization_angle)
+#abell85 = xPointSource('Abell 85', ROI_MODEL.ra, ROI_MODEL.dec,
+#                       energy_spectrum, polarization_degree, polarization_angle)
+
+img_file_path = os.path.join(XIMPOL_CONFIG, 'fits', 'abell85.fits')
+abell85 = xExtendedSource('Abell 85', img_file_path, energy_spectrum,
+                          polarization_degree, polarization_angle)
+
 
 ROI_MODEL.add_source(abell85)
 
@@ -74,6 +77,10 @@ def display():
     print(ROI_MODEL)
     fig = plt.figure('Energy spectrum')
     spectral_model_spline.plot(logy=True, show=False, label='Total')
+    
+    img = xFITSImage(img_file_path)
+    img.plot(show=False)
+    
     plt.show()
 
 
