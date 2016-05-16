@@ -68,7 +68,7 @@ PSF_PARAMETERS = [numpy.array([_x]) for _x in \
 """XIPE-specific fields for the FITS headers. (These will be added to the
 generic headers defined for the various extensions in the irf modules.)
 """
-XIPE_KEYWORDS = [
+INSTR_KEYWORDS = [
     ('TELESCOP', 'XIPE' , 'mission/satellite name'),
     ('INSTRUME', 'GPD'  , 'instrument/detector name'),
     ('DETNAM'  , 'ALL'  , 'specific detector name in use')
@@ -76,7 +76,7 @@ XIPE_KEYWORDS = [
 
 """Comments fields for the FITS headers.
 """
-XIPE_COMMENTS = [
+INSTR_COMMENTS = [
     'Gas mixture: %s' % GAS_MIXTURE,
     'Pressure: %.3f Atm' % GAS_PRESSURE,
     'Absorption gap: %.3f cm' % ABS_GAP_THICKNESS,
@@ -85,7 +85,7 @@ XIPE_COMMENTS = [
 ]
 
 
-def make_arf(aeff_file_path, qeff_file_path, irf_name, off_axis_data=None):
+def make_arf(aeff_file_path, qeff_file_path, irf_name, off_axis_data=[]):
     """Write the XIPE effective area response function.
     """
     logger.info('Creating XIPE effective area fits file...')
@@ -102,11 +102,11 @@ def make_arf(aeff_file_path, qeff_file_path, irf_name, off_axis_data=None):
     aeff = opt_aeff*gpd_eff
     specresp = aeff(ENERGY_CENTER)
     logger.info('Creating PRIMARY HDU...')
-    primary_hdu = xPrimaryHDU('ximpol', XIPE_KEYWORDS, XIPE_COMMENTS)
+    primary_hdu = xPrimaryHDU('ximpol', INSTR_KEYWORDS, INSTR_COMMENTS)
     print(repr(primary_hdu.header))
     logger.info('Creating SPECRESP HDU...')
     data = [ENERGY_LO, ENERGY_HI, specresp]
-    specresp_hdu = xBinTableHDUSPECRESP(data, XIPE_KEYWORDS, XIPE_COMMENTS)
+    specresp_hdu = xBinTableHDUSPECRESP(data, INSTR_KEYWORDS, INSTR_COMMENTS)
     print(repr(specresp_hdu.header))
     logger.info('Processing off-axis data...')
     energy = numpy.linspace(ENERGY_MIN, ENERGY_MAX, 100)
@@ -144,11 +144,11 @@ def make_mrf(modf_file_path, irf_name):
     logger.info('Filling in arrays...')
     modfresp = modf(ENERGY_CENTER)
     logger.info('Creating PRIMARY HDU...')
-    primary_hdu = xPrimaryHDU('ximpol', XIPE_KEYWORDS, XIPE_COMMENTS)
+    primary_hdu = xPrimaryHDU('ximpol', INSTR_KEYWORDS, INSTR_COMMENTS)
     print(repr(primary_hdu.header))
     logger.info('Creating MODFRESP HDU...')
     data = [ENERGY_LO, ENERGY_HI, modfresp]
-    modfresp_hdu = xBinTableHDUMODFRESP(data, XIPE_KEYWORDS, XIPE_COMMENTS)
+    modfresp_hdu = xBinTableHDUMODFRESP(data, INSTR_KEYWORDS, INSTR_COMMENTS)
     print(repr(modfresp_hdu.header))
     logger.info('Writing output file %s...' % output_file_path)
     hdulist = fits.HDUList([primary_hdu, modfresp_hdu])
@@ -166,11 +166,11 @@ def make_psf(irf_name):
     if os.path.exists(output_file_path):
         rm(output_file_path)
     logger.info('Creating PRIMARY HDU...')
-    primary_hdu = xPrimaryHDU('ximpol', XIPE_KEYWORDS, XIPE_COMMENTS)
+    primary_hdu = xPrimaryHDU('ximpol', INSTR_KEYWORDS, INSTR_COMMENTS)
     print(repr(primary_hdu.header))
     logger.info('Creating PSF HDU...')
     data = PSF_PARAMETERS
-    psf_hdu = xBinTableHDUPSF(data, [], XIPE_COMMENTS)
+    psf_hdu = xBinTableHDUPSF(data, [], INSTR_COMMENTS)
     print(repr(psf_hdu.header))
     logger.info('Writing output file %s...' % output_file_path)
     hdulist = fits.HDUList([primary_hdu, psf_hdu])
@@ -193,10 +193,10 @@ def make_rmf(eres_file_path, irf_name):
     _x, _y = numpy.loadtxt(eres_file_path, unpack=True)
     edisp_fwhm = xInterpolatedUnivariateSplineLinear(_x, _y)
     logger.info('Creating PRIMARY HDU...')
-    primary_hdu = xPrimaryHDU('ximpol', XIPE_KEYWORDS, XIPE_COMMENTS)
+    primary_hdu = xPrimaryHDU('ximpol', INSTR_KEYWORDS, INSTR_COMMENTS)
     print(repr(primary_hdu.header))
     keyword = ('DETCHANS', NUM_CHANNELS, 'Total number of detector channels')
-    rmf_header_keywords = XIPE_KEYWORDS + [keyword]
+    rmf_header_keywords = INSTR_KEYWORDS + [keyword]
     logger.info('Creating MATRIX HDU...')
     nrows = len(ENERGY_LO)
     ngrp = numpy.ones(nrows)
@@ -211,14 +211,14 @@ def make_rmf(eres_file_path, irf_name):
         matrix = numpy.vstack([matrix, rv.pdf(ch)])
     data = [ENERGY_LO, ENERGY_HI, ngrp, fchan, nchan, matrix]
     matrix_hdu = xBinTableHDUMATRIX(NUM_CHANNELS, data, rmf_header_keywords,
-                                    XIPE_COMMENTS)
+                                    INSTR_COMMENTS)
     print(repr(matrix_hdu.header))
     logger.info('Creating EBOUNDS HDU...')
     ch = numpy.arange(NUM_CHANNELS)
     emin = ch*E_CHAN_SLOPE + E_CHAN_OFFSET
     emax = (ch + 1)*E_CHAN_SLOPE + E_CHAN_OFFSET
     data = [ch, emin, emax]
-    ebounds_hdu = xBinTableHDUEBOUNDS(data, rmf_header_keywords, XIPE_COMMENTS)
+    ebounds_hdu = xBinTableHDUEBOUNDS(data, rmf_header_keywords, INSTR_COMMENTS)
     print(repr(ebounds_hdu.header))
     logger.info('Writing output file %s...' % output_file_path)
     hdulist = fits.HDUList([primary_hdu, matrix_hdu, ebounds_hdu])
