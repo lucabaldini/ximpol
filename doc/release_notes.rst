@@ -1,8 +1,12 @@
 Release notes
 =============
-* Added a script to plot MDP for the crab pulsar with the nebula background in examples.
 
-* Added effective mu, source counts and mdp to the xBinnedModulationCube class in evt/binning.py
+* Added IRFs for the baseline IXPE configuration.
+* Added a script to plot MDP for the crab pulsar with the nebula background in
+  examples.
+* Added effective mu, source counts and mdp to the xBinnedModulationCube class
+  in evt/binning.py
+
 
 *ximpol (0.42.1) - Wed, 20 Apr 2016 21:11:25 +0200*
 
