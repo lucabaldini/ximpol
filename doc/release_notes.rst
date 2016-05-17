@@ -1,7 +1,6 @@
 Release notes
 =============
 
-* Added IRFs for the baseline IXPE configuration.
 * Added a script to plot MDP for the crab pulsar with the nebula background in
   examples.
 * Added effective mu, source counts and mdp to the xBinnedModulationCube class
