@@ -88,7 +88,8 @@ class xPointSpreadFunction(xUnivariateGenerator):
         r_c = _data['R_C']
         eta = _data['ETA']
         _r = numpy.linspace(0, rmax, 100)
-        _psf = W*numpy.exp(-(_r**2/(2*sigma**2))) + N*(1 + (_r/r_c)**2)**(-eta)
+        _psf = 2*numpy.pi*_r*(W*numpy.exp(-(_r**2/(2*sigma**2))) +\
+                                                   N*(1 + (_r/r_c)**2)**(-eta))
         fmt = dict(rvname='r', rvunits='arcsec', pdfname='PSF',
                    pdfunits='sr$^{-1}$')
         xUnivariateGenerator.__init__(self, _r, _psf, **fmt)
@@ -135,8 +136,8 @@ def main():
     print(psf.rvs(10))
     ra, dec = 1., 1.
     print(psf.smear_single(ra, dec, 10))
-    rmax = 50
-    plt.hist(psf.rvs(100000), rmax, (0, rmax), rwidth=1, histtype='step',
+    rmax = 100
+    plt.hist(psf.rvs(1000000), rmax, (0, rmax), rwidth=1, histtype='step',
              lw=2, normed=True)
     _r = numpy.linspace(0, rmax, rmax)
     _psf = psf(_r)/psf.norm()
