@@ -23,7 +23,6 @@ import numpy
 from astropy.io import fits
 from astropy import wcs
 import aplpy
-import os
 
 from ximpol.utils.logging_ import logger, abort
 #from ximpol.evt.event import xEventFile
@@ -55,39 +54,104 @@ class xPolMapBase:
 
     pass
 
-class xPolMapRadial(xPolMapBase):
+class xPolMap(xPolMapBase):
     ''' Radial polarization
     '''
-    def add_circle(self,ra,dec,radius,pmax,type='radial'):
+    def add_circle(self,ra,dec,radius,pmax,ptype='circular',angle=0.0):
+        ''' This implement the case of a circular shape'''
         logger.info('add a circle at ra=%f, dec=%f, radius=%f. PMAX=%f'%(ra,dec,rad,pmax))
         for i in range(self.nxpix):
             for j in range(self.nxpix):
-                # radial:
-                #posx = nxpix/2.-i
-                #posy = -nxpix/2.+j
-                # circular:
-                #p_x   = i #-nxpix+j
-                #p_y   = j #-nxpix+i
                 world = self.w.wcs_pix2world([[i,j]], 0)
                 w_ra  = world[0][0]          
                 w_dec = world[0][1]
                 dx    =  (w_ra-ra)*numpy.cos(numpy.deg2rad(dec)) # Effect of the projection
                 dy    =  w_dec-dec
-                p_x = -dy
-                p_y = +dx
+                if ptype is 'linear':
+                    p_x = numpy.cos(numpy.deg2rad(angle))
+                    p_y = numpy.sin(numpy.deg2rad(angle))
+                elif ptype is 'circular':
+                    p_x = -dy
+                    p_y = +dx
+                elif ptype is 'radial':
+                    p_x = dx
+                    p_y = dy
+                    pass
                 dist = numpy.sqrt(dx*dx+dy*dy)
                 #print w_ra, w_dec, ra, dec, dist, radius
                 if (dist>radius):
                     p_x=0
                     p_y=0
                     pass
-                self.pol_x[i,j]=p_x
-                self.pol_y[i,j]=p_y            
+                self.pol_x[i,j]=self.pol_x[i,j]+p_x
+                self.pol_y[i,j]=self.pol_y[i,j]+p_y            
                 pass
             pass
         pol_deg=numpy.sqrt(self.pol_x*self.pol_x+self.pol_y*self.pol_y)
         self.pol_x*=pmax/pol_deg.max()
         self.pol_y*=pmax/pol_deg.max()
+        pass
+    
+    def add_ellipse(self,ra,dec,radius1,radius2,theta, pmax, ptype='circular',angle=0.0):
+        ''' This implement the case of a circular shape'''
+        logger.info('add a ellipse at ra=%f, dec=%f, radius1=%f radius2=%f theta=%f. PMAX=%f'%(ra,dec,radius1,radius2,theta, pmax))
+        theta_rad=numpy.deg2rad(theta)
+        for i in range(self.nxpix):
+            for j in range(self.nxpix):
+                world = self.w.wcs_pix2world([[i,j]], 0)
+                w_ra  = world[0][0]
+                w_dec = world[0][1]
+                dx0   = (w_ra-ra)*numpy.cos(numpy.deg2rad(dec))
+                dy0   = (w_dec-dec)
+                #dx1   = dx0#dx0*numpy.cos(theta_rad)+dy0*numpy.sin(theta_rad)
+                #dy1   = dy0#-dx0*numpy.sin(theta_rad)+dy0*numpy.cos(theta_rad)
+                dx1   =  dx0*numpy.cos(theta_rad)-dy0*numpy.sin(theta_rad)
+                dy1   =  dx0*numpy.sin(theta_rad)+dy0*numpy.cos(theta_rad)
+                
+                dx    =  dx1/radius1 # Effect of the projection
+                dy    =  dy1/radius2
+                dx2 = dx*numpy.cos(theta_rad)+dy*numpy.sin(theta_rad)
+                dy2 = -dx*numpy.sin(theta_rad)+dy*numpy.cos(theta_rad)
+                
+                if ptype is 'linear':
+                    p_x = numpy.cos(numpy.deg2rad(angle))
+                    p_y = numpy.sin(numpy.deg2rad(angle))
+                elif ptype is 'circular':
+                    p_x = -dy2
+                    p_y = +dx2
+                elif ptype is 'radial':
+                    p_x = dx2
+                    p_y = dy2
+                    pass
+                dist = numpy.sqrt(dx*dx+dy*dy)
+                #print w_ra, w_dec, ra, dec, dist
+                if (dist>1):
+                    p_x=0
+                    p_y=0
+                    pass
+                self.pol_x[i,j]=self.pol_x[i,j]+p_x#*radius1
+                self.pol_y[i,j]=self.pol_y[i,j]+p_y#*radius2           
+                pass
+            pass
+        pol_deg=numpy.sqrt(self.pol_x*self.pol_x+self.pol_y*self.pol_y)
+        self.pol_x*=pmax/pol_deg.max()
+        self.pol_y*=pmax/pol_deg.max()
+        pass
+    
+    def add_shape(self,myfilter,pmax,angle=0.0):
+        ''' This is a generic shape (box, poliline' used to define a region of uniform polarization'''
+        logger.info('add a spatial shape')
+        for i in range(self.nxpix):
+            for j in range(self.nxpix):
+                #print i,j,myfilter.inside1(i, j)
+                if myfilter.inside1(i, j): 
+                    p_x = pmax*numpy.cos(numpy.deg2rad(angle))
+                    p_y = pmax*numpy.sin(numpy.deg2rad(angle))
+                    self.pol_x[i,j]=self.pol_x[i,j]+p_x
+                    self.pol_y[i,j]=self.pol_y[i,j]+p_y  
+                    pass
+                pass
+            pass
         pass
     
     def save(self):
@@ -155,37 +219,34 @@ def readMap(filename):
 
 
 if __name__ == '__main__':
+    
     import os,sys
     from ximpol.srcmodel.img import xFITSImage
     from ximpol.utils.matplotlib_ import pyplot as plt
     from ximpol.utils.matplotlib_ import context_no_grids
     from ximpol.utils.logging_ import logger, startmsg
     import pyregion
-    outfile=None
-    ra=None
-    dec=None
-    rad=None
-    regionfile=None
-    npix=20
-    pmax=0.5
-    for i,a in enumerate(sys.argv):
-        if '-o' in a: outfile    = sys.argv[i+1]
-        if '-r' in a: regionfile = sys.argv[i+1]
-        if '-ra' in a: ra=float(sys.argv[i+1])
-        if '-dec' in a: dec=float(sys.argv[i+1])
-        if '-rad' in a: rad=float(sys.argv[i+1])
-        if '-npx' in a: npix= int(sys.argv[i+1])
-        if '-pmax' in a: pmax= float(sys.argv[i+1])
-        pass
-    # First open the map (need for setting the geometry):
-    le_img_file_path = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_1p5_3p0_keV.fits')
-    he_img_file_path = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_4p0_6p0_keV.fits')
-    tycho_img_file_path = os.path.join(XIMPOL_CONFIG, 'fits', 'tycho_4p1_6p1_keV.fits')
+    import argparse
+    desc = '''Toll for creating polarization maps from DS9 Region files'''
+    parser = argparse.ArgumentParser(description=desc)
     
-    #img_file_path=le_img_file_path
-    img_file_path=he_img_file_path
-    #img_file_path=tycho_img_file_path
+    parser.add_argument('--image',help='Input fits image file', type=str, required=True)
+    parser.add_argument('--region',help='Input Region file containing DS9 regions', type=str, required=True)
+    parser.add_argument('--output',help='Name for the output file (for the polarizationmap[s])',required=True, type=str)
+    parser.add_argument('--npix',help='Number of points in the final polarization map',type=int, required=False, default=50)
+
+
+    args = parser.parse_args()
         
+    out_file_path=args.output
+    img_file_path=args.image
+    reg_file_path=args.region
+    npix=args.npix
+    # I need to find a good way to pass this value for different regions
+    # pmax=0.5
+    ##############################
+    # First open the map (need for setting the geometry):
+    logger.info('open image file: %s' % img_file_path)
     hdulist = fits.open(img_file_path)
     CRPIX1   = hdulist[0].header['CRPIX1']
     CRPIX2   = hdulist[0].header['CRPIX2']
@@ -195,12 +256,11 @@ if __name__ == '__main__':
     NAXIS2   = hdulist[0].header['NAXIS2']
     CRVAL1   = hdulist[0].header['CRVAL1']
     CRVAL2   = hdulist[0].header['CRVAL2']
-    SIZE1    = CDELT1*NAXIS1
-    SIZE2    = CDELT2*NAXIS2
+    SIZE1    = numpy.fabs(CDELT1*NAXIS1)
+    SIZE2    = numpy.fabs(CDELT2*NAXIS2)
     DEC_0    = CRVAL2+(NAXIS2/2-CRPIX2)*CDELT2
-    # NOT SURE WHICH IS THE CORRECT PROJECTION...
+    #  PROJECTION...
     RA_0     = CRVAL1+(NAXIS1/2-CRPIX1)*CDELT1/numpy.cos(numpy.deg2rad(CRVAL2))
-    #RA_0     = CRVAL1+(NAXIS1/2-CRPIX1)*CDELT1/numpy.cos(numpy.deg2rad(CRVAL2))
 
     gc = aplpy.FITSFigure(img_file_path,figsize=(10,10))
     gc.show_colorscale(stretch='sqrt')#'graphics/2MASS_arcsinh_color.png')
@@ -211,68 +271,110 @@ if __name__ == '__main__':
     gc.scalebar.set_color('white')
     gc.show_markers([CRVAL1],[CRVAL2],c='m')#,marker='x')
     gc.show_markers([RA_0],[DEC_0],c='g')#,marker='x')
-
     xref  = RA_0
     yref  = DEC_0
     binsz = max(SIZE1,SIZE2)/npix
-    
+
+    #if ra is None:  ra=RA_0
+    #if dec is None: dec=DEC_0
+    #if rad is None: rad=min(SIZE1,SIZE2)
+
     # center of the map, in RA, Dec:
-    if regionfile is not None:
-        if outfile is None:
-            outfile = regionfile.replace('.reg','_%d.fits' %(100*pmax))
-        else:
-            outfile='out_%d.fits' %(100*pmax)
-            pass
-        regions = pyregion.open(regionfile)
-        region = regions[0]
-        ra, dec, rad = region.coord_list
-        pass
-    print '====>', ra,dec,rad
-    myPolarizationMap = xPolMapRadial(xref=xref, yref=yref,nxpix=npix,nypix=npix,binsz=binsz,proj='TAN',outfile=outfile,pmax=pmax)
+    #if regionfile is not None:
+    #    if outfile is None:
+    #        outfile = regionfile.replace('.reg','_%d.fits' %(100*pmax))
+    #    else:
+    #        outfile='out_%d.fits' %(100*pmax)
+    #        pass
+    #pass
+
+    # REGION FILE:
+    logger.info('open image file: %s' % reg_file_path)
+    # Open the region file
+    myPolarizationMap = xPolMap(xref=xref, yref=yref,nxpix=npix,nypix=npix,binsz=binsz,proj='TAN')
     myPolarizationMap.create()
-    myPolarizationMap.add_circle(ra,dec,rad,pmax)
-    myPolarizationMap.save()
-    #rad*=3600
-    #logger.info(' Map center: %.3f,%.3f, radius=%.3f arcsec',ra,dec,rad)
-    #xref=float(ra)
-    #yref=float(dec)
-    #radius=float(rad)
-    # Number of pixels:
-    #binsz  = 2.0*radius/npix
-    
-    
-    outfile_x=outfile.replace('.fits','_x.fits')
-    outfile_y=outfile.replace('.fits','_y.fits')
-
-
-    #gc = aplpy.FITSFigure(outfile_deg,figsize=(10,9))
-    #gc.scalebar.show(0.2)  # length in degrees
-
-    if regionfile is not None: gc.show_regions(regionfile)
-
-    pixcrd, world, pol_x = readMap(outfile_x)
-    pixcrd, world, pol_y = readMap(outfile_y)
-    wx=[]
-    wy=[]
-    vx=[]
-    vy=[]
-    for i in range(world.shape[0]):
-        x=world[i][0]
-        y=world[i][1]
-        px=0.01*pol_x[i]
-        py=0.01*pol_y[i]
-        if px*px+py*py>0:
-            wx.append(x)
-            wy.append(y)
-            vx.append(px)
-            vy.append(py)
+    regions_img   = pyregion.open(reg_file_path).as_imagecoord(myPolarizationMap.header)
+    regions_word  = pyregion.open(reg_file_path)
+    myfilters = regions_img.get_filter()
+    Nregion = len(regions_img)
+    for i in range(Nregion):
+        
+        r=regions_word[i]
+        # I need to create one polarization map per region
+        print '===> region found:', r.name,r.coord_list,r.coord_format,r.comment
+        
+        ptype='linear'
+        if 'circular' in r.comment:
+            ptype='circular'
+        elif 'radial' in r.comment:
+            ptype='radial'
             pass
+        
+        if ptype=='linear':
+            if 'pangle=' in r.comment:
+                pangle=float(r.comment.split('pangle=')[-1].split(' ')[0])
+                print 'Angle of polarization = %s degrees' % pangle
+            else:
+                pangle=float(raw_input('===> Angle in degrees....: '))    
+                pass
+            pass
+        
+        if 'pmax=' in r.comment:
+            pmax=float(r.comment.split('pmax=')[-1].split(' ')[0])
+            print 'Maximum Degree of polarization of polarization = %s' % pmax
+        else:
+            pmax=float(raw_input('===> maximum degree of polarization for region %s [0-100]....: ' %  r.name))/100.        
+            pass
+
+        outfile= out_file_path.replace('.fits','_%03d.fits' % i) 
+        myPolarizationMap = xPolMap(xref=xref, yref=yref,nxpix=npix,nypix=npix,binsz=binsz,proj='TAN',outfile=outfile)
+        myPolarizationMap.create()
+        
+        if r.name is 'circle':
+            ra, dec, rad = r.coord_list
+            myPolarizationMap.add_ellipse(ra,dec,rad,rad,0.0,pmax,ptype)
+            #myPolarizationMap.add_circle(ra,dec,rad,pmax,ptype)
+            pass
+        elif r.name is 'ellipse':
+            ra, dec, rad1, rad2, ang = r.coord_list
+            myPolarizationMap.add_ellipse(ra,dec,rad1,rad2,ang,pmax,ptype)            
+        else:
+            myPolarizationMap.add_shape(myfilters[i],pmax=pmax,angle=pangle)
+            pass
+        myPolarizationMap.save()
         pass
     
-    gc.show_arrows(wx,wy,vx,vy,color='w',alpha='1.0',linewidth=2)
-    #gc.show_markers(wx,wy,c='r')
-    #gc.show_markers([xref],[yref],c='w')#,marker='x')
-
-    #gc.recenter(xref,yref,radius=1.2*radius/3600.0)
-
+    #Load THE OUTPUT:
+    # DISPLAT THE REGION FILE
+    gc.show_regions(reg_file_path)    
+    for j in range(Nregion):
+        outfile_x= out_file_path.replace('.fits','_%03d_x.fits' % j) 
+        outfile_y= out_file_path.replace('.fits','_%03d_y.fits' % j) 
+        #gc = aplpy.FITSFigure(outfile_deg,figsize=(10,9))
+        #gc.scalebar.show(0.2)  # length in degrees
+        # DIPLAY THE POLARIZATION MAP:
+        pixcrd, world, pol_x = readMap(outfile_x)
+        pixcrd, world, pol_y = readMap(outfile_y)
+        wx=[]
+        wy=[]
+        vx=[]
+        vy=[]
+        for i in range(world.shape[0]):
+            x=world[i][0]
+            y=world[i][1]
+            px=0.01*pol_x[i]
+            py=0.01*pol_y[i]
+            if px*px+py*py>0:
+                wx.append(x)
+                wy.append(y)
+                vx.append(px)
+                vy.append(py)
+                pass
+            pass
+        colors=['w','y','g','r','b','k']
+        _=gc.show_arrows(wx,wy,vx,vy,color=colors[j % len(colors)],alpha='1.0',linewidth=2)
+        #gc.show_markers(wx,wy,c='r')
+        #gc.show_markers([xref],[yref],c='w')#,marker='x')
+        #gc.recenter(xref,yref,radius=1.2*radius/3600.0)
+        pass
     plt.show()
