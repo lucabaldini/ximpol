@@ -269,8 +269,8 @@ if __name__ == '__main__':
     gc.show_grid()
     gc.add_scalebar(1./60.,'1\'')
     gc.scalebar.set_color('white')
-    gc.show_markers([CRVAL1],[CRVAL2],c='m')#,marker='x')
-    gc.show_markers([RA_0],[DEC_0],c='g')#,marker='x')
+    #gc.show_markers([CRVAL1],[CRVAL2],c='m')#,marker='x')
+    #gc.show_markers([RA_0],[DEC_0],c='g')#,marker='x')
     xref  = RA_0
     yref  = DEC_0
     binsz = max(SIZE1,SIZE2)/npix
@@ -304,14 +304,16 @@ if __name__ == '__main__':
         print '===> region found:', r.name,r.coord_list,r.coord_format,r.comment
         
         ptype='linear'
-        if 'circular' in r.comment:
+        if r.comment is not None and 'circular' in r.comment:
             ptype='circular'
-        elif 'radial' in r.comment:
+        elif r.comment is not None and 'radial' in r.comment:
             ptype='radial'
             pass
-        
+        else:
+            ptype=raw_input('===> Type of polarization pattern [linear|circular|radial]....: ')
+            pass
         if ptype=='linear':
-            if 'pangle=' in r.comment:
+            if r.comment is not None and 'pangle=' in r.comment:
                 pangle=float(r.comment.split('pangle=')[-1].split(' ')[0])
                 print 'Angle of polarization = %s degrees' % pangle
             else:
@@ -319,14 +321,14 @@ if __name__ == '__main__':
                 pass
             pass
         
-        if 'pmax=' in r.comment:
+        if r.comment is not None and 'pmax=' in r.comment:
             pmax=float(r.comment.split('pmax=')[-1].split(' ')[0])
             print 'Maximum Degree of polarization of polarization = %s' % pmax
         else:
             pmax=float(raw_input('===> maximum degree of polarization for region %s [0-100]....: ' %  r.name))/100.        
             pass
 
-        outfile= out_file_path.replace('.fits','_%03d.fits' % i) 
+        outfile= out_file_path.replace('.fits','_pmax%03d_reg%03d.fits' % (pmax*100,i)) 
         myPolarizationMap = xPolMap(xref=xref, yref=yref,nxpix=npix,nypix=npix,binsz=binsz,proj='TAN',outfile=outfile)
         myPolarizationMap.create()
         

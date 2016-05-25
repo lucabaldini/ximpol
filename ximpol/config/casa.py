@@ -80,11 +80,9 @@ def nonthermal_energy_spectrum(E, t):
 thermal_polarization_angle = constant(0.)
 thermal_polarization_degree = constant(0.)
 
-# Read the polarization maps for the non-thermal component.
-#pol_mapx_path = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_50_x.fits')
-pol_mapx_path = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_x.fits')
-#pol_mapy_path = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_50_y.fits')
-pol_mapy_path = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_y.fits')
+# Read the polarization maps for the non-thermal compmax=0.5ponent.
+pol_mapx_path = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_pmax050_reg000_x.fits')
+pol_mapy_path = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_pmax050_reg000_y.fits')
 polarization_map = xPolarizationMap(pol_mapx_path, pol_mapy_path)
 
 def nonthermal_polarization_angle(E, t, ra, dec):
