@@ -34,11 +34,11 @@ OUT_FILE_PATH_BASE = os.path.join(XIMPOL_DATA, 'crab_complex')
 
 EVT_FILE_PATH = '%s.fits' % OUT_FILE_PATH_BASE
 
-REG_FILE_PATH = os.path.join(XIMPOL_CONFIG, 'fits', 'crab_nebula_9regions.reg')
+REG_FILE_PATH = os.path.join(XIMPOL_CONFIG, 'fits', 'crab_nebula_4regions.reg')
 MAP_FILE_PATH = os.path.join(XIMPOL_DATA, 'crab_complex_cmap.fits')
 
 
-DURATION = 10000
+DURATION = 100000
 E_BINNING = [1., 4., 6.]
 
 pipeline = xPipeline(clobber=False)
