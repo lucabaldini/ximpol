@@ -297,14 +297,16 @@ if __name__ == '__main__':
     regions_word  = pyregion.open(reg_file_path)
     myfilters = regions_img.get_filter()
     Nregion = len(regions_img)
+    out_files=[]
     for i in range(Nregion):
         
         r=regions_word[i]
         # I need to create one polarization map per region
-        print '===> region found:', r.name,r.coord_list,r.coord_format,r.comment
-        
-        ptype='linear'
-        if r.comment is not None and 'circular' in r.comment:
+        print '===> region found... NAME:', r.name,'COORD SYS:',r.coord_format,'COMMENT:',r.comment
+        print '     COORD LIST:',r.coord_list
+        if r.comment is not None and 'linear' in r.comment:
+            ptype='linear'
+        elif r.comment is not None and 'circular' in r.comment:
             ptype='circular'
         elif r.comment is not None and 'radial' in r.comment:
             ptype='radial'
@@ -312,6 +314,7 @@ if __name__ == '__main__':
         else:
             ptype=raw_input('===> Type of polarization pattern [linear|circular|radial]....: ')
             pass
+        
         if ptype=='linear':
             if r.comment is not None and 'pangle=' in r.comment:
                 pangle=float(r.comment.split('pangle=')[-1].split(' ')[0])
@@ -328,10 +331,11 @@ if __name__ == '__main__':
             pmax=float(raw_input('===> maximum degree of polarization for region %s [0-100]....: ' %  r.name))/100.        
             pass
 
-        outfile= out_file_path.replace('.fits','_pmax%03d_reg%03d.fits' % (pmax*100,i)) 
+        outfile= out_file_path.replace('.fits','_pmax%03d_reg%03d.fits' % (pmax*100,i))
+        out_files.append(outfile)
         myPolarizationMap = xPolMap(xref=xref, yref=yref,nxpix=npix,nypix=npix,binsz=binsz,proj='TAN',outfile=outfile)
         myPolarizationMap.create()
-        
+        pmax*=Nregion # This is to account that in the simulation each 
         if r.name is 'circle':
             ra, dec, rad = r.coord_list
             myPolarizationMap.add_ellipse(ra,dec,rad,rad,0.0,pmax,ptype)
@@ -349,9 +353,9 @@ if __name__ == '__main__':
     #Load THE OUTPUT:
     # DISPLAT THE REGION FILE
     gc.show_regions(reg_file_path)    
-    for j in range(Nregion):
-        outfile_x= out_file_path.replace('.fits','_%03d_x.fits' % j) 
-        outfile_y= out_file_path.replace('.fits','_%03d_y.fits' % j) 
+    for j,outfile in enumerate(out_files):
+        outfile_x= outfile.replace('.fits','_x.fits') 
+        outfile_y= outfile.replace('.fits','_y.fits') 
         #gc = aplpy.FITSFigure(outfile_deg,figsize=(10,9))
         #gc.scalebar.show(0.2)  # length in degrees
         # DIPLAY THE POLARIZATION MAP:

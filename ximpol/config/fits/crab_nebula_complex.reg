@@ -2,6 +2,6 @@
 # Filename: /Users/omodei/GRBWorkDir/MY_PYTHON_MODULES/ximpol/ximpol/config/fits/crab_0p3_10p0_keV.fits
 global color=green dashlist=8 3 width=1 font="helvetica 10 normal" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1
 fk5
-ellipse(83.630886,22.015192,59.784768",26.048482",317.38788) # pangle=10 pmax=0.25 circular
+ellipse(83.630886,22.015192,59.784768",26.048482",317.38788) # pangle=10 pmax=0.2 circular
 polygon(83.642244,22.010135,83.632576,22.01488,83.636983,22.00684,83.638263,22.002621,83.643523,21.999985,83.644518,22.004598) # linear pangle=-45 pmax=0.17
-circle(83.619537,22.024307,28.321554") # pangle=0 pmax=0.17 radial
+circle(83.619537,22.024307,28.321554") # pangle=0 pmax=0.1 radial

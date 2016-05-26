@@ -18,7 +18,8 @@
 
 
 
-from ximpol.config.crab_nebula import ROI_MODEL as NEBULA_ROI_MODEL
+#from ximpol.config.crab_nebula import ROI_MODEL as NEBULA_ROI_MODEL
+from ximpol.config.crab_nebula_complex import ROI_MODEL as NEBULA_ROI_MODEL
 from ximpol.config.crab_pulsar import ROI_MODEL as PULSAR_ROI_MODEL
 
 ROI_MODEL = NEBULA_ROI_MODEL + PULSAR_ROI_MODEL
