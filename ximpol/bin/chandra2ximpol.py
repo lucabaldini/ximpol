@@ -104,17 +104,12 @@ def load_chandra_arf(arf_file):
                yunits='cm$^2$')
     return xInterpolatedUnivariateSplineLinear(_x, _y, **fmt)
     
-def chandra2ximpol(**kwargs):
+def chandra2ximpol(file_path, **kwargs):
     """Make the conversion from Chandra to ximpol
-    
-    WARNING: when using the ACIS-I detector the effective area ratio is greater
-             than one for a small energy interval. We need to take in account 
-             this adding events in some way.
     """
-    assert(kwargs['evfile'].endswith('.fits'))
+    assert(file_path.endswith('.fits'))
     if kwargs['outfile'] is None:
-        outfile = os.path.basename(kwargs['evfile']).replace('.fits', 
-                                                             '_xipe.fits')
+        outfile = os.path.basename(file_path).replace('.fits','_xipe.fits')
         mkdir(XIMPOL_DATA)
         kwargs['outfile'] = os.path.join(XIMPOL_DATA, outfile)
         logger.info('Setting output file path to %s...' % kwargs['outfile'])
@@ -126,9 +121,17 @@ def chandra2ximpol(**kwargs):
     chrono = xChrono()
     logger.info('Setting the random seed to %d...' % kwargs['seed'])
     numpy.random.seed(kwargs['seed'])   
+    logger.info('Loading the instrument response functions...')
+    aeff, psf, modf, edisp = load_irfs(kwargs['irfname'])   
+    c_aeff_name = 'chandra_acis_%s.arf' % kwargs['acis']
+    c_aeff_file = os.path.join(XIMPOL_IRF, 'fits', c_aeff_name)   
+    logger.info('Reading Chandra effective area data from %s...' % c_aeff_file)    
+    c_aeff = load_chandra_arf(c_aeff_file) 
+    _x = aeff.x
+    _y = aeff.y/c_aeff(_x)
+    aeff_ratio = xInterpolatedUnivariateSplineLinear(_x, _y)
     logger.info('Loading the input FITS event file...')
-    hdu_list = fits.open(kwargs['evfile'])
-
+    hdu_list = fits.open(file_path)
     # If configuration file is not provided we assume a non-polarized source
     if kwargs['configfile'] is None:
         logger.info('Configuration file not provided.')
@@ -142,22 +145,14 @@ def chandra2ximpol(**kwargs):
                                     kwargs['configfile']).POLARIZATION_DEGREE
         polarization_angle = imp.load_source(module_name, 
                                     kwargs['configfile']).POLARIZATION_ANGLE
-    logger.info('Loading the instrument response functions...')
-    aeff, psf, modf, edisp = load_irfs(kwargs['irfname'])   
-    c_aeff_name = 'chandra_acis_%s.arf' % kwargs['acis']
-    c_aeff_file = os.path.join(XIMPOL_IRF, 'fits', c_aeff_name)   
-    logger.info('Reading Chandra effective area data from %s...' % c_aeff_file)    
-    c_aeff = load_chandra_arf(c_aeff_file) 
-    _x = aeff.x
-    _y = aeff.y/c_aeff(_x)
-    aeff_ratio = xInterpolatedUnivariateSplineLinear(_x, _y)
     logger.info('Done %s.' % chrono)
     
     hdr = hdu_list[1].header
     tbdata = hdu_list[1].data        
     tstart = hdr['TSTART']
     tstop = hdr['TSTOP']
-    gti_list = [(tstart, tstop)]    
+    gti_list = [(tstart, tstop)]
+    logger.info('Total observation time: %i s.' %(tstop-tstart))
     ra_pnt = hdr['RA_PNT']
     dec_pnt = hdr['DEC_PNT']
     ROI_MODEL = xROIModel(ra_pnt, dec_pnt)
@@ -168,19 +163,25 @@ def chandra2ximpol(**kwargs):
     # events with energy > 10 keV included into the Chandra photon list (we
     # actually don't know the reason).
     _mask = (rnd_ratio < aeff_ratio(col_mc_energy))*(col_mc_energy<10.)
-    col_mc_energy = col_mc_energy[_mask]
-
+    # This is needed for over-sample the events in case of effective area ratio
+    # greater than 1.
+    _mask_ratio = (rnd_ratio < (aeff_ratio(col_mc_energy)-1.))*\
+                                                            (col_mc_energy<10.)
+    col_mc_energy = numpy.append(col_mc_energy[_mask], 
+                                                    col_mc_energy[_mask_ratio])
+    
     logger.info('Converting from Chandra to ximpol...')
     event_list = xMonteCarloEventList()
-    col_time = tbdata['time'][_mask]   
+    col_time = numpy.append(tbdata['time'][_mask],tbdata['time'][_mask_ratio])    
     event_list.set_column('TIME', col_time)    
     event_list.set_column('MC_ENERGY', col_mc_energy)
     col_pha = edisp.matrix.rvs(col_mc_energy)
     event_list.set_column('PHA', col_pha)
-    event_list.set_column('ENERGY', edisp.ebounds(col_pha))
+    col_energy = edisp.ebounds(col_pha)
+    event_list.set_column('ENERGY',col_energy)
     col_mc_ra, col_mc_dec = _get_radec(hdr, tbdata)
-    col_mc_ra = col_mc_ra[_mask]
-    col_mc_dec = col_mc_dec[_mask]
+    col_mc_ra = numpy.append(col_mc_ra[_mask], col_mc_ra[_mask_ratio])
+    col_mc_dec = numpy.append(col_mc_dec[_mask], col_mc_dec[_mask_ratio])
     event_list.set_column('MC_RA', col_mc_ra)
     event_list.set_column('MC_DEC', col_mc_dec)
     col_ra, col_dec = psf.smear(col_mc_ra, col_mc_dec)
@@ -195,6 +196,7 @@ def chandra2ximpol(**kwargs):
     # Set the phase to rnd [0-1] for all non-periodic sources.
     phase=numpy.random.uniform(0,1,len(col_dec))
     event_list.set_column('PHASE', phase)
+    event_list.set_column('MC_SRC_ID', numpy.zeros(len(col_dec)))  
     logger.info('Done %s.' % chrono)
     
     simulation_info = xSimulationInfo()
@@ -205,12 +207,13 @@ def chandra2ximpol(**kwargs):
     simulation_info.psf = psf
     simulation_info.modf = modf
     simulation_info.edisp = edisp
+    event_list.sort()
     event_list.write_fits(kwargs['outfile'], simulation_info)
-
+    
     logger.info('All done %s!' % chrono)
     return kwargs['outfile']
     
 if __name__=='__main__':
     args = PARSER.parse_args()
     startmsg()
-    chandra2ximpol(**args.__dict__)
+    chandra2ximpol(args.evfile, **args.__dict__)
