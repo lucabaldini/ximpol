@@ -121,6 +121,10 @@ The main reference we used for the compilation is Weisskopf, M. C. et al.,
 *"Chandra Phase-Resolved X-Ray Spectroscopy of the Crab Pulsar"*, 
 `Astrophys. J. 743 (2011) 139--149 <http://arxiv.org/abs/1106.3270>`_
 and essentially all the data points come from Figure 4 of this paper.
+The optical polarimetry data are from Słowikowska, A. et al.,
+*"Optical polarization of the Crab pulsar: precision measurements and
+comparison to the radio emission"*,
+`MNRAS, 397, Issue 1 (2009) 103--123 <http://arxiv.org/abs/0901.4559>`_.
 
 
 For any specific phase value the polarization angle and degree are
