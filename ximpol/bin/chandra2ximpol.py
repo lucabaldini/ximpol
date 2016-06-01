@@ -50,6 +50,8 @@ PARSER.add_argument('--outfile', type=str, default=None,
                     help='the output FITS event file')
 PARSER.add_argument('--configfile', type=str, default=None,
                     help='the input configuration file')
+PARSER.add_argument('--duration', type=float, default=numpy.nan,
+                    help='the duration (in s) of the simulation')
 PARSER.add_argument('--irfname', type=str, default='xipe_baseline',
                     help='the input configuration file')
 PARSER.add_argument('--acis', type=str, default='i', choices=['i', 's'],
@@ -69,7 +71,7 @@ class xSimulationInfo:
     pass
 
 def _get_radec(hdr, tbdata):
-    """Make the conversion from pixel coordinates to Ra-Dec
+    """Make the conversion from pixel coordinates to Ra-Dec.
     """
     # Read wcs parameters from header.
     index = hdr.values().index('EQPOS')
@@ -103,9 +105,30 @@ def load_chandra_arf(arf_file):
     fmt = dict(xname='Energy', xunits='keV', yname='Effective area',
                yunits='cm$^2$')
     return xInterpolatedUnivariateSplineLinear(_x, _y, **fmt)
+
+def time_scaling(scale, col_mc_energy, col_time, col_mc_ra, col_mc_dec):
+    """Make the scaling from Chandra observation time to an arbitrary time
+    provided with duration parameter.
+    """
+    mc_energy = numpy.array([])
+    time = numpy.array([])
+    mc_ra = numpy.array([])
+    mc_dec = numpy.array([])
+    delta_time = col_time[-1]-col_time[0]
+    for i in range(0, int(scale[1])):
+        mc_energy = numpy.append(mc_energy, col_mc_energy)
+        time = numpy.append(time, i*delta_time + col_time)
+        mc_ra = numpy.append(mc_ra, col_mc_ra)
+        mc_dec = numpy.append(mc_dec, col_mc_dec)
+    index = 1+int(scale[0]*len(col_mc_energy))
+    mc_energy = numpy.append(mc_energy, col_mc_energy[:index])
+    time = numpy.append(time, (i+1)*delta_time + col_time[:index])
+    mc_ra = numpy.append(mc_ra, col_mc_ra[:index])
+    mc_dec = numpy.append(mc_dec, col_mc_dec[:index])    
+    return mc_energy, time, mc_ra, mc_dec
     
 def chandra2ximpol(file_path, **kwargs):
-    """Make the conversion from Chandra to ximpol
+    """Make the conversion from Chandra to ximpol.
     """
     assert(file_path.endswith('.fits'))
     if kwargs['outfile'] is None:
@@ -151,12 +174,13 @@ def chandra2ximpol(file_path, **kwargs):
     tbdata = hdu_list[1].data        
     tstart = hdr['TSTART']
     tstop = hdr['TSTOP']
-    gti_list = [(tstart, tstop)]
-    logger.info('Total observation time: %i s.' %(tstop-tstart))
+    obs_time = tstop - tstart
+    logger.info('Chandra observation time: %i s.' %obs_time)
     ra_pnt = hdr['RA_PNT']
     dec_pnt = hdr['DEC_PNT']
     ROI_MODEL = xROIModel(ra_pnt, dec_pnt)
     
+    logger.info('Reading Chandra data...')
     col_mc_energy = tbdata['energy']*0.001 # eV -> keV
     rnd_ratio = numpy.random.random(len(col_mc_energy))
     # The condition col_mc_energy < 10. is needed to avoid to take the bunch of 
@@ -169,19 +193,30 @@ def chandra2ximpol(file_path, **kwargs):
                                                             (col_mc_energy<10.)
     col_mc_energy = numpy.append(col_mc_energy[_mask], 
                                                     col_mc_energy[_mask_ratio])
-    
+
+    col_time = numpy.append(tbdata['time'][_mask],tbdata['time'][_mask_ratio])
+    col_mc_ra, col_mc_dec = _get_radec(hdr, tbdata)
+    col_mc_ra = numpy.append(col_mc_ra[_mask], col_mc_ra[_mask_ratio])
+    col_mc_dec = numpy.append(col_mc_dec[_mask], col_mc_dec[_mask_ratio])
+
+    duration = kwargs['duration']
+    if not numpy.isnan(duration):
+        logger.info('Setting the observation time to %d s...' % duration)                             
+        scale = numpy.modf(duration/obs_time)
+        tstop = tstart + duration
+        logger.info('Scaling counts according to observation time...')
+        col_mc_energy, col_time, col_mc_ra, col_mc_dec = time_scaling(scale, 
+                                col_mc_energy, col_time, col_mc_ra, col_mc_dec)
+          
     logger.info('Converting from Chandra to ximpol...')
-    event_list = xMonteCarloEventList()
-    col_time = numpy.append(tbdata['time'][_mask],tbdata['time'][_mask_ratio])    
+    gti_list = [(tstart, tstop)]
+    event_list = xMonteCarloEventList()    
     event_list.set_column('TIME', col_time)    
     event_list.set_column('MC_ENERGY', col_mc_energy)
     col_pha = edisp.matrix.rvs(col_mc_energy)
     event_list.set_column('PHA', col_pha)
     col_energy = edisp.ebounds(col_pha)
     event_list.set_column('ENERGY',col_energy)
-    col_mc_ra, col_mc_dec = _get_radec(hdr, tbdata)
-    col_mc_ra = numpy.append(col_mc_ra[_mask], col_mc_ra[_mask_ratio])
-    col_mc_dec = numpy.append(col_mc_dec[_mask], col_mc_dec[_mask_ratio])
     event_list.set_column('MC_RA', col_mc_ra)
     event_list.set_column('MC_DEC', col_mc_dec)
     col_ra, col_dec = psf.smear(col_mc_ra, col_mc_dec)
@@ -195,7 +230,7 @@ def chandra2ximpol(file_path, **kwargs):
     event_list.set_column('PE_ANGLE', col_pe_angle)
     # Set the phase to rnd [0-1] for all non-periodic sources.
     phase=numpy.random.uniform(0,1,len(col_dec))
-    event_list.set_column('PHASE', phase)
+    event_list.set_column('PHASE', phase)   
     event_list.set_column('MC_SRC_ID', numpy.zeros(len(col_dec)))  
     logger.info('Done %s.' % chrono)
     
