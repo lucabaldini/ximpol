@@ -178,6 +178,11 @@ again, model and simulation agree well across all the phase values.
    :width: 75%
    :align: center
 
+We have also simulated 100 ks of the Crab pulsar together with the nebula. Below is a short animation of the Crab complex illustrating the imaging capabilities of XIPE.
+
+.. image:: figures/showcase/crab_pulsar_animation.gif
+   :width: 75%
+   :align: center
 
 .. _showcase_grb130427a
 
