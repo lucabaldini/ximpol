@@ -20,11 +20,13 @@
 import numpy
 from ximpol.srcmodel.polarization import constant
 
-POL_DEGREE = 0.5
-POL_ANGLE = numpy.radians(65.)
+POL_DEGREE = constant(0.5)
+POL_ANGLE = constant(numpy.radians(65.))
 
-POLARIZATION_DEGREE = constant(POL_DEGREE)
-POLARIZATION_ANGLE = constant(POL_ANGLE)
+""" Dictionary scheme for source polarization model:
+    POLARIZATION_DICT = {source_id: [pol_degree, pol_angle]}
+"""
+POLARIZATION_DICT = {0: [POL_DEGREE, POL_ANGLE]}
 
 if __name__ == '__main__':
     print 'Configuration file test for Chandra-to-ximpol converter.'
