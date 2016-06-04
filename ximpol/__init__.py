@@ -32,7 +32,6 @@ XIMPOL_BASE = os.path.join(XIMPOL_ROOT, os.pardir)
 XIMPOL_BIN = os.path.join(XIMPOL_ROOT, 'bin')
 XIMPOL_CONFIG = os.path.join(XIMPOL_ROOT, 'config')
 XIMPOL_CORE = os.path.join(XIMPOL_ROOT, 'core')
-XIMPOL_DATA = os.path.join(XIMPOL_ROOT, 'data')
 XIMPOL_DETECTOR = os.path.join(XIMPOL_ROOT, 'detector')
 XIMPOL_DIST = os.path.join(XIMPOL_ROOT, 'dist')
 XIMPOL_DOC = os.path.join(XIMPOL_BASE, 'doc')
@@ -45,6 +44,13 @@ XIMPOL_SRCMODEL = os.path.join(XIMPOL_ROOT, 'srcmodel')
 XIMPOL_TEST = os.path.join(XIMPOL_ROOT, 'test')
 XIMPOL_TOOLS = os.path.join(XIMPOL_BASE, 'tools')
 XIMPOL_UTILS = os.path.join(XIMPOL_ROOT, 'utils')
+
+""" This is the output directory.
+"""
+try:
+    XIMPOL_DATA = os.environ['XIMPOL_DATA']
+except:
+    XIMPOL_DATA = os.path.join(XIMPOL_ROOT, 'data')
 
 
 """Version information.
