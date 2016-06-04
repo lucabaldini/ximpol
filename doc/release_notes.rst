@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.43.0) - Sat, 04 Jun 2016 22:13:08 +0200*
+
 * Added a script to plot MDP for the crab pulsar with the nebula background in
   examples.
 * Added effective mu, source counts and mdp to the xBinnedModulationCube class
