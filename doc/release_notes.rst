@@ -6,6 +6,7 @@ Release notes
 * Added effective mu, source counts and mdp to the xBinnedModulationCube class
   in evt/binning.py
 * Showcase updated with the fix to the PSF.
+* First implementation of the chandra2ximpol converter.
 
 
 *ximpol (0.42.1) - Wed, 20 Apr 2016 21:11:25 +0200*
