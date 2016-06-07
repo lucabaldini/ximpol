@@ -56,32 +56,32 @@ def XsectionISM_energy_plot(energy_array, show=True):
     if show:
         plt.show()
 
-def AbsorptionFactor_array(energy_array, column_density):
-    """Returns the absorbtion factors array corresponding to a 
+def TransmissionFactor_array(energy_array, column_density):
+    """Returns the transmission factors array corresponding to a 
        given energy array 
     """
-    abs_factor_array = []
+    trans_factor_array = []
     xsec_array = XsectionISM_array(energy_array)
     for energy in energy_array:
-        abs_factor = get_galactic_absorption(energy,column_density)
-        abs_factor_array.append(abs_factor)
-    abs_factor_array = np.array(abs_factor_array)
-    return abs_factor_array
+        trans_factor = get_galactic_absorption(energy,column_density)
+        trans_factor_array.append(trans_factor)
+    trans_factor_array = np.array(trans_factor_array)
+    return trans_factor_array
 
 
-def AbsorptionFactor_energy_plot(energy_array, column_density, show=True):
-    """Plots the Absorption factor as a function of the 
+def TransmissionFactor_energy_plot(energy_array, column_density, show=True):
+    """Plots the transmission factor as a function of the 
        energy in keV  
     """
-    abs_factor_array = AbsorptionFactor_array(energy_array,column_density)
-    title = 'X-Ray Absorption Factor for Nh=%e'%column_density
+    trans_factor_array = TransmissionFactor_array(energy_array,column_density)
+    title = 'X-Ray Transmission Factor for Nh=%e'%column_density
     plt.figure(title)
-    plt.plot(energy_array,abs_factor_array)
+    plt.plot(energy_array,trans_factor_array)
     plt.title(title)
     plt.xlabel('E [KeV]')
     plt.xscale('log')
     plt.axis([0.03,10.,0.,1.])
-    plt.ylabel('Absorption Factor')
+    plt.ylabel('Transmission Factor')
     if show:
         plt.show()
 
@@ -98,10 +98,10 @@ def main(interactive=False):
     XsectionISM_energy_plot(E_bins,show=False)
     overlay_tag()
     save_current_figure('absorption_cross_section.png', clear=False)
-    logger.info('Plotting the X-ray absorption factor as a function of the energy...')
-    AbsorptionFactor_energy_plot(E_bins,column_density,show=False)
-    overlay_tag()
-    save_current_figure('test_absorption_factor_NH%d.png'%column_density,
+    logger.info('Plotting the X-ray transmission factor as a function of the energy...')
+    TransmissionFactor_energy_plot(E_bins,column_density,show=False)
+    overlay_tag(x=0.55)
+    save_current_figure('test_transmission_factor_NH%d.png'%column_density,
                         clear=False)
     if interactive:
         plt.show()
