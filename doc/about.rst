@@ -10,7 +10,7 @@ Team
 * Melissa Pesce-Rollins (melissa.pesce.rollins@pi.infn.it)
 * Niccolo' Di Lalla (niccolo.dilalla@pi.infn.it)
 * Alberto Manfreda (alberto.manfreda@pi.infn.it)
-* Michela Negro (biokela_1990@hotmail.com)
+* Michela Negro (michela.negro@to.infn.it)
 
 
 License
