@@ -1,6 +1,10 @@
 Release notes
 =============
 
+* Initial import of the module and files for parametrizing the Galactic
+  absorption (issue #120).
+* Quick fix to issue #129.
+
 
 *ximpol (0.43.0) - Sat, 04 Jun 2016 22:13:08 +0200*
 
