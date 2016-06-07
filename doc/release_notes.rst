@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* Added script to make the map of the polarization degree and map of the sigma for the polarization degree.
+
 * Initial import of the module and files for parametrizing the Galactic
   absorption (issue #120).
 * Quick fix to issue #129.
