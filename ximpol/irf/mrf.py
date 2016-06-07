@@ -31,7 +31,8 @@ from ximpol.core.spline import optimize_grid_linear
 def mdp99(eff_mu, num_sig, num_bkg=0.):
     """Return the MDP at the 99% confidence level.
     """
-    assert num_sig > 0
+    if num_sig == 0:
+        return numpy.nan
     return 4.292/eff_mu*numpy.sqrt(num_sig + num_bkg)/num_sig
 
 
