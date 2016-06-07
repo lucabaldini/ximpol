@@ -17,6 +17,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
+import sys
 import os
 import numpy as np
 
@@ -85,7 +86,7 @@ def AbsorptionFactor_energy_plot(energy_array, column_density, show=True):
         plt.show()
 
 
-def main():
+def main(interactive=False):
     """
     """
     RA,DEC = 10.684, 41.269
@@ -96,11 +97,15 @@ def main():
     logger.info('Plotting the X-ray absorption cross-section in the ISM...')
     XsectionISM_energy_plot(E_bins,show=False)
     overlay_tag()
-    save_current_figure('absorption_cross_section.png')
+    save_current_figure('absorption_cross_section.png', clear=False)
     logger.info('Plotting the X-ray absorption factor as a function of the energy...')
     AbsorptionFactor_energy_plot(E_bins,column_density,show=False)
     overlay_tag()
-    save_current_figure('test_absorption_factor_NH%d.png'%column_density)
+    save_current_figure('test_absorption_factor_NH%d.png'%column_density,
+                        clear=False)
+    if interactive:
+        plt.show()
 
+        
 if __name__ == '__main__':
-    main()
+    main(interactive=sys.flags.interactive)
