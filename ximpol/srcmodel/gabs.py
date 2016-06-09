@@ -67,7 +67,7 @@ def get_column_density(ra, dec, HImap='LAB', lonlat = False):
 
 
 def get_galactic_absorption(energy, column_density):
-    """Returns the galactic absorpiton factor at a given energy and 
+    """Returns the galactic transmission factor at a given energy and 
        column density.
 
         Arguments
@@ -79,8 +79,8 @@ def get_galactic_absorption(energy, column_density):
              Column density at the source position
     """
     xsec = XsectionISM(energy)
-    abs_factor = AbsorptionFactor(xsec,column_density)
-    return abs_factor
+    trans_factor = TransmissionFactor(xsec,column_density)
+    return trans_factor
     
 
 def radec2lonlat(ra, dec):
@@ -124,8 +124,8 @@ def XsectionISM(energy):
     return cross_section
 
 
-def AbsorptionFactor(cross_section, column_density):
-    """Calculate the absorbtion factor for a given x-section and nh
+def TransmissionFactor(cross_section, column_density):
+    """Calculate the transmission factor for a given x-section and nh
     """
     factor = np.exp(-cross_section*column_density)
     return factor
