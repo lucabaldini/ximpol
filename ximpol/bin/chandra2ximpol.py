@@ -65,7 +65,7 @@ PARSER.add_argument('--seed', type=int, default=0,
 PARSER.add_argument('--clobber', type=ast.literal_eval, choices=[True, False],
                     default=True,
                     help='overwrite or do not overwrite existing output files')
-                    
+
 class xSimulationInfo:
 
     """Empty container to pass along all the relevant information about the
@@ -82,17 +82,17 @@ def filter_region(region, col_mc_ra, col_mc_dec):
     if region.name is 'circle':
         ra, dec, rad = region.coord_list
         reg_filter = filter.Circle(ra, dec, rad)
-    if region.name is 'polygon':
+    elif region.name is 'polygon':
         list_coord = region.coord_list
         reg_filter = filter.Polygon(list_coord[::2], list_coord[1::2])
-    if region.name is 'box':
+    elif region.name is 'box':
         ra, dec, width, height = region.coord_list
         reg_filter = filter.Box(ra, dec, width, height)
     else:
         logger.info('Region shape not implemented yet. Ignoring it...')
         return numpy.zeros(len(col_mc_ra), dtype=bool)
     return reg_filter.inside(radec)
-    
+
 def _get_radec(hdr, tbdata):
     """Make the conversion from pixel coordinates to Ra-Dec.
     """
@@ -117,7 +117,7 @@ def _get_radec(hdr, tbdata):
     # Convert pixel coordinates to world coordinates (Ra, Dec).
     ra_dec = w.wcs_pix2world(pixcrd, 1)
     return ra_dec[:,0], ra_dec[:,1]
-    
+
 def _load_chandra_arf(arf_file):
     """Load the Chandra effective area data.
     """
@@ -147,9 +147,9 @@ def time_scaling(scale, col_mc_energy, col_time, col_mc_ra, col_mc_dec):
     mc_energy = numpy.append(mc_energy, col_mc_energy[:index])
     time = numpy.append(time, (i+1)*delta_time + col_time[:index])
     mc_ra = numpy.append(mc_ra, col_mc_ra[:index])
-    mc_dec = numpy.append(mc_dec, col_mc_dec[:index])    
+    mc_dec = numpy.append(mc_dec, col_mc_dec[:index])
     return mc_energy, time, mc_ra, mc_dec
-    
+
 def chandra2ximpol(file_path, **kwargs):
     """Make the conversion from Chandra to ximpol.
     """
@@ -163,38 +163,38 @@ def chandra2ximpol(file_path, **kwargs):
         logger.info('Output file %s already exists.' % kwargs['outfile'])
         logger.info('Remove the file or set "clobber = True" to overwite it.')
         return kwargs['outfile']
-   
+
     chrono = xChrono()
     logger.info('Setting the random seed to %d...' % kwargs['seed'])
-    numpy.random.seed(kwargs['seed'])   
+    numpy.random.seed(kwargs['seed'])
     logger.info('Loading the instrument response functions...')
-    aeff, psf, modf, edisp = load_irfs(kwargs['irfname'])   
+    aeff, psf, modf, edisp = load_irfs(kwargs['irfname'])
     c_aeff_name = 'chandra_acis_%s.arf' % kwargs['acis']
-    c_aeff_file = os.path.join(XIMPOL_IRF, 'fits', c_aeff_name)   
-    logger.info('Reading Chandra effective area data from %s...' % c_aeff_file)    
-    c_aeff = _load_chandra_arf(c_aeff_file) 
+    c_aeff_file = os.path.join(XIMPOL_IRF, 'fits', c_aeff_name)
+    logger.info('Reading Chandra effective area data from %s...' % c_aeff_file)
+    c_aeff = _load_chandra_arf(c_aeff_file)
     _x = aeff.x
     _y = aeff.y/c_aeff(_x)
     aeff_ratio = xInterpolatedUnivariateSplineLinear(_x, _y)
     logger.info('Loading the input FITS event file...')
-    hdu_list = fits.open(file_path)  
-         
+    hdu_list = fits.open(file_path)
+
     # If configuration file is not provided we assume a non-polarized source.
     if kwargs['configfile'] is None:
         logger.info('Configuration file not provided.')
-        logger.info('Setting polarization angle and degree to zero...')                 
+        logger.info('Setting polarization angle and degree to zero...')
         polarization_degree = constant(0.)
         polarization_angle = constant(0.)
-        pol_dict = {0: [polarization_degree, polarization_angle]}        
+        pol_dict = {0: [polarization_degree, polarization_angle]}
     else:
         logger.info('Setting up the polarization source model...')
         module_name = os.path.basename(kwargs['configfile']).replace('.py', '')
         pol_dict = imp.load_source(module_name,
                                         kwargs['configfile']).POLARIZATION_DICT
     logger.info('Done %s.' % chrono)
-    
+
     hdr = hdu_list[1].header
-    tbdata = hdu_list[1].data        
+    tbdata = hdu_list[1].data
     tstart = hdr['TSTART']
     tstop = hdr['TSTOP']
     obs_time = tstop - tstart
@@ -202,11 +202,11 @@ def chandra2ximpol(file_path, **kwargs):
     ra_pnt = hdr['RA_PNT']
     dec_pnt = hdr['DEC_PNT']
     ROI_MODEL = xROIModel(ra_pnt, dec_pnt)
-    
+
     logger.info('Reading Chandra data...')
     col_mc_energy = tbdata['energy']*0.001 # eV -> keV
     rnd_ratio = numpy.random.random(len(col_mc_energy))
-    # The condition col_mc_energy < 10. is needed to avoid to take the bunch of 
+    # The condition col_mc_energy < 10. is needed to avoid to take the bunch of
     # events with energy > 10 keV included into the Chandra photon list (we
     # actually don't know the reason).
     _mask = (rnd_ratio < aeff_ratio(col_mc_energy))*(col_mc_energy<10.)
@@ -214,26 +214,26 @@ def chandra2ximpol(file_path, **kwargs):
     # greater than 1.
     _mask_ratio = (rnd_ratio < (aeff_ratio(col_mc_energy)-1.))*\
                                                             (col_mc_energy<10.)
-    col_mc_energy = numpy.append(col_mc_energy[_mask], 
+    col_mc_energy = numpy.append(col_mc_energy[_mask],
                                                     col_mc_energy[_mask_ratio])
 
     col_time = numpy.append(tbdata['time'][_mask],tbdata['time'][_mask_ratio])
     col_mc_ra, col_mc_dec = _get_radec(hdr, tbdata)
     col_mc_ra = numpy.append(col_mc_ra[_mask], col_mc_ra[_mask_ratio])
     col_mc_dec = numpy.append(col_mc_dec[_mask], col_mc_dec[_mask_ratio])
-    
-    # If duration parameter is provided the counts are down- or oversampled. 
+
+    # If duration parameter is provided the counts are down- or oversampled.
     duration = kwargs['duration']
     if not numpy.isnan(duration):
-        logger.info('Setting the observation time to %d s...' % duration)                             
+        logger.info('Setting the observation time to %d s...' % duration)
         scale = numpy.modf(duration/obs_time)
         tstop = tstart + duration
         logger.info('Scaling counts according to observation time...')
-        col_mc_energy, col_time, col_mc_ra, col_mc_dec = time_scaling(scale, 
+        col_mc_energy, col_time, col_mc_ra, col_mc_dec = time_scaling(scale,
                                 col_mc_energy, col_time, col_mc_ra, col_mc_dec)
-      
-    # The default source id in case of no regfile and for regions not selected 
-    # is zero. For regions selected in the regfile the source id is determined 
+
+    # The default source id in case of no regfile and for regions not selected
+    # is zero. For regions selected in the regfile the source id is determined
     # by the order of definition (starting with 1).
     src_id = numpy.zeros(len(col_mc_dec))
     if kwargs['regfile'] is not None:
@@ -241,25 +241,25 @@ def chandra2ximpol(file_path, **kwargs):
         regions = pyregion.open(kwargs['regfile'])
         for j, region in enumerate(regions):
             mask = filter_region(region, col_mc_ra, col_mc_dec)
-            src_id[mask]=j+1        
-    
+            src_id[mask]=j+1
+
     # In case of configfile with polarization model defined in different regions
     # the photoelectron distribution is generated according to them.
     logger.info('Generating photoelectron azimuthal distribution...')
     col_pe_angle = numpy.empty(len(col_mc_dec))
     for key, pol_list in pol_dict.items():
         _mask_src = src_id == key
-        pol_degree = pol_list[0](col_mc_energy[_mask_src], col_time[_mask_src], 
+        pol_degree = pol_list[0](col_mc_energy[_mask_src], col_time[_mask_src],
                                     col_mc_ra[_mask_src], col_mc_dec[_mask_src])
-        pol_angle = pol_list[1](col_mc_energy[_mask_src], col_time[_mask_src], 
+        pol_angle = pol_list[1](col_mc_energy[_mask_src], col_time[_mask_src],
                                     col_mc_ra[_mask_src], col_mc_dec[_mask_src])
-        col_pe_angle[_mask_src] = modf.rvs_phi(col_mc_energy[_mask_src], 
+        col_pe_angle[_mask_src] = modf.rvs_phi(col_mc_energy[_mask_src],
                                                         pol_degree, pol_angle)
-    
+
     logger.info('Converting from Chandra to ximpol...')
     gti_list = [(tstart, tstop)]
-    event_list = xMonteCarloEventList()    
-    event_list.set_column('TIME', col_time)    
+    event_list = xMonteCarloEventList()
+    event_list.set_column('TIME', col_time)
     event_list.set_column('MC_ENERGY', col_mc_energy)
     col_pha = edisp.matrix.rvs(col_mc_energy)
     event_list.set_column('PHA', col_pha)
@@ -270,13 +270,13 @@ def chandra2ximpol(file_path, **kwargs):
     col_ra, col_dec = psf.smear(col_mc_ra, col_mc_dec)
     event_list.set_column('RA', col_ra)
     event_list.set_column('DEC', col_dec)
-    event_list.set_column('MC_SRC_ID', src_id) 
+    event_list.set_column('MC_SRC_ID', src_id)
     event_list.set_column('PE_ANGLE', col_pe_angle)
     # Set the phase to rnd [0-1] for all non-periodic sources.
     phase=numpy.random.uniform(0,1,len(col_dec))
-    event_list.set_column('PHASE', phase)   
+    event_list.set_column('PHASE', phase)
     logger.info('Done %s.' % chrono)
-    
+
     simulation_info = xSimulationInfo()
     simulation_info.gti_list = gti_list
     simulation_info.roi_model = ROI_MODEL
@@ -287,10 +287,10 @@ def chandra2ximpol(file_path, **kwargs):
     simulation_info.edisp = edisp
     event_list.sort()
     event_list.write_fits(kwargs['outfile'], simulation_info)
-    
+
     logger.info('All done %s!' % chrono)
     return kwargs['outfile']
-    
+
 if __name__=='__main__':
     args = PARSER.parse_args()
     startmsg()
