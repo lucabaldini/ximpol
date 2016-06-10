@@ -18,7 +18,7 @@ side packages, most notably:
   tools to manipulate FITS files).
 * `APLpy <https://aplpy.github.io/>`_ (optional): a Python module for plotting
   astronomical imaging data in FITS format.
-* `pyregion <http://pyregion.readthedocs.io/en/latest/>`: a Python module to
+* `pyregion <http://pyregion.readthedocs.io/en/latest/>`_: a Python module to
   parse ds9 region files
 * `PyXspec <https://heasarc.gsfc.nasa.gov/xanadu/xspec/python/html/>`_
   (optional): the Python binding for XSPEC.
