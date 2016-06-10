@@ -2,6 +2,8 @@ Release notes
 =============
 
 
+*ximpol (0.44.0) - Fri, 10 Jun 2016 15:35:16 +0200*
+
 * Added method to the xPolarizationMap object to plot the polarization
   degree and angle (in addition to the x and y components).
 * Added new corona models for Cyg-X1 in ascii folder
