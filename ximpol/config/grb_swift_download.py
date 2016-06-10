@@ -16,13 +16,15 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-import urllib2
 import lxml.html
+import urllib2
+import numpy
 import os
 import re
 
 from ximpol import XIMPOL_CONFIG
 from ximpol.utils.logging_ import logger
+from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
 
 PATH_0 = 'http://www.swift.ac.uk'
 PATH_1 = os.path.join(PATH_0,'xrt_curves')
@@ -56,11 +58,11 @@ def download_swift_grb_lc_file(grb_name, min_obs_time=22000, \
                GRB name, as given (including spaces) in 
                http://www.swift.ac.uk/xrt_curves/allcurvesflux.php
 
-       min_obs_time: float
+       min_obs_time: float, optional
                minimum time required to the observation [seconds].
                Default: 22000 -> about 6 hours
 
-       light_curve: str
+       light_curve: str, optional
                Defines the kind of curve: if flux(t) or rate(t).
                Default: 'flux' -> [erg cm^{-2} s^{-1}]
                Other options: 'rate' -> [s^{-1}]
@@ -86,8 +88,8 @@ def download_swift_grb_lc_file(grb_name, min_obs_time=22000, \
             logger.info('Saving %s'%outfile)
             return outfile
         elif not check_obs_time(last_time,min_obs_time):
-            logger.info('Obs time < %f seconds!\nNot saving any data.'\
-                        %min_obs_time)
+            logger.info('Obs time for %s < %f seconds!\nNot saving any data.'\
+                        %(grb_name,min_obs_time))
 
 def check_obs_time(last_time, min_obs_time):
     """check if the time of the observation is greater than a referece time
@@ -127,13 +129,86 @@ def get_lc_url(grb_name, light_curve):
                 lc = urllib2.urlopen(lc_url)
     return lc_url, lc    
 
+def parse_light_curve_data(file_path):
+    """Parse the ASCII file with the GRB light curve data from Swift.
+    """
+    t = []
+    tp = []
+    tm = []
+    f = []
+    fp = []
+    fm = []
+    for line in open(file_path):
+        try:
+            _t, _tp, _tm, _f, _fp, _fm = [float(item) for item in line.split()]
+            t.append(_t)
+            tp.append(_tp)
+            tm.append(_tm)
+            f.append(_f)
+            fp.append(_fp)
+            fm.append(-_fm)
+        except:
+            pass
+    t = numpy.array(t)
+    tp = numpy.array(tp)
+    tm = numpy.array(tm)
+    f = numpy.array(f)
+    fp = numpy.array(fp)
+    fm = numpy.array(fm)
+    return t, tp, tm, f, fp, fm
+
+def parse_light_curve(file_path, num_bins=100, num_min_data=5):
+    """Read the light-curve data points and make sense out of them.
+
+    Here we make a weighted average of the input data over a logarithmic
+    time binning, then we interpolate in log space to fill the gaps in the
+    input data, and finally we create a spline in linear space.
+    """
+    t, tp, tm, f, fp, fm = parse_light_curve_data(file_path)
+    if len(t) >= num_min_data:
+        binning = numpy.logspace(numpy.log10(t[0]), numpy.log10(t[-1]), \
+                                 num_bins)
+        tave = [t[0]]
+        fave = [f[0]]
+        for _tmin, _tmax in zip(t[:-1], t[1:]):
+            #_tave = (_tmin*_tmax)**0.5
+            _tave = _tmin
+            _mask = (t >= _tmin)*(t <= _tmax)
+            if numpy.count_nonzero(_mask) > 1:
+                _weights = numpy.power(0.5*(fp + fm)[_mask], -2.)
+                _fave = numpy.average(f[_mask], weights=_weights)
+                _fave = f[_mask][0]
+                tave.append(_tave)
+                fave.append(_fave)
+        """
+        for _tmin, _tmax in zip(binning[:-1], binning[1:]):
+            _tave = (_tmin*_tmax)**0.5
+            _mask = (t >= _tmin)*(t <= _tmax)
+            if numpy.count_nonzero(_mask) > 1:
+                _weights = numpy.power(0.5*(fp + fm)[_mask], -2.)
+                _fave = numpy.average(f[_mask], weights=_weights)
+                tave.append(_tave)
+                fave.append(_fave)"""
+        tave = numpy.log10(numpy.array(tave))
+        fave = numpy.log10(numpy.array(fave))
+        spline = xInterpolatedUnivariateSplineLinear(tave, fave)
+        #tave = numpy.linspace(tave[0], tave[-1], num_bins)
+        tave = numpy.linspace(tave[0], tave[-1], len(t))
+        fave = spline(tave)
+        tave = numpy.power(10., tave)
+        fave = numpy.power(10., fave)
+        fmt = dict(xname='Time', xunits='s',
+                   yname='Energy integral flux 0.3-10 keV',
+                   yunits='erg cm$^{-2}$ s$^{-1}$')
+        return xInterpolatedUnivariateSplineLinear(tave, fave, **fmt)
+    else:
+        logger.info('Data points < %i !\nNot producing any light curve.'\
+                        %num_min_data)
+        return 0
+
 def main():
     """
     """
-    GRB_NAME = 'GRB 041223'
-    flux_outfile = download_swift_grb_lc_file(GRB_NAME)
-    rate_outfile = download_swift_grb_lc_file(GRB_NAME, light_curve='rate')
-    
     grb_lc_ascii_file_list = []
     for grb in get_all_swift_grb_names():
         grb_lc_ascii_file = download_swift_grb_lc_file(grb)
