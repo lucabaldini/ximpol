@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.44.2) - Fri, 10 Jun 2016 17:58:27 +0200*
+
 * Trivial fix.
 
 
