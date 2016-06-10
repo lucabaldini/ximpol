@@ -1,5 +1,9 @@
 Release notes
 =============
+* Added new corona models for Cyg-X1 in ascii folder
+* Added new Cyg-X1 config files (one per model) in the config folder
+* Added new script tp make the plot comparing the polarization fraction for Cyg-X1 for the two coronal models in examples
+* Added method to run several simulations (with different seeds) and merge the output files to one single. This is in the run method for the Cyg-X1 example.
 
 * Added script to make the map of the polarization degree and map of the sigma for the polarization degree.
 
