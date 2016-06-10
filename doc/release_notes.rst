@@ -1,12 +1,29 @@
 Release notes
 =============
+
+
+*ximpol (0.44.2) - Fri, 10 Jun 2016 17:58:27 +0200*
+
+* Trivial fix.
+
+
+*ximpol (0.44.1) - Fri, 10 Jun 2016 17:54:30 +0200*
+
+* Installation notes updated (closing issue #131).
+
+
+*ximpol (0.44.0) - Fri, 10 Jun 2016 15:35:16 +0200*
+
+* Added method to the xPolarizationMap object to plot the polarization
+  degree and angle (in addition to the x and y components).
 * Added new corona models for Cyg-X1 in ascii folder
 * Added new Cyg-X1 config files (one per model) in the config folder
-* Added new script tp make the plot comparing the polarization fraction for Cyg-X1 for the two coronal models in examples
-* Added method to run several simulations (with different seeds) and merge the output files to one single. This is in the run method for the Cyg-X1 example.
-
-* Added script to make the map of the polarization degree and map of the sigma for the polarization degree.
-
+* Added new script tp make the plot comparing the polarization fraction for
+  Cyg-X1 for the two coronal models in examples
+* Added method to run several simulations (with different seeds) and merge the
+  output files to one single. This is in the run method for the Cyg-X1 example.
+* Added script to make the map of the polarization degree and map of the sigma
+  for the polarization degree.
 * Initial import of the module and files for parametrizing the Galactic
   absorption (issue #120).
 * Quick fix to issue #129.
