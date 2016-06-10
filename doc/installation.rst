@@ -18,6 +18,8 @@ side packages, most notably:
   tools to manipulate FITS files).
 * `APLpy <https://aplpy.github.io/>`_ (optional): a Python module for plotting
   astronomical imaging data in FITS format.
+* `pyregion <http://pyregion.readthedocs.io/en/latest/>`: a Python module to
+  parse ds9 region files
 * `PyXspec <https://heasarc.gsfc.nasa.gov/xanadu/xspec/python/html/>`_
   (optional): the Python binding for XSPEC.
 
@@ -30,6 +32,7 @@ the following ``import`` statements with no errors.
 >>> import astropy
 >>> import aplpy
 >>> import xspec
+>>> import pyregion
 
 (The last two are not strictly necessary to run a simulation, but in the
 long run you probably want to have them.) If any of the required packages
@@ -58,7 +61,8 @@ whetever you need after the fact, e.g.,
 
 .. code-block:: bash
                 
-    pip install aplpy 
+    pip install aplpy
+    pip install pyregion
 
 If you are uncertain on what to do, you might want to try anaconda first,
 as this might be the less painful solution.
@@ -81,7 +85,7 @@ For GNU/Linux in the Fedora flavor, for instance, you would do something like
 
 .. code-block:: bash
 
-    yum install numpy scipy python-matplotlib python-astropy APLpy
+    dnf install numpy scipy python-matplotlib python-astropy APLpy
 
 
 Downloading the code

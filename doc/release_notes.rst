@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* Installation notes updated (closing issue #131).
+
 
 *ximpol (0.44.0) - Fri, 10 Jun 2016 15:35:16 +0200*
 
