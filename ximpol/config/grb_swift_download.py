@@ -133,15 +133,14 @@ def main():
     GRB_NAME = 'GRB 041223'
     flux_outfile = download_swift_grb_lc_file(GRB_NAME)
     rate_outfile = download_swift_grb_lc_file(GRB_NAME, light_curve='rate')
-    """
+    
     grb_lc_ascii_file_list = []
     for grb in get_all_swift_grb_names():
         grb_lc_ascii_file = download_swift_grb_lc_file(grb)
         if type(grb_lc_ascii_file) is str:
-            print grb_lc_ascii_file
             grb_lc_ascii_file_list.append(grb_lc_ascii_file)
     logger.info('Saved %i files.'%len(grb_lc_ascii_file_list))
-    """
+    
 
 if __name__=='__main__':
     main()
