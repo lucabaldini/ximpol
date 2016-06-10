@@ -24,7 +24,8 @@ from astropy import wcs
 
 from ximpol.core.spline import xInterpolatedBivariateSplineLinear
 from ximpol.srcmodel.img import xFITSImage
-
+from ximpol.utils.matplotlib_ import pyplot as plt
+from ximpol.utils.matplotlib_ import context_no_grids
 
 def constant(C):
     """Simple wrapper returning a constant, independently of the input
@@ -46,8 +47,8 @@ class xPolarizationMap:
         self.ymap_file_path = ymap_file_path
         self.x_img = None
         self.y_img = None
-        self.x_wcs, self.x_spline = self.__read_map(xmap_file_path)
-        self.y_wcs, self.y_spline = self.__read_map(ymap_file_path)
+        self.x_wcs, self.x_data, self.x_spline = self.__read_map(xmap_file_path)
+        self.y_wcs, self.y_data, self.y_spline = self.__read_map(ymap_file_path)
         self.__reset_sample()
 
     def __read_map(self,filename):
@@ -60,7 +61,7 @@ class xPolarizationMap:
         x = range(nbinsx)
         y = range(nbinsy)
         spline = xInterpolatedBivariateSplineLinear(x, y, data)
-        return w, spline
+        return w, data, spline
 
     def polarization_vector(self, ra, dec):
         """Return the polarization vector for a given (array of) RA and Dec
@@ -153,31 +154,79 @@ class xPolarizationMap:
                         color='w', alpha=0.8)
         fig.show_markers(self.__wx, self.__wy, marker='o')
 
-    def plot_xmap(self, overlay=True):
+    def plot_xmap(self, overlay=True, show=False):
         """Plot the x polarization map.
         """
         if self.x_img is None:
             self.x_img = xFITSImage(self.xmap_file_path, build_cdf=False)
-        fig = self.x_img.plot(show=False)
+        fig = self.x_img.plot(show=False, zlabel='Polarization degree (x)')
         if overlay:
             self.overlay_arrows(fig)
+        if show:
+            plt.show()
         return fig
 
-    def plot_ymap(self, overlay=True):
+    def plot_ymap(self, overlay=True, show=False):
         """Plot the y polarization map.
         """
         if self.y_img is None:
             self.y_img = xFITSImage(self.ymap_file_path, build_cdf=False)
-        fig = self.y_img.plot(show=False)
+        fig = self.y_img.plot(show=False, zlabel='Polarization degree (y)')
         if overlay:
             self.overlay_arrows(fig)
+        if show:
+            plt.show()
         return fig
+
+    def plot_polarization_degree(self, show=True):
+        """
+        """
+        import aplpy
+        if self.x_img is None:
+            self.x_img = xFITSImage(self.xmap_file_path, build_cdf=False)
+        if self.y_img is None:
+            self.y_img = xFITSImage(self.ymap_file_path, build_cdf=False)
+        _data = numpy.sqrt(self.x_data**2 + self.y_data**2)
+        hdu_list = [self.x_img.hdu_list[0].copy()]
+        hdu_list[0].data = _data
+        with context_no_grids():
+            fig = aplpy.FITSFigure(hdu_list[0], figure=plt.figure())
+            fig.add_grid()
+            fig.show_colorscale(cmap = 'afmhot', vmin=None, vmax=None)
+            fig.add_colorbar()
+            fig.colorbar.set_axis_label_text('Polarization degree')
+        if show:
+            plt.show()
+        return fig
+        
+    def plot_polarization_angle(self, degrees=True, show=True):
+        """
+        """
+        import aplpy
+        if self.x_img is None:
+            self.x_img = xFITSImage(self.xmap_file_path, build_cdf=False)
+        if self.y_img is None:
+            self.y_img = xFITSImage(self.ymap_file_path, build_cdf=False)
+        _data = numpy.arctan2(self.x_data, self.y_data)
+        if degrees:
+            _data = numpy.degrees(_data)
+        hdu_list = [self.x_img.hdu_list[0].copy()]
+        hdu_list[0].data = _data
+        with context_no_grids():
+            fig = aplpy.FITSFigure(hdu_list[0], figure=plt.figure())
+            fig.add_grid()
+            fig.show_colorscale(cmap = 'afmhot', vmin=None, vmax=None)
+            fig.add_colorbar()
+            fig.colorbar.set_axis_label_text('Polarization angle')
+        if show:
+            plt.show()
+        return fig
+    
 
 
 if __name__=='__main__':
     import os
     from ximpol import XIMPOL_CONFIG
-    from ximpol.utils.matplotlib_ import pyplot as plt
     file_path_x = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_pol_x.fits')
     file_path_y = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_pol_y.fits')
     img_file_path = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_1p5_3p0_keV.fits')
