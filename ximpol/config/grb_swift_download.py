@@ -24,12 +24,17 @@ import re
 
 from ximpol import XIMPOL_CONFIG
 from ximpol.utils.logging_ import logger
-from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
 
 PATH_0 = 'http://www.swift.ac.uk'
-PATH_1 = os.path.join(PATH_0,'xrt_curves')
-ALL_LC_PATH = os.path.join(PATH_1,'allcurvesflux.php')
+PATH_CURV = os.path.join(PATH_0,'xrt_curves')
+PATH_POS = os.path.join(PATH_0,'xrt_positions')
+PATH_UNENH_POS = os.path.join(PATH_0,'xrt_unenh_positions')
+PATH_SPEC = os.path.join(PATH_0,'xrt_spectra')
+ALL_LC_PATH = os.path.join(PATH_CURV,'allcurvesflux.php')
 GRB_ALL_NAME = re.compile('[a-zA-Z]+\s[a-zA-Z]*\s*\d+[A-Z]*')
+PHOTON_INDEX = re.compile('\>\d\.\d+\s')
+RA_DEC = re.compile('\([-]*\d+\.\d+')
+#NH = re.compile('\d+\.*\d*')
 
 curve = {'flux':'flux.qdp',
          'rate':'curve.qdp',
@@ -45,6 +50,7 @@ def get_all_swift_grb_names():
         if "class='grb'>" in line:
             m = GRB_ALL_NAME.search(line)
             grb_list.append(m.group())
+    grb_list.remove('GRB 120711B')
     return grb_list
 
 def download_swift_grb_lc_file(grb_name, min_obs_time=22000, \
@@ -74,15 +80,20 @@ def download_swift_grb_lc_file(grb_name, min_obs_time=22000, \
                            %(grb_name.replace(' ','').replace('.','-'),
                              light_curve))
     if os.path.exists(outfile):
-        logger.info('Already saved %s'%outfile)
+        logger.info('Already saved file for %s'%grb_name)
         return outfile
     else:
         lc_url, lc = get_lc_url(grb_name,light_curve)
         data = lc.read().split()
         last_time = float(data[len(data)-6])
         if check_obs_time(last_time,min_obs_time):
+            index = get_grb_spec_index_from_site(grb_name)
+            ra, dec = get_grb_position_from_site(grb_name)
             ff = open(outfile,'w')
             lc = urllib2.urlopen(lc_url)
+            ff.write('%s INDEX = %f\n'%(grb_name,index))
+            ff.write('%s RA = %f\n'%(grb_name,ra))
+            ff.write('%s DEC = %f\n'%(grb_name,dec))
             ff.write(lc.read())
             ff.close()
             logger.info('Saving %s'%outfile)
@@ -107,6 +118,18 @@ def check_obs_time(last_time, min_obs_time):
     else: 
         return False
 
+def get_trigger_number(grb_name):
+    trigger = ''
+    f = urllib2.urlopen(ALL_LC_PATH)
+    for line in f:
+        if grb_name in line:
+            dom = lxml.html.fromstring(line)
+            for link in dom.xpath('//a/@href'):
+                trigger = link.replace('xrt_curves','')
+                trigger = trigger.replace('/','')
+            break
+    return trigger
+
 def get_lc_url(grb_name, light_curve):
     """get the url of the light curve ascii file for a given GRB
 
@@ -118,104 +141,93 @@ def get_lc_url(grb_name, light_curve):
        light_curve: str
                Defines the kind of curve: if flux(t) or rate(t).
     """
-    f = urllib2.urlopen(ALL_LC_PATH)
     curve_file = curve[light_curve]
     lc_url, lc = '', ''
-    for line in f:
-        if grb_name in line:
-            dom =  lxml.html.fromstring(line)
-            for link in dom.xpath('//a/@href'):
-                lc_url = PATH_0+link+curve_file
-                lc = urllib2.urlopen(lc_url)
-    return lc_url, lc    
+    trigger = get_trigger_number(grb_name)
+    lc_url = os.path.join(PATH_CURV,trigger,curve_file)
+    lc = urllib2.urlopen(lc_url)
+    return lc_url, lc
+
+def get_grb_spec_index_from_site(grb_name):
+    """Extract the photon index from Swift web site for a given GRB.
+       If more than one photon index, it returns the late time spectrum index.
+
+       Arguments
+       ---------
+       grb_name: str
+               GRB name, as given (including spaces) in
+               http://www.swift.ac.uk/xrt_curves/allcurvesflux.php
+    """
+    trigger = get_trigger_number(grb_name)
+    spec_url = os.path.join(PATH_SPEC,trigger)
+    spec_page = urllib2.urlopen(spec_url)
+    grb_spec_index = 0.
+    for line in spec_page:
+        if 'Photon index' in line:
+            m = PHOTON_INDEX.search(line)
+            if m == None:
+                grb_spec_index = 2.
+                logger.info('Spectrum not accurate. Default index set to 2.')
+            else:
+                grb_spec_index = float(m.group().replace('>',''))
+                continue
+    if grb_spec_index == 0:
+        grb_spec_index = 2.
+        logger.info('Spectrum not available. Default index set to 2.')
+    else:
+        logger.info('%s average spectral index: %f'%(grb_name,grb_spec_index))
+    return grb_spec_index
+
+def get_grb_position_from_site(grb_name):
+    """Extract RA and DEC from Swift web site for a given GRB.
+
+       Arguments
+       ---------
+       grb_name: str
+               GRB name, as given (including spaces) in
+               http://www.swift.ac.uk/xrt_curves/allcurvesflux.php
+    """
+    trigger = get_trigger_number(grb_name)
+    unenh_position_url = os.path.join(PATH_UNENH_POS,trigger)
+    position_page = urllib2.urlopen(unenh_position_url)
+    grb_ra = 0.
+    grb_dec = 0.
+    ok = 0
+    for line in position_page:
+        if 'RA (J2000)' in line:
+            if RA_DEC.search(line) is None:
+                logger.info('Sorry, no position determinated for %s'\
+                            %grb_name)
+                ok = 1
+            else:
+                pass
+    if ok == 0:
+        position_page = urllib2.urlopen(unenh_position_url)
+        for line in position_page:
+            if 'RA (J2000)' in line:
+                m = RA_DEC.search(line)
+                grb_ra = float(m.group().replace('(',''))
+            if 'Dec (J2000)' in line:
+                m = RA_DEC.search(line)
+                grb_dec = float(m.group().replace('(',''))
+        logger.info('%s position: RA %f deg, Dec %f deg'\
+                            %(grb_name,grb_ra,grb_dec))
+        return grb_ra, grb_dec 
+    else:
+        logger.info('Set default RA = 0. and Dec = 0.')
+        return grb_ra, grb_dec
 
 def parse_light_curve_data(file_path):
     """Parse the ASCII file with the GRB light curve data from Swift.
     """
-    t = []
-    tp = []
-    tm = []
-    f = []
-    fp = []
-    fm = []
-    for line in open(file_path):
-        try:
-            _t, _tp, _tm, _f, _fp, _fm = [float(item) for item in line.split()]
-            t.append(_t)
-            tp.append(_tp)
-            tm.append(_tm)
-            f.append(_f)
-            fp.append(_fp)
-            fm.append(-_fm)
-        except:
-            pass
-    t = numpy.array(t)
-    tp = numpy.array(tp)
-    tm = numpy.array(tm)
-    f = numpy.array(f)
-    fp = numpy.array(fp)
-    fm = numpy.array(fm)
-    return t, tp, tm, f, fp, fm
-
-def parse_light_curve(file_path, num_bins=100, num_min_data=5):
-    """Read the light-curve data points and make sense out of them.
-
-    Here we make a weighted average of the input data over a logarithmic
-    time binning, then we interpolate in log space to fill the gaps in the
-    input data, and finally we create a spline in linear space.
-    """
-    t, tp, tm, f, fp, fm = parse_light_curve_data(file_path)
-    if len(t) >= num_min_data:
-        binning = numpy.logspace(numpy.log10(t[0]), numpy.log10(t[-1]), \
-                                 num_bins)
-        tave = [t[0]]
-        fave = [f[0]]
-        for _tmin, _tmax in zip(t[:-1], t[1:]):
-            #_tave = (_tmin*_tmax)**0.5
-            _tave = _tmin
-            _mask = (t >= _tmin)*(t <= _tmax)
-            if numpy.count_nonzero(_mask) > 1:
-                _weights = numpy.power(0.5*(fp + fm)[_mask], -2.)
-                _fave = numpy.average(f[_mask], weights=_weights)
-                _fave = f[_mask][0]
-                tave.append(_tave)
-                fave.append(_fave)
-        """
-        for _tmin, _tmax in zip(binning[:-1], binning[1:]):
-            _tave = (_tmin*_tmax)**0.5
-            _mask = (t >= _tmin)*(t <= _tmax)
-            if numpy.count_nonzero(_mask) > 1:
-                _weights = numpy.power(0.5*(fp + fm)[_mask], -2.)
-                _fave = numpy.average(f[_mask], weights=_weights)
-                tave.append(_tave)
-                fave.append(_fave)"""
-        tave = numpy.log10(numpy.array(tave))
-        fave = numpy.log10(numpy.array(fave))
-        spline = xInterpolatedUnivariateSplineLinear(tave, fave)
-        #tave = numpy.linspace(tave[0], tave[-1], num_bins)
-        tave = numpy.linspace(tave[0], tave[-1], len(t))
-        fave = spline(tave)
-        tave = numpy.power(10., tave)
-        fave = numpy.power(10., fave)
-        fmt = dict(xname='Time', xunits='s',
-                   yname='Energy integral flux 0.3-10 keV',
-                   yunits='erg cm$^{-2}$ s$^{-1}$')
-        return xInterpolatedUnivariateSplineLinear(tave, fave, **fmt)
-    else:
-        logger.info('Data points < %i !\nNot producing any light curve.'\
-                        %num_min_data)
-        return 0
 
 def main():
+    """test the download of GRB 130427A
     """
-    """
-    grb_lc_ascii_file_list = []
-    for grb in get_all_swift_grb_names():
-        grb_lc_ascii_file = download_swift_grb_lc_file(grb)
-        if type(grb_lc_ascii_file) is str:
-            grb_lc_ascii_file_list.append(grb_lc_ascii_file)
-    logger.info('Saved %i files.'%len(grb_lc_ascii_file_list))
-    
+    grb = 'GRB 130427A'
+    download_swift_grb_lc_file(grb)
+    download_swift_grb_lc_file(grb, light_curve='rate')
+
 
 if __name__=='__main__':
     main()
