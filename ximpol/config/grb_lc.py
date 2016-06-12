@@ -16,6 +16,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+import sys
 import numpy
 import random
 
@@ -25,7 +26,7 @@ from ximpol.utils.matplotlib_ import pyplot as plt
 from ximpol.config.grb_swift_download import download_swift_grb_lc_file
 from ximpol.config.grb_swift_download import get_all_swift_grb_names
 from ximpol.config.grb_utils import parse_light_curve
-
+from ximpol.utils.matplotlib_ import overlay_tag, save_current_figure
 
 MIN_ENERGY = 0.3
 MAX_ENERGY = 10.
@@ -34,7 +35,7 @@ MAX_ENERGY = 10.
 #If you want all the GRBs use the following line:
 #grb_list = get_all_swift_grb_names()
     
-def plot_swift_lc(grb_list):
+def plot_swift_lc(grb_list,show=True):
     """Plots Swift GRB light curves.
     """
     plt.figure(figsize=(10, 8), dpi=80)
@@ -57,17 +58,22 @@ def plot_swift_lc(grb_list):
                                               color='%f'%c,linewidth=1.0)
                     num_grb += 1
     logger.info('%i GRBs included in the plot.'%num_grb)
-    plt.show()
+    if show:
+        plt.show()
 
 
-def main():
+def main(interactive=False):
     """Test the script plotting the light curve og GRB 130427A
     """
     #If you want all the GRBs use the following line:    
     #grb_list = get_all_swift_grb_names()
     grb_list = ['GRB 130427A']
-    plot_swift_lc(grb_list)
-
+    plot_swift_lc(grb_list,show=False)
+    overlay_tag()
+    save_current_figure('Swift_XRT_light_curves',
+                        clear=False)
+    if interactive:
+        plt.show()
 
 if __name__=='__main__':
-    main()
+    main(interactive=sys.flags.interactive)
