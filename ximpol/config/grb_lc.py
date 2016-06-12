@@ -20,20 +20,12 @@ import sys
 import numpy
 import random
 
-from ximpol import XIMPOL_CONFIG
 from ximpol.utils.logging_ import logger
 from ximpol.utils.matplotlib_ import pyplot as plt
 from ximpol.config.grb_swift_download import download_swift_grb_lc_file
 from ximpol.config.grb_swift_download import get_all_swift_grb_names
 from ximpol.config.grb_utils import parse_light_curve
 from ximpol.utils.matplotlib_ import overlay_tag, save_current_figure
-
-MIN_ENERGY = 0.3
-MAX_ENERGY = 10.
-
-#define a list with the name of the GRBs you want to plot
-#If you want all the GRBs use the following line:
-#grb_list = get_all_swift_grb_names()
     
 def plot_swift_lc(grb_list,show=True):
     """Plots Swift GRB light curves.
