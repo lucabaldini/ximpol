@@ -2,6 +2,11 @@ Release notes
 =============
 
 
+* Galactic absorption column density and redhsift added to all the model
+  components (issue #120).
+* Some cleanup of the Galactic absorption code (issue #120).
+
+
 *ximpol (0.44.2) - Fri, 10 Jun 2016 17:58:27 +0200*
 
 * Trivial fix.

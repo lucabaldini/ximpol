@@ -102,6 +102,12 @@ class xFITSImage:
         """
         return self.data[i][j]
 
+    def __str__(self):
+        """String formatting.
+        """
+        w, h = self.data.shape
+        return '%d x %d image from %s' % (w, h, self.hdu_list.filename())
+
     def plot(self, show=True, zlabel='Counts/pixel', subplot=(1, 1, 1)):
         """Plot the image.
 

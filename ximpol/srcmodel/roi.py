@@ -43,9 +43,6 @@ class xModelComponentBase:
     name : string
         The name of the source.
 
-    identifier : int
-        A unique identifier of the source within a ROI model.
-
     energy_spectrum : function
         The function object representing the energy spectrum.
 
@@ -54,27 +51,49 @@ class xModelComponentBase:
 
     polarization_angle : function
         The function object representing the polarization angle.
+
+    column_density : float
+        The value of the column density (in cm^-2) used to calculate the
+        Galactic absorption. Defaults to 0.
+    
+    redshift : float
+        The source redshift. Defaults to 0.
+
+    min_validity_time : float
+        The minimum validity time for the source model. Defaults to 0.
+
+    max_validity_time : float
+        The maximum validity time for the source model. Defaults to 10 Ms.
+
+    identifier : int
+        A unique identifier of the source within a ROI model. Defaults to None
+        and is, generally, automatically assigned when building the ROI (i.e.,
+        you don't have to worry about it, but it's handy to have in the
+        output event list).
     """
 
     def __init__(self, name, energy_spectrum, polarization_degree,
-                 polarization_angle, identifier=None, min_validity_time=0.,
-                 max_validity_time=DEFAULT_MAX_VALIDITY_TIME):
+                 polarization_angle, column_density=0., redshift=0.,
+                 min_validity_time=0.,
+                 max_validity_time=DEFAULT_MAX_VALIDITY_TIME, identifier=None):
         """Constructor.
         """
         self.name = name
         self.setup(energy_spectrum, polarization_degree, polarization_angle)
-        self.identifier = identifier
+        self.column_density = column_density
+        self.redshift = redshift
         self.min_validity_time = min_validity_time
         self.max_validity_time = max_validity_time
+        self.identifier = identifier
         # We cache here the integral flux, since we don't want to (potentially)
         # recalculate the integral each time the __str__() method is called.
         emin = 2.
         emax = 8.
         t = self.min_validity_time
-        flux_ergcms = self.integral_flux(emin, emax, t)
-        flux_mcrab = ergcms2mcrab(flux_ergcms)
+        self.flux_ergcms = self.integral_flux(emin, emax, t)
+        self.flux_mcrab = ergcms2mcrab(self.flux_ergcms)
         self.flux_label = 'Flux @ t = %d: %.3e erg/cm2/s (%.2f mcrab)' %\
-                          (t, flux_ergcms, flux_mcrab)
+                          (t, self.flux_ergcms, self.flux_mcrab)
 
     def integral_flux(self, emin=2.0, emax=8.0, t=None):
         """Return the integral source flux at a generic time.
@@ -103,7 +122,13 @@ class xModelComponentBase:
 
     @classmethod
     def sampling_time(cls, tstart, tstop):
-        """
+        """Return the sampling time used for the lightcurve when generating
+        events.
+
+        Warning
+        -------
+        We have an issue open for this and at some point we should go back to
+        it and make sure it is properly addressed.
         """
         return numpy.linspace(tstart, tstop, 100)
 
@@ -160,14 +185,24 @@ class xModelComponentBase:
 
     def __str__(self):
         """String formatting.
+
+        Note that this base class has no ra and dec attributes, since they're
+        not really relevant for extended sources initiazed from FITS images,
+        but since all the other derived classed do have such attributes,
+        check whether that's the case and, if necessary, print out the
+        source position. This avoids code duplication in the derived classes.
         """
-        text = '%s %s (id = %s)'%\
+        text = '%s "%s" (id = %s)'%\
                (self.__class__.__name__, self.name, self.identifier)
         text += '\n    Validity time: [%f--%f]'  %\
                 (self.min_validity_time, self.max_validity_time)
-        text += '\n    Position: RA = %s deg, Dec = %s deg' %\
-                (self.ra, self.dec)
+        text += '\n    Galactic column density: %.3e cm^{-2}' %\
+                self.column_density
+        text += '\n    Redshift: %.3f' % self.redshift
         text += '\n    %s' % self.flux_label
+        if hasattr(self, 'ra') and hasattr(self, 'dec'):
+            text += '\n    Position: RA = %s deg, Dec = %s deg' %\
+                    (self.ra, self.dec)
         return text
 
     def rvs_event_list(self, aeff, psf, modf, edisp, **kwargs):
@@ -216,28 +251,30 @@ class xModelComponentBase:
 
 class xPointSource(xModelComponentBase):
 
-    """Class representing a point source.
+    """Class representing a steady point source.
+    See :py:class:`ximpol.srcmodel.roi.xModelComponentBase` for the signature
+    of the base class.
 
     Arguments
     ---------
-    name : string
-        The name of the source.
-
     ra : float
-        The right ascention of the source.
+        The right ascension of the source (in decimal degrees).
 
     dec : float
-        The declination of the source.
+        The declination of the source (in decimal degrees).
     """
 
     def __init__(self, name, ra, dec, energy_spectrum, polarization_degree,
-                 polarization_angle, min_validity_time=0.,
-                 max_validity_time=DEFAULT_MAX_VALIDITY_TIME):
+                 polarization_angle, column_density=0., redshift=0.,
+                 min_validity_time=0.,
+                 max_validity_time=DEFAULT_MAX_VALIDITY_TIME, identifier=None):
         """Constructor.
         """
         xModelComponentBase.__init__(self, name, energy_spectrum,
                                      polarization_degree, polarization_angle,
-                                     None, min_validity_time, max_validity_time)
+                                     column_density, redshift,
+                                     min_validity_time, max_validity_time,
+                                     identifier)
         self.ra = ra
         self.dec = dec
 
@@ -294,16 +331,35 @@ class xEphemeris:
 class xPeriodicPointSource(xPointSource):
 
     """Class representing a periodic point source (e.g., a pulsar).
+    See :py:class:`ximpol.srcmodel.roi.xModelComponentBase` for the signature
+    of the base class.
+
+    Arguments
+    ---------
+    ra : float
+        The right ascension of the source (in decimal degrees).
+
+    dec : float
+        The declination of the source (in decimal degrees).
+
+    ephemeris : :py:class:`ximpol.srcmodel.roi.xEphemeris object
+        The source ephemeris.
     """
 
     def __init__(self, name, ra, dec, energy_spectrum, polarization_degree,
-                 polarization_angle, ephemeris):
+                 polarization_angle, ephemeris, column_density=0., redshift=0.,
+                 min_validity_time=None, max_validity_time=None,
+                 identifier=None):
         """Constructor.
         """
+        if min_validity_time is None:
+            min_validity_time = ephemeris.min_validity_time
+        if max_validity_time is None:
+            max_validity_time = ephemeris.max_validity_time
         xPointSource.__init__(self, name, ra, dec, energy_spectrum,
                               polarization_degree, polarization_angle,
-                              ephemeris.min_validity_time,
-                              ephemeris.max_validity_time)
+                              column_density, redshift, min_validity_time,
+                              max_validity_time, identifier)
         self.ephemeris = ephemeris
 
     def rvs_event_list(self, aeff, psf, modf, edisp, **kwargs):
@@ -375,30 +431,32 @@ class xPeriodicPointSource(xPointSource):
 class xUniformDisk(xModelComponentBase):
 
     """Class representing a uniform disk.
+    See :py:class:`ximpol.srcmodel.roi.xModelComponentBase` for the signature
+    of the base class.
 
     Arguments
     ---------
-    name : string
-        The name of the source.
-
     ra : float
-        The right ascention of the disk center.
+        The right ascension of the disk center (in decimal degrees).
 
     dec : float
-        The declination of the disk center.
+        The declination of the disk center (in decimal degrees).
 
     radius : float
-        The radius of the disk.
+        The radius of the disk (in degrees).
     """
 
     def __init__(self, name, ra, dec, radius, energy_spectrum,
-                 polarization_degree, polarization_angle, min_validity_time=0.,
-                 max_validity_time=DEFAULT_MAX_VALIDITY_TIME):
+                 polarization_degree, polarization_angle, column_density=0.,
+                 redshift=0., min_validity_time=0.,
+                 max_validity_time=DEFAULT_MAX_VALIDITY_TIME, identifier=None):
         """Constructor.
         """
         xModelComponentBase.__init__(self, name, energy_spectrum,
                                      polarization_degree, polarization_angle,
-                                     None, min_validity_time, max_validity_time)
+                                     column_density, redshift,
+                                     min_validity_time, max_validity_time,
+                                     identifier)
         self.ra = ra
         self.dec = dec
         self.radius = radius
@@ -433,30 +491,32 @@ class xUniformDisk(xModelComponentBase):
 class xGaussianDisk(xModelComponentBase):
 
     """Class representing a (azimuthally simmetric) gaussian disk.
+    See :py:class:`ximpol.srcmodel.roi.xModelComponentBase` for the signature
+    of the base class.
 
     Arguments
     ---------
-    name : string
-        The name of the source.
-
     ra : float
-        The right ascention of the disk center.
+        The right ascension of the disk center (in decimal degrees).
 
     dec : float
-        The declination of the disk center.
+        The declination of the disk center (in decimal degrees).
 
     sigma : float
-        The root mean square of the disk.
+        The root mean square of the disk (in degrees).
     """
 
     def __init__(self, name, ra, dec, sigma, energy_spectrum,
-                 polarization_degree, polarization_angle, min_validity_time=0.,
-                 max_validity_time=DEFAULT_MAX_VALIDITY_TIME):
+                 polarization_degree, polarization_angle, column_density=0.,
+                 redshift=0., min_validity_time=0.,
+                 max_validity_time=DEFAULT_MAX_VALIDITY_TIME, identifier=None):
         """Constructor.
         """
         xModelComponentBase.__init__(self, name, energy_spectrum,
                                      polarization_degree, polarization_angle,
-                                     None, min_validity_time, max_validity_time)
+                                     column_density, redshift,
+                                     min_validity_time, max_validity_time,
+                                     identifier)
         self.ra = ra
         self.dec = dec
         self.sigma = sigma
@@ -488,24 +548,26 @@ class xGaussianDisk(xModelComponentBase):
 class xExtendedSource(xModelComponentBase):
 
     """Class representing an extended source.
+    See :py:class:`ximpol.srcmodel.roi.xModelComponentBase` for the signature
+    of the base class.
 
     Arguments
     ---------
-    name : string
-        The name of the source.
-
     img_file_path : string
         The path to the FITS file containing the image of the source.
     """
 
     def __init__(self, name, img_file_path, energy_spectrum,
-                 polarization_degree, polarization_angle, min_validity_time=0.,
-                 max_validity_time=DEFAULT_MAX_VALIDITY_TIME):
+                 polarization_degree, polarization_angle, column_density=0.,
+                 redshift=0., min_validity_time=0.,
+                 max_validity_time=DEFAULT_MAX_VALIDITY_TIME, identifier=None):
         """Constructor.
         """
         xModelComponentBase.__init__(self, name, energy_spectrum,
                                      polarization_degree, polarization_angle,
-                                     None, min_validity_time, max_validity_time)
+                                     column_density, redshift,
+                                     min_validity_time, max_validity_time,
+                                     identifier)
         self.image = xFITSImage(img_file_path)
 
     def rvs_sky_coordinates(self, size=1):
@@ -521,11 +583,8 @@ class xExtendedSource(xModelComponentBase):
     def __str__(self):
         """String formatting.
         """
-        text = '%s %s (id = %s)'%\
-               (self.__class__.__name__, self.name, self.identifier)
-        text += '\n    Validity time: [%f--%f]'  %\
-                (self.min_validity_time, self.max_validity_time)
-        text += '\n    %s' % self.flux_label
+        text = xModelComponentBase.__str__(self)
+        text += '\n    FITS image: %s' % self.image
         return text
 
 
@@ -540,10 +599,10 @@ class xROIModel(OrderedDict):
     Arguments
     ---------
     ra_center : float
-        The right ascention of the center of the ROI (in degrees).
+        The right ascension of the center of the ROI (in decimal degrees).
 
     dec_center : float
-        The declination of the center of the ROI (in degrees).
+        The declination of the center of the ROI (in decimal degrees).
     """
 
     def __init__(self, ra_center, dec_center):
@@ -633,3 +692,42 @@ class xROIModel(OrderedDict):
                                                 **kwargs)
         event_list.sort()
         return event_list
+
+
+
+def main():
+    """Simple test code.
+    """
+    import os
+    from ximpol.srcmodel.spectrum import power_law
+    from ximpol.srcmodel.polarization import constant
+    from ximpol import XIMPOL_CONFIG
+    src_base_model = dict(energy_spectrum = power_law(1., 2.),
+                          polarization_degree = constant(0.1),
+                          polarization_angle = constant(20.),
+                          column_density = 1.0e-22,
+                          redshift = 0.0012,
+                          identifier = 0)
+    s1 = xModelComponentBase('Source 1', **src_base_model)
+    print(s1)
+    s2 = xPointSource('Source 2', ra=10., dec=15., **src_base_model)
+    print(s2)
+    _ephem = xEphemeris(10., 0.033, min_validity_time=10.,
+                        max_validity_time=10000.)
+    s3 = xPeriodicPointSource('Source 3', ra=10., dec=15., ephemeris=_ephem,
+                              **src_base_model)
+    print(s3)
+    s4 = xUniformDisk('Source 4', ra=10., dec=15., radius=0.01,
+                      **src_base_model)
+    print(s4)
+    s5 = xGaussianDisk('Source 5', ra=10., dec=15., sigma=0.01,
+                       **src_base_model)
+    print(s5)
+    img_file_path = os.path.join(XIMPOL_CONFIG, 'fits',
+                                 'crab_0p3_10p0_keV.fits')
+    s6 = xExtendedSource('Source 6', img_file_path, **src_base_model)
+    print(s6)
+    
+
+if __name__ == '__main__':
+    main()
