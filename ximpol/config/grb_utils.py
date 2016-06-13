@@ -104,7 +104,7 @@ def parse_light_curve(file_path, num_bins=100, num_min_data=5):
     else:
         logger.info('Data points < %i !\nNot producing any light curve.'\
                         %num_min_data)
-        return 0
+        return None
 
 def main():
     """Test the script Retriving RA, Dec and Index for GRB 130427A 
