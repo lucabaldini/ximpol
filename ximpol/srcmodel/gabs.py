@@ -223,15 +223,17 @@ class xpeInterstellarAbsorptionModel:
 
 
 def main():
-    """
+    """Simple test code.
     """
     from ximpol.utils.matplotlib_ import pyplot as plt
-    m = xpeInterstellarAbsorptionModel()
-    f = m.transmission_factor(1e22)
+    model = xpeInterstellarAbsorptionModel()
+    trans = model.transmission_factor(1.e22)
+    energy = numpy.linspace(1, 10, 10)
+    print(trans(energy))
     plt.figure()
-    m.xsection.plot(logx=True, logy=True, show=False)
+    model.xsection.plot(logx=True, logy=True, show=False)
     plt.figure()
-    f.plot(logx=True)
+    trans.plot(logx=True)
     
 
 if __name__ == '__main__':
