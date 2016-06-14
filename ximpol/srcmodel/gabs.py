@@ -29,8 +29,8 @@ from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
 
 
 
-def mapped_column_density(ra, dec, map_name='LAB'):
-    """Return the mapped column density at a given position in the sky.
+def mapped_column_density_HI(ra, dec, map_name='LAB'):
+    """Return the mapped H_I column density at a given position in the sky.
 
     The value is read from one of the available input maps. Note that the
     data in the maps are stored in Galactic coordinates, while we're

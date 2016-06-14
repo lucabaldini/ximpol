@@ -20,7 +20,7 @@
 import sys
 import os
 
-from ximpol.srcmodel.gabs import mapped_column_density,\
+from ximpol.srcmodel.gabs import mapped_column_density_HI,\
     xpeInterstellarAbsorptionModel
 from ximpol.utils.logging_ import logger, abort
 from ximpol.utils.matplotlib_ import pyplot as plt
@@ -43,7 +43,7 @@ def main(interactive=False):
 
     plt.figure()
     ra, dec = 10.684, 41.269
-    column_density = mapped_column_density(ra, dec, 'LAB')
+    column_density = mapped_column_density_HI(ra, dec, 'LAB')
     trans = model.transmission_factor(column_density)
     trans.plot(logx=True, show=False, label='$n_H = $%.3e' % column_density)
     plt.legend(loc='upper left')
