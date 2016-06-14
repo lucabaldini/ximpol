@@ -73,7 +73,20 @@ class xpeInterstellarAbsorptionModel:
 
     Here we essentially read the numbers in table 2 from the paper and
     build an interpolated univariate linear spline with the photoabsorption
-    cross section values.
+    cross section values. The cross section is parametrized as a set of
+    piecewise quadratic functions fitted to the data in energy bins---see the
+    figure below.
+
+    .. image:: ../figures/gabs_xsection.png
+
+    Example
+    -------
+    >>> from ximpol.srcmodel.gabs import xpeInterstellarAbsorptionModel
+    >>> model = xpeInterstellarAbsorptionModel()
+    # Build a spline with the interstellar transmission factor as a function
+    # of the photon energy
+    >>> trans = model.transmission_factor(1.e22)
+    >>> trans.plot()
     """
 
     def __init__(self, num_samples=250):
@@ -129,7 +142,10 @@ class xpeInterstellarAbsorptionModel:
         """Return a spline with the values of absorption cross section
         multiplied by the cube of the energy, as a function of the energy.
         
-        This is essentially the same plot in Figure 1 of the original paper.
+        This is essentially the same plot in Figure 1 of the original paper, as
+        illustrated in the following figure
+        
+        .. image:: ../figures/gabs_xsection_ecube.png
         """
         _x = self.xsection.x
         _y = self(_x)*(_x**3.)
@@ -145,6 +161,8 @@ class xpeInterstellarAbsorptionModel:
 
         .. math::
             \\varepsilon = \\exp(-n_H\\sigma)
+
+        .. image:: ../figures/gabs_trans_samples.png
 
         Arguments
         ---------
