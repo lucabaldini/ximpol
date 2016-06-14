@@ -53,7 +53,7 @@ def get_all_swift_grb_names():
     grb_list.remove('GRB 120711B')
     return grb_list
 
-def download_swift_grb_lc_file(grb_name, min_obs_time=22000, \
+def download_swift_grb_lc_file(grb_name, min_obs_time=21600, \
                                light_curve='flux'):
     """Downloads an ascii file with the light curve of a given GRB 
        observed by Swift.

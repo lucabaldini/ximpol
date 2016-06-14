@@ -35,9 +35,9 @@ def plot_swift_lc(grb_list,show=True):
     num_grb = 0
     for grb_name in grb_list:
         flux_outfile = download_swift_grb_lc_file(grb_name)
-        if type(flux_outfile) is str:
+        if flux_outfile is not None:
             integral_flux_spline = parse_light_curve(flux_outfile)
-            if integral_flux_spline != 0:
+            if integral_flux_spline is not None:
                 if grb_name == 'GRB 130427A':
                     integral_flux_spline.plot(num_points=1000,logx=True,\
                                               logy=True,show=False,\
