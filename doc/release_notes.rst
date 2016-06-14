@@ -6,6 +6,7 @@ Release notes
   components (issue #120).
 * Some cleanup of the Galactic absorption code (issue #120).
 * Unit test for the intertellar absorption added.
+* Fix for issue #103.
 
 
 *ximpol (0.44.2) - Fri, 10 Jun 2016 17:58:27 +0200*

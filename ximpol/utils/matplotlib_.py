@@ -37,6 +37,13 @@ DEFAULT_FIG_HEIGHT = 6.
 DEFAULT_FIG_SIZE = (DEFAULT_FIG_WIDTH, DEFAULT_FIG_HEIGHT)
 
 
+if os.environ.get('XPOL_USETEX', False):
+    XPOL_USETEX = True
+else:
+    XPOL_USETEX = False
+logger.info('Setting up matplotlib with XPOL_USETEX = %s' % XPOL_USETEX)
+    
+
 def property(key):
     """Return a given matplotlib configuration property.
     """
@@ -89,7 +96,7 @@ def setup():
     matplotlib.rc('lines', linewidth=2.0)
     matplotlib.rc('patch', linewidth=0.5, facecolor='blue', edgecolor='eeeeee',
                   antialiased=True)
-    matplotlib.rc('text', hinting_factor=8, usetex=True)
+    matplotlib.rc('text', hinting_factor=8, usetex=XPOL_USETEX)
     matplotlib.rc('mathtext', fontset='cm')
     matplotlib.rc('axes',facecolor='white', edgecolor='bcbcbc', grid=True,
                   titlesize='x-large', labelsize='large')
