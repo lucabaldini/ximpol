@@ -54,6 +54,9 @@ PARSER.add_argument('--configfile', type=str, default=None,
                     help='the input configuration file')
 PARSER.add_argument('--regfile', type=str, default=None,
                     help='the input region file')
+PARSER.add_argument('--mc', type=ast.literal_eval, choices=[True, False],
+                    default=True,
+                    help='use chandra coordinates for source id definition')
 PARSER.add_argument('--duration', type=float, default=numpy.nan,
                     help='the duration (in s) of the simulation')
 PARSER.add_argument('--irfname', type=str, default='xipe_baseline',
@@ -178,19 +181,6 @@ def chandra2ximpol(file_path, **kwargs):
     aeff_ratio = xInterpolatedUnivariateSplineLinear(_x, _y)
     logger.info('Loading the input FITS event file...')
     hdu_list = fits.open(file_path)
-
-    # If configuration file is not provided we assume a non-polarized source.
-    if kwargs['configfile'] is None:
-        logger.info('Configuration file not provided.')
-        logger.info('Setting polarization angle and degree to zero...')
-        polarization_degree = constant(0.)
-        polarization_angle = constant(0.)
-        pol_dict = {0: [polarization_degree, polarization_angle]}
-    else:
-        logger.info('Setting up the polarization source model...')
-        module_name = os.path.basename(kwargs['configfile']).replace('.py', '')
-        pol_dict = imp.load_source(module_name,
-                                        kwargs['configfile']).POLARIZATION_DICT
     logger.info('Done %s.' % chrono)
 
     hdr = hdu_list[1].header
@@ -198,7 +188,7 @@ def chandra2ximpol(file_path, **kwargs):
     tstart = hdr['TSTART']
     tstop = hdr['TSTOP']
     obs_time = tstop - tstart
-    logger.info('Chandra observation time: %i s.' %obs_time)
+    logger.info('Chandra observation time: %i s.' % obs_time)
     ra_pnt = hdr['RA_PNT']
     dec_pnt = hdr['DEC_PNT']
     ROI_MODEL = xROIModel(ra_pnt, dec_pnt)
@@ -232,27 +222,48 @@ def chandra2ximpol(file_path, **kwargs):
         col_mc_energy, col_time, col_mc_ra, col_mc_dec = time_scaling(scale,
                                 col_mc_energy, col_time, col_mc_ra, col_mc_dec)
 
+    # The Ra Dec coordinates are calculated here because they are needed in
+    # source id definition (in case of kwargs['chandra]==False)
+    col_ra, col_dec = psf.smear(col_mc_ra, col_mc_dec)
     # The default source id in case of no regfile and for regions not selected
     # is zero. For regions selected in the regfile the source id is determined
     # by the order of definition (starting with 1).
+    logger.info('Defining source id...')
     src_id = numpy.zeros(len(col_mc_dec))
+    n_reg = -1
     if kwargs['regfile'] is not None:
-        logger.info('Defining source id...')
         regions = pyregion.open(kwargs['regfile'])
-        for j, region in enumerate(regions):
-            mask = filter_region(region, col_mc_ra, col_mc_dec)
-            src_id[mask]=j+1
+        for n_reg, region in enumerate(regions):
+            if kwargs['mc'] is True:
+                mask = filter_region(region, col_mc_ra, col_mc_dec)
+            else:
+                mask = filter_region(region, col_ra, col_dec)
+            src_id[mask]=n_reg+1
 
-    # In case of configfile with polarization model defined in different regions
-    # the photoelectron distribution is generated according to them.
+    # If configuration file is not provided we assume a non-polarized source.
+    # In case of configfile with polarization model defined in different
+    # regions the photoelectron distribution is generated according to them.
+    if kwargs['configfile'] is None:
+        logger.info('Configuration file not provided.')
+        logger.info('Setting polarization angle and degree to zero...')
+        polarization_degree = constant(0.)
+        polarization_angle = constant(0.)
+        pol_dict = {0: [polarization_degree, polarization_angle]}
+        for k in range(1,n_reg+2):
+            pol_dict[k] = [polarization_degree, polarization_angle]
+    else:
+        logger.info('Setting up the polarization source model...')
+        module_name = os.path.basename(kwargs['configfile']).replace('.py', '')
+        pol_dict = imp.load_source(module_name,
+                                        kwargs['configfile']).POLARIZATION_DICT
     logger.info('Generating photoelectron azimuthal distribution...')
     col_pe_angle = numpy.empty(len(col_mc_dec))
     for key, pol_list in pol_dict.items():
         _mask_src = src_id == key
         pol_degree = pol_list[0](col_mc_energy[_mask_src], col_time[_mask_src],
-                                    col_mc_ra[_mask_src], col_mc_dec[_mask_src])
+                                col_mc_ra[_mask_src], col_mc_dec[_mask_src])
         pol_angle = pol_list[1](col_mc_energy[_mask_src], col_time[_mask_src],
-                                    col_mc_ra[_mask_src], col_mc_dec[_mask_src])
+                                col_mc_ra[_mask_src], col_mc_dec[_mask_src])
         col_pe_angle[_mask_src] = modf.rvs_phi(col_mc_energy[_mask_src],
                                                         pol_degree, pol_angle)
 
@@ -267,7 +278,6 @@ def chandra2ximpol(file_path, **kwargs):
     event_list.set_column('ENERGY',col_energy)
     event_list.set_column('MC_RA', col_mc_ra)
     event_list.set_column('MC_DEC', col_mc_dec)
-    col_ra, col_dec = psf.smear(col_mc_ra, col_mc_dec)
     event_list.set_column('RA', col_ra)
     event_list.set_column('DEC', col_dec)
     event_list.set_column('MC_SRC_ID', src_id)
