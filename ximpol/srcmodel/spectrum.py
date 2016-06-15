@@ -21,6 +21,8 @@ import numpy
 from ximpol.core.rand import xUnivariateGenerator, xUnivariateAuxGenerator
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
 from ximpol.core.spline import xInterpolatedBivariateSplineLinear
+from ximpol.irf.mrf import mdp99, xMDPTable
+from ximpol.utils.units_ import erg2keV
 
 
 def power_law(C, Gamma):
@@ -36,6 +38,77 @@ def power_law(C, Gamma):
         def _function(E, t):
             return C*numpy.power(E, -Gamma)
     return _function
+
+
+def pl_norm(integral, emin, emax, index, energy_power=0.):
+    """Return the power-law normalization resulting in a given integral
+    flux (or integral energy flux, or more in general integral of the
+    flux multiplied by a generic power of the energy) between the minimum and
+    maximum energies assuming a given spectral index.
+
+    More specifically, given a power law of the form
+
+    .. math::
+       \\mathcal{S}(E) = CE^{-\\Gamma},
+    
+    we define :math:`\\beta = (1 + p - \\Gamma)` and calculate
+    
+    .. math::
+       I_{p} = \\int_{E_{\\rm min}}^{E_{\\rm max}} E^{p}\\mathcal{S}(E) dE =
+       \\begin{cases}
+       \\frac{C}{\\beta}
+       \\left( E_{\\rm max}^{\\beta} - E_{\\rm min}^{\\beta}\\right)
+       \\quad \\beta \\neq 0\\\\
+       C \\ln \\left( E_{\\rm max}/E_{\\rm min} \\right)
+       \\quad \\beta = 0\\\\
+       \\end{cases}.
+    
+    Hence
+    
+    .. math::
+        C =
+        \\begin{cases}
+        \\frac{I_p\\beta}{
+        \\left( E_{\\rm max}^{\\beta} - E_{\\rm min}^{\\beta}\\right)}
+        \\quad \\beta \\neq 0\\\\
+        \\frac{I_p}{\\ln \\left( E_{\\rm max}/E_{\\rm min} \\right)}.
+        \\end{cases}
+
+    Arguments
+    ---------
+    integral : float or array
+        The value of the integral flux or energy-to-some-power flux
+
+    emin : float
+        The minimum energy for the integral flux
+
+    emax : float
+        The maximum energy for the integral flux
+
+    index : float
+        The power-law index
+
+    energy_power : float
+        The power of the energy in the integral
+
+    erg : bool
+        if True, convert erg to keV in the calculation.
+    """
+    assert emax > emin
+    beta = 1 + energy_power - index
+    if beta != 0:
+        return integral*beta/(emax**beta - emin**beta)
+    else:
+        return integral/numpy.log(emax/emin)
+    
+
+def int_eflux2pl_norm(integral, emin, emax, index, erg=True):
+    """Convert an integral energy flux into the corresponding power-law
+    normalization.
+    """
+    if erg:
+        integral = erg2keV(integral)
+    return pl_norm(integral, emin, emax, index, 1.)
 
 
 class xCountSpectrum(xUnivariateAuxGenerator):
@@ -73,7 +146,8 @@ class xCountSpectrum(xUnivariateAuxGenerator):
             """Return the convolution between the effective area and
             the input photon spectrum.
             """
-            return scale*source_spectrum(E, t)*numpy.tile(aeff(E[0]), (t.shape[0], 1))
+            return scale*source_spectrum(E, t)*numpy.tile(aeff(E[0]),
+                                                          (t.shape[0], 1))
 
         xUnivariateAuxGenerator.__init__(self, t, aeff.x, _pdf, **fmt)
         self.light_curve = self.build_light_curve()
@@ -147,6 +221,38 @@ class xCountSpectrum(xUnivariateAuxGenerator):
         if emax is None:
             emax = self.ymax()
         return self.integral(tmin, tmax, emin, emax)
+
+    def build_mdp_table(self, energy_binning, modulation_factor):
+        """Calculate the MDP values in energy bins, given the modulation
+        factor of the instrument as a function of the energy.
+
+        Arguments
+        ---------
+        energy_binning : array
+            The energy binning
+        modulation_factor : ximpol.irf.mrf.xModulationFactor instance
+            The instrument modulation factor as a function of the energy.
+        """
+        # Build the time-integrated spectrum.
+        time_integrated_spectrum = self.build_time_integral()
+        # Build the modulation-factor spectrum, i.e. the object that we
+        # integrate to calculate the effective modulation factor in a
+        # given energy bin for a given spectrum.
+        _x = time_integrated_spectrum.x
+        _y = time_integrated_spectrum.y*modulation_factor(_x)
+        mu_spectrum = xInterpolatedUnivariateSplineLinear(_x, _y)
+        # Loop over the energy bins and calculate the actual MDP values.
+        # Note that we also calculate the MDP on the entire energy range.
+        observation_time = self.xmax() - self.xmin()
+        mdp_table = xMDPTable(observation_time)
+        ebins = zip(energy_binning[:-1], energy_binning[1:]) +\
+                [(energy_binning[0], energy_binning[-1])]
+        for _emin, _emax in ebins:
+            num_counts = self.num_expected_counts(emin=_emin, emax=_emax)
+            mu_eff = mu_spectrum.integral(_emin, _emax)/num_counts
+            mdp = mdp99(mu_eff, num_counts)
+            mdp_table.add_row(mdp, _emin, _emax, mu_eff, num_counts)
+        return mdp_table
 
 
 def main():

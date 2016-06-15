@@ -201,7 +201,9 @@ class xUnivariateSplineBase:
             yname = self.yname
         if yunits is None:
             yunits = self.yunits
-        return self.__class__(_x, _y)
+        fmt = dict(xname=self.xname, xunits=self.xunits, yname=yname,
+                   yunits=yunits)
+        return self.__class__(_x, _y, **fmt)
 
     @classmethod
     def label(cls, name, units=None):

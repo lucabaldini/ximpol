@@ -30,6 +30,7 @@ from xpobssim import xpobssim, PARSER as XPOBSSIM_PARSER
 from xpselect import xpselect, PARSER as XPSELECT_PARSER
 from chandra2ximpol import chandra2ximpol, PARSER as CHANDRA2XIMPOL_PARSER
 from xpbin import xpbin, PARSER as XPBIN_PARSER
+from xpmdp import xpmdp, PARSER as XPMDP_PARSER
 
 from ximpol.utils.logging_ import logger
 from ximpol.utils.os_ import rm
@@ -139,3 +140,13 @@ class xPipeline:
         outfile = chandra2ximpol(file_path, **kwargs)
         self.converted_files.append(outfile)
         return outfile
+
+    def xpmdp(self, **kwargs):
+        """Calculate the MDP in energy bins for a given source model.
+        
+        All command-line switches accepted by xpmdp can be passed as
+        keyword arguments here.
+        """
+        switches = self.command_line(**kwargs).split()
+        kwargs = XPMDP_PARSER.parse_args(switches).__dict__
+        return xpmdp(**kwargs)
