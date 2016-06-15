@@ -69,9 +69,9 @@ PARSER.add_argument('--ebinfile', type=str, default=None,
                     help='path to the optional energy bin definition file')
 PARSER.add_argument('--ebinning', type=ast.literal_eval, default=None,
                     help='the list containing the bin edges')
-#PARSER.add_argument('--clobber', type=ast.literal_eval, choices=[True, False],
-#                    default=True,
-#                    help='overwrite or do not overwrite existing output files')
+PARSER.add_argument('--clobber', type=ast.literal_eval, choices=[True, False],
+                    default=True,
+                    help='overwrite or do not overwrite existing output files')
 
 
 
