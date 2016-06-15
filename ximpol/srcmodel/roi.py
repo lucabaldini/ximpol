@@ -95,7 +95,7 @@ class xModelComponentBase:
         self.flux_label = 'Flux @ t = %d: %.3e erg/cm2/s (%.2f mcrab)' %\
                           (t, self.flux_ergcms, self.flux_mcrab)
 
-    def integral_flux(self, emin=2.0, emax=8.0, t=None):
+    def integral_flux(self, emin=2.0, emax=8.0, t=None, erg=True):
         """Return the integral source flux at a generic time.
 
         This is achieved by taking a "slice" of the source spectrum
@@ -117,7 +117,8 @@ class xModelComponentBase:
         _x = numpy.linspace(emin, emax, 100)
         _y = _x*self.energy_spectrum(_x, t)
         _flux = xInterpolatedUnivariateSplineLinear(_x, _y).integral(emin, emax)
-        _flux = keV2erg(_flux)
+        if erg:
+            _flux = keV2erg(_flux)
         return _flux
 
     @classmethod

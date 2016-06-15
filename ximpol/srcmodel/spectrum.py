@@ -22,6 +22,7 @@ from ximpol.core.rand import xUnivariateGenerator, xUnivariateAuxGenerator
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
 from ximpol.core.spline import xInterpolatedBivariateSplineLinear
 from ximpol.irf.mrf import mdp99, xMDPTable
+from ximpol.utils.units_ import erg2keV
 
 
 def power_law(C, Gamma):
@@ -37,6 +38,84 @@ def power_law(C, Gamma):
         def _function(E, t):
             return C*numpy.power(E, -Gamma)
     return _function
+
+
+def pl_norm(integral, emin, emax, index, energy_power=0., erg=True):
+    """Return the power-law normalization resulting in a given integral
+    flux (or integral energy flux, or more in general integral of the
+    flux multiplied by a generic power of the energy) between the minimum and
+    maximum energies assuming a given spectral index.
+
+    More specifically, given a power law of the form
+
+    .. math::
+       \\mathcal{S}(E) = CE^{-\\Gamma},
+    
+    we define :math:`\\beta = (1 + p - \\Gamma)` and calculate
+    
+    .. math::
+       I_{p} = \\int_{E_{\\rm min}}^{E_{\\rm max}} E^{p}\\mathcal{S}(E) dE =
+       \\begin{cases}
+       \\frac{C}{\\beta}
+       \\left( E_{\\rm max}^{\\beta} - E_{\\rm min}^{\\beta}\\right)
+       \\quad \\beta \\neq 0\\\\
+       C \\ln \\left( E_{\\rm max}/E_{\\rm min} \\right)
+       \\quad \\beta = 0\\\\
+       \\end{cases}.
+    
+    Hence
+    
+    .. math::
+        C =
+        \\begin{cases}
+        \\frac{I_p\\beta}{
+        \\left( E_{\\rm max}^{\\beta} - E_{\\rm min}^{\\beta}\\right)}
+        \\quad \\beta \\neq 0\\\\
+        \\frac{I_p}{\\ln \\left( E_{\\rm max}/E_{\\rm min} \\right)}.
+        \\end{cases}
+
+    Arguments
+    ---------
+    integral : float or array
+        The value of the integral flux or energy-to-some-power flux
+
+    emin : float
+        The minimum energy for the integral flux
+
+    emax : float
+        The maximum energy for the integral flux
+
+    index : float
+        The power-law index
+
+    energy_power : float
+        The power of the energy in the integral
+
+    erg : bool
+        if True, convert erg to keV in the calculation.
+    """
+    assert emax > emin
+    if erg:
+        integral = erg2keV(integral)
+    beta = 1 + energy_power - index
+    if beta != 0:
+        return integral*beta/(emax**beta - emin**beta)
+    else:
+        return integral/numpy.log(emax/emin)
+
+
+def int_flux2pl_norm(integral, emin, emax, index, erg=True):
+    """Convert an integral flux into the corresponding power-law
+    normalization.
+    """
+    return pl_norm(integral, emin, emax, index, 0., erg)
+
+
+def int_eflux2pl_norm(integral, emin, emax, index, erg=True):
+    """Convert an integral energy flux into the corresponding power-law
+    normalization.
+    """
+    return pl_norm(integral, emin, emax, index, 1., erg)
 
 
 class xCountSpectrum(xUnivariateAuxGenerator):

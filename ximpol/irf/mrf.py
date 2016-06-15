@@ -95,6 +95,11 @@ class xMDPTable:
                          num_bkg)
         self.rows.append(row)
 
+    def mdp_values(self):
+        """Return the MDP values in the various energy bins.
+        """
+        return [row.mdp for row in self.rows]
+
     def __str__(self):
         """String formatting.
         """
