@@ -64,7 +64,7 @@ def get_spectrum(_energy, norm, index, aeff_file_path):
     _aeff = aeff_spline.eval_(_energy,theta=0.)
     return _aeff*norm*numpy.power(_energy, -index)
 
-def get_integral_flux(grb_name, delta_t=600):
+def get_integral_flux(grb_name,delta_t=600):
     file_path = download_swift_grb_lc_file(grb_name)
     if file_path is not None:
         index = get_grb_spec_index(file_path)
@@ -77,7 +77,7 @@ def get_integral_flux(grb_name, delta_t=600):
             t_min = light_curve.xmin()
             t_max = t_min + delta_t
             flux = light_curve.integral(t_min,t_max)
-            return flux, t_min
+            return flux, light_curve.xmin()
         else:
             return None, None
     else:
@@ -101,7 +101,6 @@ def get_grb_mdp(grb_name, repointing=0., obs_time=100000, \
                                      numpy.power(MIN_ENERGY, 2. - index))
             scale_factor *= 6.242e8
             light_curve = E_light_curve.scale(scale_factor)
-            #light_curve.plot(logx=True,logy=True)
             t_min = repointing
             if t_min < light_curve.xmin():
                 logger.info('Repointing time < to the minimum time of the burst...')
@@ -114,18 +113,17 @@ def get_grb_mdp(grb_name, repointing=0., obs_time=100000, \
                 _energy = numpy.linspace(MIN_ENERGY,MAX_ENERGY,1000)
                 _modf = get_eff_mu(_energy,mu_file_path)
                 _spectrum = get_spectrum(_energy,norm,index,aeff_file_path)
-                #fmt = dict(yname='Energy Spectrum', \
-                    #xname='Energy', xunits='keV', \
-                    #yunits='keV$^{-1}$')
                 energy_spectrum = xInterpolatedUnivariateSplineLinear(_energy,\
                                                                       _spectrum)
-                #energy_spectrum.plot(logy=False, logx=False)
                 num_evt = energy_spectrum.integral(MIN_ENERGY,MAX_ENERGY)
                 if not math.isnan(num_evt) and num_evt != 0.:
-                    logger.info('Total estimated number of events: %i'%int(num_evt))
+                    logger.info('Total estimated number of events: %i'\
+                                %int(num_evt))
                     mu = numpy.average(_modf,weights=_spectrum)
                     mdp = mdp99(mu,int(num_evt))
                     if not math.isnan(mdp):
+                        logger.info('%lf--%lf keV: %i counts in %i s, mu %lf, MDP %lf'\
+                                    %(MIN_ENERGY,MAX_ENERGY,int(num_evt),obs_time,mu,mdp))
                         return mdp
                     else:
                         return None
@@ -150,15 +148,16 @@ def plot_grb_mdp_vs_repoint(grb_name, _t_repoint, t_obs=100000, \
         else:
             mdp_list.append(0.)
     _mdp = numpy.array(mdp_list)*100
-    n_groups = len(_t_repoint)
-    plt.plot(_t_repoint, _mdp, marker='o', linestyle=':', color=color)
+    plt.plot(_t_repoint, _mdp, marker='.',linestyle='--', lw=0.5, color=color,\
+             label=grb_name)
     plt.xlabel('$t_{repoint}$ [s]')
     plt.ylabel('MDP (\%)')
-    plt.title('%s -- MDP vs $t_{repoint}$, $\Delta t_{obs} =$ %i s'\
-              %(grb_name,t_obs))
+    plt.title('MDP vs $t_{repoint}$, $\Delta t_{obs} =$ %i s'\
+              %(t_obs))
     if show:
         plt.show()
 
+target = []
 def plot_grb_mdp_vs_obstime(grb_name, _t_obs, t_repoint=21600, \
                             color='black', show=True):
     """Plot all the MDP (changing the repointing elapsed time defined in *arg) 
@@ -171,75 +170,36 @@ def plot_grb_mdp_vs_obstime(grb_name, _t_obs, t_repoint=21600, \
             mdp_list.append(mdp)
         else:
             mdp_list.append(0.)
-    _mdp = numpy.array(mdp_list)*100
-    n_groups = len(_t_obs)
-    plt.plot(_t_obs,_mdp, marker='o', linestyle=':', color=color)
+    target = [i for i in _mdp if i<0.09*_mdp[0]]
+    plt.plot(_t_obs,_mdp, marker='.',linestyle='--', lw=0.5, color=color,\
+             label=grb_name)
     plt.xlabel('$\Delta t_{obs}$ [s]')
     plt.ylabel('MDP (\%)')
-    plt.set_yscale('log')
-    plt.title('%s, MDP vs $\Delta t_{obs}$, $ t_{repoint} =$ %i s'\
-              %(grb_name,t_repoint))
+    plt.title('MDP vs $\Delta t_{obs}$, $ t_{repoint} =$ %i s'\
+              %(t_repoint))
+    print _mdp
     if show:
         plt.show()
 
 def main():
     """Produce some plots
     """
-    # If mdp_repoint = True Produce the plot of the MDP for a given GRB 
-    # for different repointing times
-    mdp_repoint = True
-    if mdp_repoint == True:
-        grb_list = ['GRB 130427A','GRB 080319B']
-        plt.figure(figsize=(10, 6), dpi=80)
-        for grb in grb_list:
-            c = [random.uniform(0,1),random.uniform(0,1),random.uniform(0,1)]
-            repointing_time = numpy.linspace(0,60000,30)
-            plot_grb_mdp_vs_repoint(grb,repointing_time,show=False,color=c)
-        overlay_tag()
-        save_current_figure('grb_MDP',clear=False)
-        #for grb in grb_list:
-            #plt.figure(figsize=(10, 6), dpi=80)
-            #obs_time = numpy.logspace(100,100000,20)
-            #plot_grb_mdp_vs_obstime(grb,obs_time,show=False)
-        plt.show()
-
-    # If mdp_repoint = True, produce the plot of the MDP for all the Swift 
-    # GRBs and a given repointing time
-    all_mdp_repoint = True
-    if all_mdp_repoint == True:
-        histo = plt.figure(figsize=(10, 6), dpi=80)
+    # If all_mdp = True, produces: 
+    # 1) the plot of the MDP for all the Swift GRBs 
+    #    and a given repointing time
+    # 2) the plot of the correlation between MDP for all the Swift 
+    #    GRBs and a given repointing time and the integral prompt 
+    #    (first 10 min) flux
+    good_grb = []
+    all_mdp = False
+    if all_mdp == True:
         grb_list = get_all_swift_grb_names()
-        mdp_list = []
         bins = numpy.linspace(0, 100, 100)
-        t = 21600
-        for grb in grb_list:
-            mdp = get_grb_mdp(grb,repointing=t)
-            if mdp is not None:
-                mdp_list.append(mdp*100)
-        _mdp = numpy.array(mdp_list)
-        plt.title('Sample of %i GRBs, MDPs if repointing after %i seconds'\
-                  %(len(_mdp),t))
-        plt.hist(_mdp, bins, alpha=0.5)
-        plt.xlabel('MDP (\%)')
-        plt.ylabel('Number of GRBs')
-        overlay_tag()
-        save_current_figure('grb_MDP_repoint', clear=False)
-        plt.show()
-        
-    # If mdp_promptflux = True, produce the plot of the correlation 
-    # between MDP for all the Swift GRBs and a given repointing time
-    # and the integral prompt (first 10 min) flux
-    all_mdp_promptflux = True
-    if all_mdp_promptflux == True:
-        plt.figure(figsize=(10, 6), dpi=80)
-        grb_list = get_all_swift_grb_names()        
         t_rep = 21600
         t_obs = 100000
         promt_time = 600
-        mdp_list = []
-        flux_list = []
-        t0_list = []
-        c= []
+        mdp_list, flux_list, t0_list = [], [], []
+        c, good_grb = [], []
         for grb in grb_list:
             mdp = get_grb_mdp(grb,repointing=t_rep,obs_time=t_obs)
             flux, t0 = get_integral_flux(grb,delta_t=promt_time)
@@ -247,8 +207,9 @@ def main():
                 mdp_list.append(mdp*100)
                 flux_list.append(flux)
                 t0_list.append(t0)
-                if grb is 'GRB 130427A' or grb is 'GRB 080319B':
+                if mdp*100 <= 15:
                     c.append('red')
+                    good_grb.append(grb)
                 elif t0 > 350:
                     c.append('grey')
                 else:
@@ -256,13 +217,62 @@ def main():
         _mdp = numpy.array(mdp_list)
         _flux = numpy.array(flux_list)
         _t0 = numpy.array(t0_list)
+        # 1)------------------------------------------------------
+        histo = plt.figure(figsize=(10, 6), dpi=80)
+        plt.title('Sample of %i GRBs, MDPs if repointing after %i seconds'\
+                  %(len(_mdp),t_rep))
+        plt.hist(_mdp, bins, alpha=0.5)
+        plt.xlabel('MDP (\%)')
+        plt.ylabel('Number of GRBs')
+        overlay_tag()
+        save_current_figure('grb_MDP_repoint', clear=False)
+        # 2)------------------------------------------------------
+        plt.figure(figsize=(10, 6), dpi=80)
+        ax = plt.gca()
         plt.scatter(_mdp, _flux, s=30, marker='.', color=c)
         plt.xlabel('MDP (\%)')
         plt.ylabel('Prompt [first %i s] integral flux [keV$^{-1}$cm$^{-2}$]'\
-                   %promt_time)
+                   %(promt_time,21600))
         plt.title('$\Delta t_{obs}=%i s,$ $t_{repoint}=%i s$'%(t_obs,t_rep))
+        ax.set_yscale('log')
+        ax.set_xscale('log')
         overlay_tag()
         save_current_figure('grb_MDP_prompt',clear=False)
+        plt.show()
+    
+    # If mdp_vs_time = True Produces: 
+    # 1) the plot of the MDP for a given GRB 
+    #    as a function of the repointing time
+    # 2) the plot of the MDP for a given GRB 
+    #    as a function of the observation duration
+    mdp_vs_time = True
+    color_list = []
+    if mdp_vs_time == True:
+        grb_list = ['GRB 060729', 'GRB 080411', 'GRB 091127', 'GRB 111209A',\
+                    'GRB 120711A', 'GRB 130427A', 'GRB 130505A', 'GRB 130907A',\
+                    'GRB 150403A']
+        #1)------------------------------------------------------
+        plt.figure(figsize=(10, 6), dpi=80)
+        ax = plt.gca()
+        for grb in grb_list:
+            c = [random.uniform(0,1),random.uniform(0,1),random.uniform(0,1)]
+            color_list.append(c)
+            repointing_time = numpy.linspace(100,60000,30)
+            plot_grb_mdp_vs_repoint(grb,repointing_time,show=False,color=c)
+        ax.legend(loc='upper left', shadow=False)
+        plt.plot([21600, 21600], [0, 30], 'k--', lw=1, color='green')
+        plt.plot([43200, 43200], [0, 30], 'k--', lw=1,color='green')
+        overlay_tag()
+        save_current_figure('grb_MDP_vs_repoint',clear=False)
+        #2)------------------------------------------------------
+        plt.figure(figsize=(10, 6), dpi=80)
+        ax = plt.gca()
+        for i,grb in enumerate(grb_list):
+            obs_time = numpy.linspace(1000,50000,20)
+            plot_grb_mdp_vs_obstime(grb,obs_time,show=False,color=color_list[i])
+        ax.legend(loc='upper right', shadow=False)
+        overlay_tag(x=0.5)
+        save_current_figure('grb_MDP_vs_obstime',clear=False)
         plt.show()
 
 if __name__=='__main__':
