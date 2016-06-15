@@ -40,7 +40,7 @@ def power_law(C, Gamma):
     return _function
 
 
-def pl_norm(integral, emin, emax, index, energy_power=0., erg=True):
+def pl_norm(integral, emin, emax, index, energy_power=0.):
     """Return the power-law normalization resulting in a given integral
     flux (or integral energy flux, or more in general integral of the
     flux multiplied by a generic power of the energy) between the minimum and
@@ -95,27 +95,20 @@ def pl_norm(integral, emin, emax, index, energy_power=0., erg=True):
         if True, convert erg to keV in the calculation.
     """
     assert emax > emin
-    if erg:
-        integral = erg2keV(integral)
     beta = 1 + energy_power - index
     if beta != 0:
         return integral*beta/(emax**beta - emin**beta)
     else:
         return integral/numpy.log(emax/emin)
-
-
-def int_flux2pl_norm(integral, emin, emax, index, erg=True):
-    """Convert an integral flux into the corresponding power-law
-    normalization.
-    """
-    return pl_norm(integral, emin, emax, index, 0., erg)
-
+    
 
 def int_eflux2pl_norm(integral, emin, emax, index, erg=True):
     """Convert an integral energy flux into the corresponding power-law
     normalization.
     """
-    return pl_norm(integral, emin, emax, index, 1., erg)
+    if erg:
+        integral = erg2keV(integral)
+    return pl_norm(integral, emin, emax, index, 1.)
 
 
 class xCountSpectrum(xUnivariateAuxGenerator):
