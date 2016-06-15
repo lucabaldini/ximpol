@@ -3,12 +3,14 @@ Release notes
 
 
 * Galactic absorption column density and redhsift added to all the model
-  components (issue #120).
+  components (working our way through issue #120).
 * Some cleanup of the Galactic absorption code (issue #120).
 * Unit test for the intertellar absorption added.
 * Fix for issue #103.
 * Some significant refactoring of the xpmdp code.
 * xpmdp added to the pipeline (closing issue #137).
+* Added a unit test comparing the xpmdp.py output with the figures from the
+  online sensitivity calculator.
 
 
 *ximpol (0.44.2) - Fri, 10 Jun 2016 17:58:27 +0200*
