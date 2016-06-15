@@ -127,7 +127,6 @@ def xpmdp(**kwargs):
         tstop = ROI_MODEL.max_validity_time()
         logger.info('Simulation stop time set to %s...' % tstop)
     kwargs['tstop'] = tstop
-    observation_time = kwargs['tstop'] - kwargs['tstart']
 
     # This is copied from roi.py and should probably be factored out.
     # Again, the ROI class should be able to sum the count spectra of all the
@@ -137,6 +136,7 @@ def xpmdp(**kwargs):
         abort('Multiple sources not implemented, yet.')
     source = sources[0]
     if isinstance(source, xPeriodicPointSource):
+        observation_time = kwargs['tstop'] - kwargs['tstart']
         psamples = numpy.linspace(kwargs['phasemin'], kwargs['phasemax'], 100)
         logger.info('Sampling phases: %s' % psamples)
         count_spectrum = xCountSpectrum(source.energy_spectrum, aeff, psamples,
