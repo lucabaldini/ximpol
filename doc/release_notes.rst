@@ -1,6 +1,9 @@
 Release notes
 =============
 
+* Minor bug fix.
+* ximpol.srcmodel.polarization module added to the documentation.
+
 
 *ximpol (0.45.0) - Wed, 15 Jun 2016 14:46:01 +0200*
 
