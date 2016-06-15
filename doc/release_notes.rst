@@ -8,6 +8,7 @@ Release notes
 * Unit test for the intertellar absorption added.
 * Fix for issue #103.
 * Some significant refactoring of the xpmdp code.
+* xpmdp added to the pipeline (closing issue #137).
 
 
 *ximpol (0.44.2) - Fri, 10 Jun 2016 17:58:27 +0200*
