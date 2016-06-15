@@ -31,7 +31,8 @@ PATH_POS = os.path.join(PATH_0,'xrt_positions')
 PATH_UNENH_POS = os.path.join(PATH_0,'xrt_unenh_positions')
 PATH_SPEC = os.path.join(PATH_0,'xrt_spectra')
 ALL_LC_PATH = os.path.join(PATH_CURV,'allcurvesflux.php')
-GRB_ALL_NAME = re.compile('[a-zA-Z]+\s[a-zA-Z]*\s*\d+[A-Z]*')
+#GRB_ALL_NAME = re.compile('[a-zA-Z]+\s[a-zA-Z]*\s*\d+[A-Z]*')
+GRB_ALL_NAME = re.compile('GRB\s\d+[A-Z]*')
 PHOTON_INDEX = re.compile('\>\d\.\d+\s')
 RA_DEC = re.compile('\([-]*\d+\.\d+')
 #NH = re.compile('\d+\.*\d*')
@@ -47,7 +48,7 @@ def get_all_swift_grb_names():
     grb_list = []
     f = urllib2.urlopen(ALL_LC_PATH)
     for line in f:
-        if "class='grb'>" in line:
+        if "class='grb'>GRB" in line:
             m = GRB_ALL_NAME.search(line)
             grb_list.append(m.group())
     grb_list.remove('GRB 120711B')
@@ -81,7 +82,15 @@ def download_swift_grb_lc_file(grb_name, min_obs_time=21600, \
                              light_curve))
     if os.path.exists(outfile):
         logger.info('Already saved file for %s'%grb_name)
-        return outfile
+        f = open(outfile)
+        lines = f.readlines()
+        last_time = float(lines[len(lines)-1].split()[0])
+        if check_obs_time(last_time,min_obs_time):
+            return outfile
+        elif not check_obs_time(last_time,min_obs_time):
+            logger.info('Obs time for %s < %f seconds!\nNot saving any data.'\
+                        %(grb_name,min_obs_time))
+            return None
     else:
         lc_url, lc = get_lc_url(grb_name,light_curve)
         data = lc.read().split()
@@ -101,6 +110,7 @@ def download_swift_grb_lc_file(grb_name, min_obs_time=21600, \
         elif not check_obs_time(last_time,min_obs_time):
             logger.info('Obs time for %s < %f seconds!\nNot saving any data.'\
                         %(grb_name,min_obs_time))
+            return None
 
 def check_obs_time(last_time, min_obs_time):
     """check if the time of the observation is greater than a referece time
