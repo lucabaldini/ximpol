@@ -145,6 +145,8 @@ def xpmdp(**kwargs):
         tsamples = source.sampling_time(kwargs['tstart'], kwargs['tstop'])
         logger.info('Sampling times: %s' % tsamples)
         count_spectrum = xCountSpectrum(source.energy_spectrum, aeff, tsamples)
+
+    # Do the actual work.
     ebinning =_make_energy_binning(**kwargs)
     mdp_table = count_spectrum.build_mdp_table(ebinning, modf)
     logger.info(mdp_table)
