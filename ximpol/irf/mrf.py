@@ -28,12 +28,81 @@ from ximpol.core.rand import xUnivariateAuxGenerator
 from ximpol.core.spline import optimize_grid_linear
 
 
-def mdp99(eff_mu, num_sig, num_bkg=0.):
+def mdp99(mu_effective, num_signal, num_bkg=0.):
     """Return the MDP at the 99% confidence level.
+
+    Note that the function returns numpy.nan if the number of signal events is
+    zero.
+
+    Arguments
+    ---------
+    mu_effective : float or array
+        The effective (i.e., weighted over the count spectrum) modulation
+        factor.
+    num_signal : float or array
+        The number of signal events.
+    num_bkg : float or array
+        The number of background events.
     """
-    if num_sig == 0:
+    if num_signal == 0:
         return numpy.nan
-    return 4.292/eff_mu*numpy.sqrt(num_sig + num_bkg)/num_sig
+    return 4.292/mu_effective*numpy.sqrt(num_signal + num_bkg)/num_signal
+
+
+
+class XMDPRecord:
+
+    """Small utility class to keep track 
+    """
+
+    def __init__(self, mdp, min_energy, max_energy, mu_effective, num_signal,
+                 num_bkg=0):
+        """Constructor.
+        """
+        self.mdp = mdp
+        self.min_energy = min_energy
+        self.max_energy = max_energy
+        self.mu_effective = mu_effective
+        self.num_signal = num_signal
+        self.num_bkg = num_bkg
+
+    def __str__(self):
+        """String formatting.
+        """
+        return '%.2f--%.2f keV: %d/%d counts, effective mu %.3f, MDP %.2f%%' %\
+            (self.min_energy, self.max_energy, self.num_signal, self.num_bkg,
+             self.mu_effective, 100*self.mdp)
+    
+
+    
+
+class xMDPTable:
+
+    """Small utility class to store a set MDP values evaluated in energy bins.
+    """
+
+    def __init__(self, observation_time):
+        """Constructor.
+        """
+        self.observation_time = observation_time
+        self.rows = []
+
+    def add_row(self, mdp, min_energy, max_energy, mu_effective, num_signal,
+                num_bkg=0):
+        """Add a row to the MDP table.
+        """
+        row = XMDPRecord(mdp, min_energy, max_energy, mu_effective, num_signal,
+                         num_bkg)
+        self.rows.append(row)
+
+    def __str__(self):
+        """String formatting.
+        """
+        text = 'MDP table (%.1f s observation time)\n' % self.observation_time
+        for row in self.rows:
+            text += '%s\n' % row
+        return text
+
 
 
 class xBinTableHDUMODFRESP(xBinTableHDUBase):

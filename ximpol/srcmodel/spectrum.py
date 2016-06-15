@@ -21,6 +21,7 @@ import numpy
 from ximpol.core.rand import xUnivariateGenerator, xUnivariateAuxGenerator
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
 from ximpol.core.spline import xInterpolatedBivariateSplineLinear
+from ximpol.irf.mrf import mdp99, xMDPTable
 
 
 def power_law(C, Gamma):
@@ -73,7 +74,8 @@ class xCountSpectrum(xUnivariateAuxGenerator):
             """Return the convolution between the effective area and
             the input photon spectrum.
             """
-            return scale*source_spectrum(E, t)*numpy.tile(aeff(E[0]), (t.shape[0], 1))
+            return scale*source_spectrum(E, t)*numpy.tile(aeff(E[0]),
+                                                          (t.shape[0], 1))
 
         xUnivariateAuxGenerator.__init__(self, t, aeff.x, _pdf, **fmt)
         self.light_curve = self.build_light_curve()
@@ -147,6 +149,38 @@ class xCountSpectrum(xUnivariateAuxGenerator):
         if emax is None:
             emax = self.ymax()
         return self.integral(tmin, tmax, emin, emax)
+
+    def build_mdp_table(self, energy_binning, modulation_factor):
+        """Calculate the MDP values in energy bins, given the modulation
+        factor of the instrument as a function of the energy.
+
+        Arguments
+        ---------
+        energy_binning : array
+            The energy binning
+        modulation_factor : ximpol.irf.mrf.xModulationFactor instance
+            The instrument modulation factor as a function of the energy.
+        """
+        # Build the time-integrated spectrum.
+        time_integrated_spectrum = self.build_time_integral()
+        # Build the modulation-factor spectrum, i.e. the object that we
+        # integrate to calculate the effective modulation factor in a
+        # given energy bin for a given spectrum.
+        _x = time_integrated_spectrum.x
+        _y = time_integrated_spectrum.y*modulation_factor(_x)
+        mu_spectrum = xInterpolatedUnivariateSplineLinear(_x, _y)
+        # Loop over the energy bins and calculate the actual MDP values.
+        # Note that we also calculate the MDP on the entire energy range.
+        observation_time = self.xmax() - self.xmin()
+        mdp_table = xMDPTable(observation_time)
+        ebins = zip(energy_binning[:-1], energy_binning[1:]) +\
+                [(energy_binning[0], energy_binning[-1])]
+        for _emin, _emax in ebins:
+            num_counts = self.num_expected_counts(emin=_emin, emax=_emax)
+            mu_eff = mu_spectrum.integral(_emin, _emax)/num_counts
+            mdp = mdp99(mu_eff, num_counts)
+            mdp_table.add_row(mdp, _emin, _emax, mu_eff, num_counts)
+        return mdp_table
 
 
 def main():

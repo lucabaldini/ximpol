@@ -75,28 +75,37 @@ PARSER.add_argument('--ebinning', type=ast.literal_eval, default=None,
 
 
 
-def _make_binning(ebinalg, emin=1., emax=10., ebins=5, ebinning=None):
-    """Build the modulation cube binning.
+def _make_energy_binning(**kwargs):
+    """Build the energy binning for the MDP calculation.
 
-    Warning
-    -------
-    This is copied from evt/binning.py and should be factored out.
+    While there's surely some overlap with the code in ximpol.evt.binning
+    module, none of the binning methods implemented there is exactly what
+    we need here---the closest being that for the modulation cube, which
+    is also supporting the extra EQP binning mode that really does not make
+    a lot of sense here (we don't have an event file with the column energy).
+    I guess we'll just go along with some code duplication. Too bad.
     """
+    ebinalg = kwargs['ebinalg']
+    emin = kwargs['emin']
+    emax = kwargs['emax']
+    ebins = kwargs['ebins']
+    ebinning = kwargs['ebinning']
     if ebinalg == 'LIN':
         ebinning = numpy.linspace(emin, emax, ebins + 1)
     elif ebinalg == 'LOG':
         ebinning = numpy.linspace(numpy.log10(emin), numpy.log10(emax),
                                   ebins + 1)
-    #elif ebinalg == 'FILE':
-    #    ebinfile = self.get('ebinfile')
-    #    assert ebinfile is not None
-    #    ebinning = self.read_binning(ebinfile)
+    elif ebinalg == 'FILE':
+        ebinfile = self.get('ebinfile')
+        assert ebinfile is not None
+        ebinning = numpy.loadtxt(ebinfile)
     elif ebinalg == 'LIST':
         assert isinstance(ebinning, list)
         ebinning = numpy.array(ebinning, 'd')
     else:
         abort('ebinalg %s not implemented yet' % ebinalg)
     return ebinning
+
 
 def xpmdp(**kwargs):
     """Calculate the MDP.
@@ -132,31 +141,14 @@ def xpmdp(**kwargs):
         logger.info('Sampling phases: %s' % psamples)
         count_spectrum = xCountSpectrum(source.energy_spectrum, aeff, psamples,
                                         scale=observation_time)
-        time_integrated_spectrum = count_spectrum.build_time_integral()
     else:
         tsamples = source.sampling_time(kwargs['tstart'], kwargs['tstop'])
         logger.info('Sampling times: %s' % tsamples)
         count_spectrum = xCountSpectrum(source.energy_spectrum, aeff, tsamples)
-        time_integrated_spectrum = count_spectrum.build_time_integral()
-
-    # Thuis should be a callable method in the binning module.
-    ebinning =_make_binning(kwargs['ebinalg'], kwargs['emin'], kwargs['emax'],
-                            kwargs['ebins'], kwargs['ebinning'])
-
-    # And this might be implemented in the irf.mrf module.
-    _x = time_integrated_spectrum.x
-    _y = time_integrated_spectrum.y*modf(_x)
-    mu_spectrum = xInterpolatedUnivariateSplineLinear(_x, _y)
-
-    for _emin, _emax in zip(ebinning[:-1], ebinning[1:]) +\
-        [(ebinning[0], ebinning[-1])]:
-        num_counts = count_spectrum.num_expected_counts(emin=_emin, emax=_emax)
-        mu_average = mu_spectrum.integral(_emin, _emax)/num_counts
-        mdp = 4.29/mu_average/numpy.sqrt(num_counts)
-        logger.info('%.2f--%.2f keV: %d counts in %d s, mu %.3f, MDP %.2f%%' %\
-                    (_emin, _emax, num_counts, observation_time, mu_average,
-                     100*mdp))
-
+    ebinning =_make_energy_binning(**kwargs)
+    mdp_table = count_spectrum.build_mdp_table(ebinning, modf)
+    logger.info(mdp_table)
+    return mdp_table
 
 
 
