@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.47.0) - Thu, 16 Jun 2016 15:34:41 +0200*
+
 * Redshift added to the simulation (issue #121).
 
 
