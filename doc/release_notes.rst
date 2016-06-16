@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.47.1) - Thu, 16 Jun 2016 16:39:40 +0200*
+
 * Slight tweak to the command-line switches for xpbin and xpselect, in order
   to be able to set the mc keyword argument to True from the pipeline.
 * Fix for issue #105 (closing it).
