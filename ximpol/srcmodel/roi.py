@@ -213,7 +213,9 @@ class xModelComponentBase:
         event_list = xMonteCarloEventList()
         tsamples = self.sampling_time(kwargs['tstart'], kwargs['tstop'])
         logger.info('Sampling times: %s' % tsamples)
-        count_spectrum = xCountSpectrum(self.energy_spectrum, aeff, tsamples)
+        count_spectrum = xCountSpectrum(self.energy_spectrum, aeff, tsamples,
+                                        column_density=self.column_density,
+                                        redshift=self.redshift)
         # Extract the number of events to be generated based on the integral
         # of the light curve over the simulation time.
         num_events = numpy.random.poisson(count_spectrum.light_curve.norm())
@@ -375,7 +377,9 @@ class xPeriodicPointSource(xPointSource):
         # Mind the count spectrum is made in phase!
         sampling_phase = numpy.linspace(0., 1., 100)
         count_spectrum = xCountSpectrum(self.energy_spectrum, aeff,
-                                        sampling_phase)
+                                        sampling_phase,
+                                        column_density=self.column_density,
+                                        redshift=self.redshift)
         # All this is not properly taking into account the ephemeris.
         min_time = kwargs['tstart']
         max_time = kwargs['tstop']

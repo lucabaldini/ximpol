@@ -27,6 +27,7 @@ from ximpol.srcmodel.spectrum import int_eflux2pl_norm
 from ximpol.utils.units_ import keV2erg
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
 from ximpol.irf import load_arf, load_mrf
+from ximpol.srcmodel.gabs import xpeInterstellarAbsorptionModel
 
 
 """The calculator ouputs have been obtained running by hand the code on the web
@@ -43,7 +44,11 @@ web form.
 """
 SENSITIVITY_CALCULATOR_OUTPUT = [
     (0.1, 1., 10., 0.1, [0.04022, 0.06668, 0.14058]),
-    (0.1, 2., 10., 0.1, [0.03293, 0.06927, 0.17443])
+    (0.1, 2., 10., 0.1, [0.03293, 0.06927, 0.17443]),
+    (1. , 1., 10., 0.1, [0.04191, 0.06579, 0.13706]),
+    (1. , 2., 10., 0.1, [0.03400, 0.06729, 0.16716]),
+    (10., 1., 10., 0.1, [0.06228, 0.06348, 0.11810]),
+    (10., 2., 10., 0.1, [0.04880, 0.06013, 0.13230])
 ]
 
 
@@ -63,16 +68,29 @@ class TestSensitivityCalculator(unittest.TestCase):
         cls.emin = 2.
         cls.emax = 8.
         cls.ebinning = numpy.linspace(cls.emin, cls.emax, 4)
+        cls.ism_model = xpeInterstellarAbsorptionModel()
 
-    def mdp_table(self, column_density, index, exposure_time, flux):
+    def mdp_table(self, column_density, index, exposure_time, eflux):
         """Return the MDP table for a point source with a power-law
         spectral shape with a given set of parameters and for a given
         observation time.
+
+        There's a slight complication, here, due to the fact that the
+        sensitivity calculator is rescaling the absorbed fluxes so that the
+        input energy flux (in the web form) is that at the observer instead of
+        that at the source. Therefore we need to do the same here.
         """
-        norm = int_eflux2pl_norm(flux, self.emin, self.emax, index, erg=True)
-        energy_spectrum = power_law(norm, index)
         tsamples = numpy.linspace(0., exposure_time, 2)
-        count_spectrum = xCountSpectrum(energy_spectrum, self.aeff, tsamples)
+        norm = int_eflux2pl_norm(eflux, self.emin, self.emax, index, erg=True)
+        energy_spectrum = power_law(norm, index)
+        ism_trans = self.ism_model.transmission_factor(column_density)
+        _x = numpy.linspace(self.emin, self.emax, 1000)
+        _y = _x*energy_spectrum(_x, 0.)*ism_trans(_x)
+        absorbed_energy_spectrum = xInterpolatedUnivariateSplineLinear(_x, _y)
+        absorbed_eflux = keV2erg(absorbed_energy_spectrum.norm())
+        scale = eflux/absorbed_eflux
+        count_spectrum = xCountSpectrum(energy_spectrum, self.aeff, tsamples,
+                                        column_density, scale_factor=scale)
         mdp_table = count_spectrum.build_mdp_table(self.ebinning, self.modf)
         return mdp_table
 
@@ -80,20 +98,24 @@ class TestSensitivityCalculator(unittest.TestCase):
         """Compare the MDP calculated by ximpol with that returned by the
         sensitivity calculator.
         """
-        for column_density, index, exposure_time, flux, target_mdps in\
+        for column_density, index, exposure_time, eflux, target_mdps in\
             SENSITIVITY_CALCULATOR_OUTPUT:
             # Convert the source parameters to physical units.
             column_density *= 1.e22
             exposure_time *= 1000.
-            flux *= 1.e-8
+            eflux *= 1.e-8
             # Calculate the MDP table using the ximpol facilities.
-            table = self.mdp_table(column_density, index, exposure_time, flux)
+            table = self.mdp_table(column_density, index, exposure_time, eflux)
             ximpol_mdps = table.mdp_values()[:-1]
             target_mdps = numpy.array(target_mdps)
             ximpol_mdps = numpy.array(ximpol_mdps)
             delta = abs(target_mdps - ximpol_mdps)/target_mdps
             max_delta = delta.max()
-            self.assertTrue(max_delta < 0.05, 'max. diff. %.4f' % max_delta)
+            err_msg = 'max. diff. %.4f (nH = %.3e, index = %.2f)' %\
+                      (max_delta, column_density, index)
+            err_msg += '\nximpol: %s\nsensitivity calculator: %s' %\
+                       (ximpol_mdps, target_mdps)
+            self.assertTrue(max_delta < 0.03, err_msg)
         
 
 

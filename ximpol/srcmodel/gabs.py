@@ -89,7 +89,7 @@ class xpeInterstellarAbsorptionModel:
     >>> trans.plot()
     """
 
-    def __init__(self, num_samples=250):
+    def __init__(self, num_samples=1000):
         """Constructor.
 
         Arguments

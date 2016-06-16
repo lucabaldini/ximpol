@@ -30,7 +30,6 @@ from ximpol.utils.profile import xChrono
 from ximpol.utils.os_ import mkdir
 from ximpol.utils.logging_ import logger, startmsg
 from ximpol import XIMPOL_IRF, XIMPOL_DATA
-from ximpol.srcmodel.spectrum import xCountSpectrum
 
 
 """Command-line switches.
