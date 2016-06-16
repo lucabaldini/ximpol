@@ -97,7 +97,8 @@ PARSER.add_argument('--ebinning', type=ast.literal_eval, default=None,
                     help='the list containing the bin edges')
 PARSER.add_argument('--phibins', type=int, default=75,
                     help='number of bins for LIN/LOG phi binning')
-PARSER.add_argument('--mc', action='store_true', default=False,
+PARSER.add_argument('--mc', type=ast.literal_eval, choices=[True, False],
+                    default=False,
                     help='use Monte Carlo information for binning')
 PARSER.add_argument('--clobber', type=ast.literal_eval, choices=[True, False],
                     default=True,

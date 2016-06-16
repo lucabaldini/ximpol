@@ -62,7 +62,8 @@ PARSER.add_argument('--phimax', type=float, default=None,
                     help='maximum azimuthal angle')
 PARSER.add_argument('--mcsrcid', action='append', type=int, default=[],
                     help='the Monte Carlo source ID to select')
-PARSER.add_argument('--mc', action='store_true', default=False,
+PARSER.add_argument('--mc', type=ast.literal_eval, choices=[True, False],
+                    default=False,
                     help='use Monte Carlo information for the selection')
 PARSER.add_argument('--clobber', type=ast.literal_eval, choices=[True, False],
                     default=True,
