@@ -140,15 +140,13 @@ def xpmdp(**kwargs):
         psamples = numpy.linspace(kwargs['phasemin'], kwargs['phasemax'], 100)
         logger.info('Sampling phases: %s' % psamples)
         count_spectrum = xCountSpectrum(source.energy_spectrum, aeff, psamples,
-                                        scale_factor=observation_time,
-                                        column_density=source.column_density,
-                                        redshift=source.redshift)
+                                        source.column_density, source.redshift,
+                                        scale_factor=observation_time)
     else:
         tsamples = source.sampling_time(kwargs['tstart'], kwargs['tstop'])
         logger.info('Sampling times: %s' % tsamples)
         count_spectrum = xCountSpectrum(source.energy_spectrum, aeff, tsamples,
-                                        column_density=source.column_density,
-                                        redshift=source.redshift)
+                                        source.column_density, source.redshift)
 
     # Do the actual work.
     ebinning =_make_energy_binning(**kwargs)
