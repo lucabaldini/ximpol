@@ -201,7 +201,7 @@ class xCountSpectrum(xUnivariateAuxGenerator):
             # Tile the one dimensional vector horizontally.
             _vals = numpy.tile(_vals, (t.shape[0], 1))
             # And multiply by the source spectrum---we're done.
-            _vals *= source_spectrum(E, t)
+            _vals *= source_spectrum(E*(1 + redshift), t)
             return _vals
 
         fmt = dict(auxname='Time', auxunits='s', rvname='Energy',
