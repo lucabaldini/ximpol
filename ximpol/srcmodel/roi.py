@@ -92,8 +92,9 @@ class xModelComponentBase:
         t = self.min_validity_time
         self.flux_ergcms = self.integral_flux(emin, emax, t)
         self.flux_mcrab = ergcms2mcrab(self.flux_ergcms)
-        self.flux_label = 'Flux @ t = %d: %.3e erg/cm2/s (%.2f mcrab)' %\
-                          (t, self.flux_ergcms, self.flux_mcrab)
+        self.flux_label = 'Unabsorbed flux @ t = %d: %.3e erg/cm2/s' %\
+                          (t, self.flux_ergcms)
+        self.flux_label += ' (%.2f mcrab)' % self.flux_mcrab
 
     def integral_flux(self, emin=2.0, emax=8.0, t=None, erg=True):
         """Return the integral source flux at a generic time.

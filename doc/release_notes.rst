@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* Interstellar absorption added to the simulation (closing issue #120).
+
 
 *ximpol (0.45.1) - Wed, 15 Jun 2016 15:00:50 +0200*
 
