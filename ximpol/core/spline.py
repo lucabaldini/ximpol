@@ -236,7 +236,7 @@ class xUnivariateSplineBase:
         what the class of the original spline is.
         """
         _x = self.x
-        _y = numpy.array([self.integral(0, _xp) for _xp in _x])/self.norm()
+        _y = numpy.array([self.integral(_x[0], _xp) for _xp in _x])/self.norm()
         return xInterpolatedUnivariateSplineLinear(_x, _y)
 
     def build_ppf(self):
@@ -246,7 +246,7 @@ class xUnivariateSplineBase:
         what the class of the original spline is.
         """
         _y = self.x
-        _x = numpy.array([self.integral(0, _xp) for _xp in _y])
+        _x = numpy.array([self.integral(_y[0], _xp) for _xp in _y])
         _x, _mask = numpy.unique(_x, return_index=True)
         _x/= self.norm()
         _y = _y[_mask]
