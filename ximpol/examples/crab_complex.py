@@ -34,7 +34,10 @@ OUT_FILE_PATH_BASE = os.path.join(XIMPOL_DATA, 'crab_complex')
 
 EVT_FILE_PATH = '%s.fits' % OUT_FILE_PATH_BASE
 
-REG_FILE_PATH = os.path.join(XIMPOL_CONFIG, 'fits', 'crab_nebula_4regions.reg')
+#REG_FILE_PATH = os.path.join(XIMPOL_CONFIG, 'fits', 'crab_nebula_4regions.reg')
+REG_FILE_PATH = os.path.join(XIMPOL_CONFIG, 'fits', 'crab_nebula_1ROI.reg')
+REG_FILE_PATH = os.path.join(XIMPOL_CONFIG, 'fits', 'crab_nebula_2ROI.reg')
+REG_FILE_PATH = os.path.join(XIMPOL_CONFIG, 'fits', 'crab_nebula_13regions.reg')
 MAP_FILE_PATH = os.path.join(XIMPOL_DATA, 'crab_complex_cmap.fits')
 
 

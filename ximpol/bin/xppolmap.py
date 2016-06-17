@@ -335,7 +335,7 @@ if __name__ == '__main__':
         out_files.append(outfile)
         myPolarizationMap = xPolMap(xref=xref, yref=yref,nxpix=npix,nypix=npix,binsz=binsz,proj='TAN',outfile=outfile)
         myPolarizationMap.create()
-        pmax*=Nregion # This is to account that in the simulation each 
+        #pmax*=Nregion # This is to account that in the simulation each 
         if r.name is 'circle':
             ra, dec, rad = r.coord_list
             myPolarizationMap.add_ellipse(ra,dec,rad,rad,0.0,pmax,ptype, pangle)
