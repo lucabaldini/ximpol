@@ -51,29 +51,34 @@ def pl_norm(integral, emin, emax, index, energy_power=0.):
     More specifically, given a power law of the form
 
     .. math::
-       \\mathcal{S}(E) = CE^{-\\Gamma},
+       \\mathcal{S}(E) = C\\left( \\frac{E}{E_0} \\right)^{-\\Gamma}
+       \\quad [{\\rm keV}^{-1}~{\\rm cm}^{-2}~{\\rm s}^{-1}],
     
-    we define :math:`\\beta = (1 + p - \\Gamma)` and calculate
+    (where :math:`E_0 = 1~{\\rm keV}`) we define
+    :math:`\\beta = (1 + p - \\Gamma)` and calculate
     
     .. math::
        I_{p} = \\int_{E_{\\rm min}}^{E_{\\rm max}} E^{p}\\mathcal{S}(E) dE =
        \\begin{cases}
-       \\frac{C}{\\beta}
+       \\frac{C E_0^{\\Gamma}}{\\beta}
        \\left( E_{\\rm max}^{\\beta} - E_{\\rm min}^{\\beta}\\right)
        \\quad \\beta \\neq 0\\\\
-       C \\ln \\left( E_{\\rm max}/E_{\\rm min} \\right)
+       C E_0^{\\Gamma} \\ln \\left( E_{\\rm max}/E_{\\rm min} \\right)
        \\quad \\beta = 0\\\\
-       \\end{cases}.
+       \\end{cases}
+       \\quad [{\\rm keV}^{p}~{\\rm cm}^{-2}~{\\rm s}^{-1}].
     
     Hence
     
     .. math::
         C =
         \\begin{cases}
-        \\frac{I_p\\beta}{
+        \\frac{I_p\\beta}{E_0^{\\Gamma}
         \\left( E_{\\rm max}^{\\beta} - E_{\\rm min}^{\\beta}\\right)}
         \\quad \\beta \\neq 0\\\\
-        \\frac{I_p}{\\ln \\left( E_{\\rm max}/E_{\\rm min} \\right)}.
+        \\frac{I_p}{E_0^{\\Gamma}
+        \\ln \\left( E_{\\rm max}/E_{\\rm min} \\right)}
+        \\quad \\beta = 0.
         \\end{cases}
 
     Arguments

@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* Minor doc update.
+
 
 *ximpol (0.47.1) - Thu, 16 Jun 2016 16:39:40 +0200*
 
