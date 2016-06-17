@@ -2,6 +2,7 @@ Release notes
 =============
 
 * Minor doc update.
+* Added GK Per configuration file and analysis pipeline example.
 
 
 *ximpol (0.47.1) - Thu, 16 Jun 2016 16:39:40 +0200*
