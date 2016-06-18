@@ -18,6 +18,7 @@
 
 
 import os
+import numpy
 
 from ximpol import XIMPOL_CONFIG
 from ximpol.utils.logging_ import logger
@@ -38,15 +39,30 @@ NAME_LIST = ['mcg_6_30_15', 'ark_120', 'ngc_1365']
 CFG_FILE = os.path.join(XIMPOL_CONFIG, NAME_LIST[i]+'.py')
 TIME = 1000000.
 E_BINNING = [2.,4.,8.]
-SEED = 0
+SIM_NUM = 10
+
+pol_degree_array = numpy.empty([SIM_NUM, (len(E_BINNING)-1)])
+pol_degree_error_array = numpy.empty([SIM_NUM, (len(E_BINNING)-1)])
+pol_angle_array = numpy.empty([SIM_NUM, (len(E_BINNING)-1)])
+pol_angle_error_array = numpy.empty([SIM_NUM, (len(E_BINNING)-1)])
 
 pipeline = xPipeline(clobber=True)
-evt_file_path = pipeline.xpobssim(configfile=CFG_FILE, duration=TIME, seed=SEED)
-pipeline.xpbin(evt_file_path, algorithm='CMAP')
-mod_cube_file_path = pipeline.xpbin(evt_file_path, algorithm='MCUBE',
-                                    ebinalg='LIST', ebinning=E_BINNING)
-mod_cube = xBinnedModulationCube(mod_cube_file_path)
-mod_cube.fit()
+for j in range(0, SIM_NUM):
+    SEED = j
+    evt_file_path = pipeline.xpobssim(configfile=CFG_FILE, duration=TIME, seed=SEED)
+    #pipeline.xpbin(evt_file_path, algorithm='CMAP')
+    mod_cube_file_path = pipeline.xpbin(evt_file_path, algorithm='MCUBE',
+                                        ebinalg='LIST', ebinning=E_BINNING)
+    mod_cube = xBinnedModulationCube(mod_cube_file_path)
+    mod_cube.fit()
+    pol_degree_array[j,:] = numpy.array([r.polarization_degree for
+                                         r in mod_cube.fit_results])
+    pol_degree_error_array[j,:] = numpy.array([r.polarization_degree_error for
+                                               r in mod_cube.fit_results])
+    pol_angle_array[j,:] = numpy.array([numpy.degrees(r.phase) for
+                                        r in mod_cube.fit_results])
+    pol_angle_error_array[j,:] = numpy.array([numpy.degrees(r.phase_error) for
+                                              r in mod_cube.fit_results])
 
 cnts_tot = 0
 mu_tot = 0.
@@ -65,23 +81,39 @@ logger.info('%.2f--%.2f keV: %d counts in %d s, mu %.3f, MDP %.2f%%' %\
         TIME, mu_tot, 100*mdp_tot))
 logger.info('Done.')
 
+pol_deg = numpy.mean(pol_degree_array, axis=0)
+pol_deg_err = numpy.mean(pol_degree_error_array, axis = 0)
+pol_ang = numpy.mean(pol_angle_array, axis=0)
+pol_ang_err = numpy.mean(pol_angle_error_array, axis = 0)
+
 fig = plt.figure('Polarization degree')
-pol_deg_err = [r.polarization_degree_error for r in mod_cube.fit_results]
-pol_deg = [r.polarization_degree for r in mod_cube.fit_results]
-if pol_deg[0] < 3*pol_deg_err[0]:
-    mod_cube.plot_polarization_degree(show=False, label='Data', color='gray')
-else:
-    mod_cube.plot_polarization_degree(show=False, label='Data')
+plt.xlabel('Energy [keV]')
+plt.ylabel('Polarization degree')
+bad = pol_deg < 3*pol_deg_err
+good = numpy.invert(bad)
+_dx = numpy.array([mod_cube.emean - mod_cube.emin, mod_cube.emax - mod_cube.emean])
+if bad.sum() > 0:
+    plt.errorbar(mod_cube.emean[bad], pol_deg[bad], pol_deg_err[bad],
+                            _dx[bad], fmt='o', label='Data', color='gray')
+if good.sum() > 0:
+    plt.errorbar(mod_cube.emean[good], pol_deg[good], pol_deg_err[good],
+                            _dx[good], fmt='o', label='Data', color='blue')
 pol_degree.plot(show=False, label='Model', linestyle='dashed', color='green')
 plt.legend(bbox_to_anchor=(0.30, 0.95))
 plt.axis([1, 10, 0, 0.1])
+#plt.savefig('/home/nicco/MGC_0_4_10x1Ms_polarization_degree.png')
 
 fig = plt.figure('Polarization angle')
-if pol_deg[0] < 3*pol_deg_err[0]:
-    mod_cube.plot_polarization_angle(show=False, label='Data', color='gray')
-else:
-    mod_cube.plot_polarization_angle(show=False, label='Data')
+plt.xlabel('Energy [keV]')
+plt.ylabel('Polarization angle [$^\circ$]')
+if bad.sum() > 0:
+    plt.errorbar(mod_cube.emean[bad], pol_ang[bad], pol_ang_err[bad],
+                            _dx[bad], fmt='o', label='Data', color='gray')
+if good.sum() > 0:
+    plt.errorbar(mod_cube.emean[good], pol_ang[good], pol_ang_err[good],
+                            _dx[good], fmt='o', label='Data', color='blue')
 pol_angle.plot(show=False, label='Model', linestyle='dashed', color='green')
 plt.legend(bbox_to_anchor=(0.95, 0.95))
 plt.axis([1, 10, 0, 180])
+#plt.savefig('/home/nicco/MGC_0_4_10x1Ms_polarization_angle.png')
 plt.show()
