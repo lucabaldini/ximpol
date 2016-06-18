@@ -1,7 +1,8 @@
 Release notes
 =============
 
-
+* Added M87 configuration files and analysis pipeline for chandra-to-ximpol
+  converter.
 * Added configuration files and analysis pipeline example for MCG-6-30-15, 
   ARK 120 and NGC 1365.
 
