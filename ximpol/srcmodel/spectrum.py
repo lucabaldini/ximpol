@@ -23,6 +23,8 @@ from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
 from ximpol.core.spline import xInterpolatedBivariateSplineLinear
 from ximpol.irf.mrf import mdp99, xMDPTable
 from ximpol.utils.units_ import erg2keV
+from ximpol.utils.logging_ import logger
+from ximpol.srcmodel.gabs import xpeInterstellarAbsorptionModel
 
 
 def power_law(C, Gamma):
@@ -49,29 +51,34 @@ def pl_norm(integral, emin, emax, index, energy_power=0.):
     More specifically, given a power law of the form
 
     .. math::
-       \\mathcal{S}(E) = CE^{-\\Gamma},
+       \\mathcal{S}(E) = C\\left( \\frac{E}{E_0} \\right)^{-\\Gamma}
+       \\quad [{\\rm keV}^{-1}~{\\rm cm}^{-2}~{\\rm s}^{-1}],
     
-    we define :math:`\\beta = (1 + p - \\Gamma)` and calculate
+    (where :math:`E_0 = 1~{\\rm keV}`) we define
+    :math:`\\beta = (1 + p - \\Gamma)` and calculate
     
     .. math::
        I_{p} = \\int_{E_{\\rm min}}^{E_{\\rm max}} E^{p}\\mathcal{S}(E) dE =
        \\begin{cases}
-       \\frac{C}{\\beta}
+       \\frac{C E_0^{\\Gamma}}{\\beta}
        \\left( E_{\\rm max}^{\\beta} - E_{\\rm min}^{\\beta}\\right)
        \\quad \\beta \\neq 0\\\\
-       C \\ln \\left( E_{\\rm max}/E_{\\rm min} \\right)
+       C E_0^{\\Gamma} \\ln \\left( E_{\\rm max}/E_{\\rm min} \\right)
        \\quad \\beta = 0\\\\
-       \\end{cases}.
+       \\end{cases}
+       \\quad [{\\rm keV}^{p}~{\\rm cm}^{-2}~{\\rm s}^{-1}].
     
     Hence
     
     .. math::
         C =
         \\begin{cases}
-        \\frac{I_p\\beta}{
+        \\frac{I_p\\beta}{E_0^{\\Gamma}
         \\left( E_{\\rm max}^{\\beta} - E_{\\rm min}^{\\beta}\\right)}
         \\quad \\beta \\neq 0\\\\
-        \\frac{I_p}{\\ln \\left( E_{\\rm max}/E_{\\rm min} \\right)}.
+        \\frac{I_p}{E_0^{\\Gamma}
+        \\ln \\left( E_{\\rm max}/E_{\\rm min} \\right)}
+        \\quad \\beta = 0.
         \\end{cases}
 
     Arguments
@@ -128,27 +135,83 @@ class xCountSpectrum(xUnivariateAuxGenerator):
     calculated when a class object is instantiated.
     """
 
-    def __init__(self, source_spectrum, aeff, t, scale=1.):
+    def __init__(self, source_spectrum, aeff, t, column_density=0.,
+                 redshift=0., scale_factor=1.):
         """Constructor.
+
+        Arguments
+        ---------
+        source_spectrum : a Python function
+            The source spectrum, i.e., a Python function that can be called
+            with two numpy arrays E and t and returns the differential energy
+            spectrum of the source at the appropriate enenrgy and time value(s).
+
+        aeff : ximpol.irf.xEffectiveArea instance
+            The instrument effective area.
+        
+        t : array
+            The array of time values where we're sampling the light curve of the
+            source.
+
+        column_density : float, defaults to 0.
+            The H column density to calculate the insterstellar absorption.
+
+        redshift : float, defaults to 0.
+            The source redshift.
+
+        scale_factor : float, defaults to 1.
+            An optional scale factor for the output count spectrum (see the
+            warning below).
 
         Warning
         -------
-        Do we really want the option to pass a scale here?
         This was a workaround for running the MDP script on a pulsar,
         where we sample in phase and then have to multiply by the
-        number of periods.
+        observation time.
         """
-        fmt = dict(auxname='Time', auxunits='s', rvname='Energy',
-                   rvunits='keV',  pdfname='dN/dE $\\times$ aeff',
-                   pdfunits='s$^{-1}$ keV$^{-1}$')
 
         def _pdf(E, t):
             """Return the convolution between the effective area and
             the input photon spectrum.
-            """
-            return scale*source_spectrum(E, t)*numpy.tile(aeff(E[0]),
-                                                          (t.shape[0], 1))
 
+            Note that, due the way this callable is used within the constructor
+            of xUnivariateAuxGenerator at this point E and t are two numpy
+            arrays whose shape is `(num_time_samples, num_energy_samples)`.
+            Particularly, `E[0]` is the array of energy values that we use for
+            sampling the spectrum (nominally the same sampling that we use
+            for the effective area).
+
+            We start from all the stuff that is energy-independent, e.g., the
+            effective area and the interstellar absorption and do the proper
+            convolutions in energy space. Then we tile the values horizontally
+            for as many times as the length of the array sampling the time,
+            and at the end we multiply the resulting bidimensional array by
+            an equal-size array containing the value of the differential
+            energy spectrum on the time-energy grid.
+            """
+            # Grab the one-dimensional array used to sample the energy.
+            _energy = E[0]
+            # Calculate the effective area on the array.
+            _vals = aeff(_energy)
+            # Multiply by the scale factor.
+            _vals *= scale_factor
+            # If needed, fold in the transmission factor for the interstellar
+            # absorption.
+            if column_density > 0.:
+                logger.info('Applying interstellar absorption (nH = %.3e)' %\
+                            column_density)
+                ism_model = xpeInterstellarAbsorptionModel()
+                ism_trans = ism_model.transmission_factor(column_density)
+                _vals *= ism_trans(_energy)
+            # Tile the one dimensional vector horizontally.
+            _vals = numpy.tile(_vals, (t.shape[0], 1))
+            # And multiply by the source spectrum---we're done.
+            _vals *= source_spectrum(E*(1 + redshift), t)
+            return _vals
+
+        fmt = dict(auxname='Time', auxunits='s', rvname='Energy',
+                   rvunits='keV',  pdfname='dN/dE $\\times$ aeff',
+                   pdfunits='s$^{-1}$ keV$^{-1}$')
         xUnivariateAuxGenerator.__init__(self, t, aeff.x, _pdf, **fmt)
         self.light_curve = self.build_light_curve()
 

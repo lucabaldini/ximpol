@@ -22,6 +22,7 @@
 
 
 import unittest
+import scipy.special
 
 from ximpol.core.spline import *
 from ximpol.utils.logging_ import suppress_logging
@@ -140,6 +141,18 @@ class TestSplineLinear(unittest.TestCase):
         self.assertTrue(_delta < 1e-3, 'ppf(0) - xmin %.9f' % _delta)
         _delta = abs(ppf(1) - self.s3.xmax())
         self.assertTrue(_delta < 1e-3, 'ppf(1) - xmax %.9f' % _delta)
+
+    def test_cdf_erf(self):
+        """Test the cdf for a gaussian function.
+        """
+        _x = numpy.linspace(-5, 5, 100)
+        _y = 1./numpy.sqrt(2.*numpy.pi)*numpy.exp(-0.5*_x**2)
+        pdf = xInterpolatedUnivariateSplineLinear(_x, _y)
+        cdf = pdf.build_cdf()
+        delta = abs(cdf(_x) - 0.5*(1. + scipy.special.erf(_x/numpy.sqrt(2.))))
+        max_delta = delta.max()
+        err_msg = 'maximum absolute delta %.4e' % max_delta
+        self.assertTrue(max_delta < 5e-4, err_msg)
 
 
 if __name__ == '__main__':

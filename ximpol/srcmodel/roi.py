@@ -92,8 +92,9 @@ class xModelComponentBase:
         t = self.min_validity_time
         self.flux_ergcms = self.integral_flux(emin, emax, t)
         self.flux_mcrab = ergcms2mcrab(self.flux_ergcms)
-        self.flux_label = 'Flux @ t = %d: %.3e erg/cm2/s (%.2f mcrab)' %\
-                          (t, self.flux_ergcms, self.flux_mcrab)
+        self.flux_label = 'Unabsorbed flux @ t = %d: %.3e erg/cm2/s' %\
+                          (t, self.flux_ergcms)
+        self.flux_label += ' (%.2f mcrab)' % self.flux_mcrab
 
     def integral_flux(self, emin=2.0, emax=8.0, t=None, erg=True):
         """Return the integral source flux at a generic time.
@@ -213,7 +214,8 @@ class xModelComponentBase:
         event_list = xMonteCarloEventList()
         tsamples = self.sampling_time(kwargs['tstart'], kwargs['tstop'])
         logger.info('Sampling times: %s' % tsamples)
-        count_spectrum = xCountSpectrum(self.energy_spectrum, aeff, tsamples)
+        count_spectrum = xCountSpectrum(self.energy_spectrum, aeff, tsamples,
+                                        self.column_density, self.redshift)
         # Extract the number of events to be generated based on the integral
         # of the light curve over the simulation time.
         num_events = numpy.random.poisson(count_spectrum.light_curve.norm())
@@ -375,7 +377,8 @@ class xPeriodicPointSource(xPointSource):
         # Mind the count spectrum is made in phase!
         sampling_phase = numpy.linspace(0., 1., 100)
         count_spectrum = xCountSpectrum(self.energy_spectrum, aeff,
-                                        sampling_phase)
+                                        sampling_phase, self.column_density,
+                                        self.redshift)
         # All this is not properly taking into account the ephemeris.
         min_time = kwargs['tstart']
         max_time = kwargs['tstop']

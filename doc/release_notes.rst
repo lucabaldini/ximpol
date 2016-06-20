@@ -1,6 +1,33 @@
 Release notes
 =============
 
+* Added M87 configuration files and analysis pipeline for chandra-to-ximpol
+  converter.
+* Added configuration files and analysis pipeline example for MCG-6-30-15, 
+  ARK 120 and NGC 1365.
+
+*ximpol (0.47.2) - Sat, 18 Jun 2016 06:56:49 +0200*
+
+* Minor doc update.
+* Added GK Per configuration file and analysis pipeline example.
+
+
+*ximpol (0.47.1) - Thu, 16 Jun 2016 16:39:40 +0200*
+
+* Slight tweak to the command-line switches for xpbin and xpselect, in order
+  to be able to set the mc keyword argument to True from the pipeline.
+* Fix for issue #105 (closing it).
+
+
+*ximpol (0.47.0) - Thu, 16 Jun 2016 15:34:41 +0200*
+
+* Redshift added to the simulation (issue #121).
+
+
+*ximpol (0.46.0) - Thu, 16 Jun 2016 15:26:42 +0200*
+
+* Interstellar absorption added to the simulation (closing issue #120).
+
 
 *ximpol (0.45.1) - Wed, 15 Jun 2016 15:00:50 +0200*
 

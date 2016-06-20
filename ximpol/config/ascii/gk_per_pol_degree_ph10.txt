@@ -1,0 +1,13 @@
+#GK PER for Beta=40deg incl=60deg mdot=10g/cm2/s Mwd=0.5Msun H/r=10. 
+# Theta : Viewing angle ; Phase: spin phase (Period:531.3sec)  Polarization degree as from McNamara et al. 2008
+#Theta   Phase   Pol(%) 
+20.0   0.0       0.9    
+33.6   0.1       0.9 
+56.0   0.2       2.1 
+77.8   0.3       3.0 
+90.0   0.4       8.0 
+90.0   0.6       8.0 
+77.8   0.7       3.0 
+56.0   0.8       2.1 
+33.6   0.9       0.9 
+20.0   1.0       0.9
