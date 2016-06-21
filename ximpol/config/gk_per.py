@@ -31,7 +31,6 @@ from ximpol.utils.units_ import keV2erg
 GK_PER_RA = 52.80005
 GK_PER_DEC = 43.9043
 GK_PER_PERIOD = 531.3
-GK_PER_POLARIZATION_ANGLE = numpy.radians(45.)
 
 
 def _full_path(file_name):
@@ -81,46 +80,48 @@ be a sensible first step.
 """
 phasogram_file_path = _full_path('gk_per_flux_2_8_keV_ph10.txt')
 _bin, _phase, _eflux, _dummy = numpy.loadtxt(phasogram_file_path, unpack=True)
-_phase += 0.05
-_phase = numpy.concatenate((numpy.array([0.]), _phase, numpy.array([1.])))
-_ef0 = 0.5*(_eflux[0] + _eflux[-1])
-_eflux = numpy.concatenate((numpy.array([_ef0]), _eflux, numpy.array([_ef0])))
-_fmt = dict(xname='Rotational phase', yname='Integral energy flux 2--8 keV',
+# Duplicate the values at phi=0 for phi=1.
+_phase = numpy.append(_phase, 1.)
+_eflux = numpy.append(_eflux, _eflux[0])
+_fmt = dict(xname='Phase', yname='Integral energy flux 2--8 keV',
             yunits='erg s$^{-1}$ cm$^{-2}$')
 phasogram_spline = xInterpolatedUnivariateSpline(_phase, _eflux, k=3, **_fmt)
 
 
-"""Parse the input polarization degree.
+"""Parse the input polarization degree and angle.
 
 This is provided in a text file in ten phase bins, and we exactly the same
 magic that we do for the integral flux above.
 """
-pol_degree_file_path = _full_path('gk_per_pol_degree_ph10.txt')
-_dummy, _phase, _degree = numpy.loadtxt(pol_degree_file_path, unpack=True)
-_phase += 0.05
-# I suspect there's a transcription error in the input file---specifically
-# in the phase column, but I do have to double-check this horrible hack.
-_phase -= 0.1*(_phase > 0.5)
-# End of horrible hack.
-_phase = numpy.concatenate((numpy.array([0.]), _phase, numpy.array([1.])))
+pol_degree_file_path = _full_path('gk_per_pol_degree_angle_ph10.txt')
+_dummy, _phase, _degree, _angle = numpy.loadtxt(pol_degree_file_path,
+                                                unpack=True)
 _degree /= 100.
-_pd0 = 0.5*(_degree[0] + _degree[-1])
-_degree = numpy.concatenate((numpy.array([_pd0]), _degree, numpy.array([_pd0])))
-_fmt = dict(xname='Rotational phase', yname='Polarization degree')
+# Duplicate the values at phi=0 for phi=1.
+_phase = numpy.append(_phase, 1.)
+_degree = numpy.append(_degree, _degree[0])
+_angle = numpy.append(_angle, _angle[0])
+_fmt = dict(xname='Phase', yname='Polarization degree')
 pol_degree_spline = xInterpolatedUnivariateSpline(_phase, _degree, k=3, **_fmt)
+_fmt = dict(xname='Phase', yname='Polarization angle [$^\\circ$]')
+pol_angle_spline = xInterpolatedUnivariateSpline(_phase, _angle, k=3, **_fmt)
 
 
 def energy_spectrum(E, phase):
-    """
+    """Return the energy spectrum.
     """
     return phasogram_spline(phase)/average_eflux*spectrum_spline(E)
 
 def polarization_degree(E, phase, ra, dec):
-    """
+    """Return the polarization degree.
     """
     return pol_degree_spline(phase)
 
-polarization_angle = constant(GK_PER_POLARIZATION_ANGLE)
+def polarization_angle(E, phase, ra, dec):
+    """Return the polarization angle.
+    """
+    return numpy.radians(pol_angle_spline(phase))
+
 
 ephem = xEphemeris(0., 1./GK_PER_PERIOD)
 
@@ -148,4 +149,6 @@ if __name__ == '__main__':
     phasogram_spline.plot(show=False)
     plt.figure()
     pol_degree_spline.plot(show=False)
+    plt.figure()
+    pol_angle_spline.plot(show=False)
     plt.show()

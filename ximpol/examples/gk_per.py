@@ -27,8 +27,8 @@ from ximpol.evt.binning import xBinnedModulationCube, xEventBinningBase
 from ximpol.evt.event import xEventFile
 from ximpol.utils.matplotlib_ import pyplot as plt
 from ximpol.utils.matplotlib_ import save_current_figure
-from ximpol.config.gk_per import pol_degree_spline, phasogram_spline,\
-    GK_PER_POLARIZATION_ANGLE
+from ximpol.config.gk_per import phasogram_spline, pol_degree_spline,\
+    pol_angle_spline
 
 
 """Script-wide simulation and analysis settings.
@@ -38,7 +38,7 @@ OUT_FILE_PATH_BASE = os.path.join(XIMPOL_DATA, 'gk_per')
 EVT_FILE_PATH = '%s.fits' % OUT_FILE_PATH_BASE
 ANALYSIS_FILE_PATH = '%s_analysis.txt' % OUT_FILE_PATH_BASE
 SIM_DURATION = 800000.
-PHASE_BINNING = numpy.linspace(0., 1., 9)
+PHASE_BINNING = numpy.linspace(0., 1., 6)
 PHASE_BINNING = zip(PHASE_BINNING[:-1], PHASE_BINNING[1:])
 E_BINNING = [2., 8.]
 
@@ -132,9 +132,8 @@ def plot(save_plots=False):
     plt.errorbar(_phase[_bad_fit], _pol_angle[_bad_fit],
                  xerr=_phase_err[_bad_fit], yerr=_pol_angle_err[_bad_fit],
                  fmt='o', label=sim_label, color='gray')
-    _x = numpy.linspace(0., 1., 100)
-    _y = numpy.full(100, GK_PER_POLARIZATION_ANGLE)
-    plt.plot(_x, _y, label=mod_label, color='green')
+    pol_angle_spline.plot(show=False, label=mod_label, color='green',
+                          scale=numpy.radians(1.))
     plt.axis([0., 1., 0., 1.5])
     plt.xlabel('Rotational phase')
     plt.ylabel('Polarization angle [rad]')
