@@ -98,7 +98,7 @@ def parse_light_curve(file_path, num_bins=100, num_min_data=5):
         tave = numpy.power(10., tave)
         fave = numpy.power(10., fave)
         fmt = dict(xname='Time', xunits='s',
-                   yname='Energy integral flux 0.3-10 keV',
+                   yname='Integral energy flux 0.3--10 keV',
                    yunits='erg cm$^{-2}$ s$^{-1}$')
         return xInterpolatedUnivariateSplineLinear(tave, fave, **fmt)
     else:
