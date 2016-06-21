@@ -38,7 +38,8 @@ OUT_FILE_PATH_BASE = os.path.join(XIMPOL_DATA, 'gk_per')
 EVT_FILE_PATH = '%s.fits' % OUT_FILE_PATH_BASE
 ANALYSIS_FILE_PATH = '%s_analysis.txt' % OUT_FILE_PATH_BASE
 SIM_DURATION = 800000.
-PHASE_BINNING = numpy.linspace(0., 1., 6)
+#PHASE_BINNING = numpy.linspace(0., 1., 6)
+PHASE_BINNING = numpy.array([0., 0.30, 0.40, 0.50, 0.60, 0.70, 1.])
 PHASE_BINNING = zip(PHASE_BINNING[:-1], PHASE_BINNING[1:])
 E_BINNING = [2., 8.]
 
@@ -134,7 +135,7 @@ def plot(save_plots=False):
                  fmt='o', label=sim_label, color='gray')
     pol_angle_spline.plot(show=False, label=mod_label, color='green',
                           scale=numpy.radians(1.))
-    plt.axis([0., 1., 0., 1.5])
+    plt.axis([0., 1., -0.1, 1.5])
     plt.xlabel('Rotational phase')
     plt.ylabel('Polarization angle [rad]')
     plt.legend(bbox_to_anchor=(0.45, 0.95))
