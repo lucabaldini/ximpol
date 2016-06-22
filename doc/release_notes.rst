@@ -5,6 +5,8 @@ Release notes
   converter.
 * Added configuration files and analysis pipeline example for MCG-6-30-15, 
   ARK 120 and NGC 1365.
+* Configuration file for GK Per slightly tweaked.
+  
 
 *ximpol (0.47.2) - Sat, 18 Jun 2016 06:56:49 +0200*
 
