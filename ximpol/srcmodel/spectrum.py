@@ -308,8 +308,9 @@ class xCountSpectrum(xUnivariateAuxGenerator):
         # Note that we also calculate the MDP on the entire energy range.
         observation_time = self.xmax() - self.xmin()
         mdp_table = xMDPTable(observation_time)
-        ebins = zip(energy_binning[:-1], energy_binning[1:]) +\
-                [(energy_binning[0], energy_binning[-1])]
+        ebins = zip(energy_binning[:-1], energy_binning[1:])
+        if len(energy_binning) > 2:
+            ebins.append((energy_binning[0], energy_binning[-1]))
         for _emin, _emax in ebins:
             num_counts = self.num_expected_counts(emin=_emin, emax=_emax)
             mu_eff = mu_spectrum.integral(_emin, _emax)/num_counts
