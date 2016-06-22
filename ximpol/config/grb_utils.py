@@ -52,6 +52,9 @@ def parse_light_curve_data(file_path):
     fp = []
     fm = []
     for line in open(file_path):
+        #Upper limits are always defined at the end of the file 
+        if 'Upper limit' in line:
+            break
         try:
             _t, _tp, _tm, _f, _fp, _fm = [float(item) for item in line.split()]
             t.append(_t)
@@ -70,7 +73,7 @@ def parse_light_curve_data(file_path):
     fm = numpy.array(fm)
     return t, tp, tm, f, fp, fm
 
-def parse_light_curve_original(file_path, num_bins=150):
+def parse_light_curve(file_path, num_bins=150, num_min_data=5):
     """Read the light-curve data points and make sense out of them.
 
     Here we make a weighted average of the input data over a logarithmic
@@ -78,6 +81,8 @@ def parse_light_curve_original(file_path, num_bins=150):
     input data, and finally we create a spline in linear space.
     """
     t, tp, tm, f, fp, fm = parse_light_curve_data(file_path)
+    if len(t) < num_min_data:
+        return None
     binning = numpy.logspace(numpy.log10(t[0]), numpy.log10(t[-1]), num_bins)
     tave = [t[0]]
     fave = [f[0]]
@@ -89,6 +94,9 @@ def parse_light_curve_original(file_path, num_bins=150):
             _fave = numpy.average(f[_mask], weights=_weights)
             tave.append(_tave)
             fave.append(_fave)
+        elif numpy.count_nonzero(_mask) == 1:
+            tave.append(_tave)
+            fave.append(f[_mask])
         else:
             _t1 = numpy.log10(t[t <= _tmin][-1])
             _t2 = numpy.log10(t[t >= _tmax][0])
@@ -111,52 +119,21 @@ def parse_light_curve_original(file_path, num_bins=150):
                yunits='erg cm$^{-2}$ s$^{-1}$')
     return xInterpolatedUnivariateSplineLinear(tave, fave, **fmt)
 
-def parse_light_curve(file_path, num_bins=100, num_min_data=5):
-    """Read the light-curve data points and make sense out of them.
-    """
-    t, tp, tm, f, fp, fm = parse_light_curve_data(file_path)
-    return xInterpolatedUnivariateSplineLinear(t, f)
-    print t
-    if len(t) >= num_min_data:
-        tave = [t[0]]
-        fave = [f[0]]
-        for _tmin, _tmax in zip(t[:-1], t[1:]):
-            _tave = _tmin
-            _mask = (t >= _tmin)*(t <= _tmax)
-            if numpy.count_nonzero(_mask) > 1:
-                _fave = f[_mask][0]
-                tave.append(_tave)
-                fave.append(_fave)
-        print tave
-        tave = numpy.log10(numpy.array(tave))
-        fave = numpy.log10(numpy.array(fave))
-        spline = xInterpolatedUnivariateSplineLinear(tave, fave)
-        tave = numpy.linspace(tave[0], tave[-1], len(t))
-        fave = spline(tave)
-        tave = numpy.power(10., tave)
-        fave = numpy.power(10., fave)
-        fmt = dict(xname='Time', xunits='s',
-                   yname='Integral energy flux 0.3--10 keV',
-                   yunits='erg cm$^{-2}$ s$^{-1}$')
-        return xInterpolatedUnivariateSplineLinear(tave, fave, **fmt)
-    else:
-        logger.info('Data points < %i !\nNot producing any light curve.'\
-                        %num_min_data)
-        return None
-
 def main():
     """Test the script Retriving RA, Dec and Index for GRB 130427A 
     """
     from ximpol.utils.matplotlib_ import pyplot as plt
-    grb_name = 'GRB 050219A'
+    grb_name = 'GRB 050219'
     from ximpol.config.grb_swift_download import download_swift_grb_lc_file
     file_path = download_swift_grb_lc_file(grb_name)
+    if file_path is None:
+        return
     grb_ra, grb_dec = get_grb_position(file_path)
     grb_index = get_grb_spec_index(file_path)
     logger.info('Retriving information for %s:'%grb_name)
     logger.info('\tPosition: RA = %fdeg, Dec = %fdeg'%(grb_ra,grb_dec))
     logger.info('\tSpectral Index = %f '%grb_index)
-    grb_lc = parse_light_curve_original(file_path)
+    grb_lc = parse_light_curve(file_path)
     t, tp, tm, f, fp, fm = parse_light_curve_data(file_path)
     plt.errorbar(t, f, yerr=[fm, fp], fmt='o')
     grb_lc.plot(logx=True, logy=True)
