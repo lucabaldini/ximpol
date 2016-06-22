@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.47.3) - Wed, 22 Jun 2016 08:56:35 +0200*
+
 * Added M87 configuration files and analysis pipeline for chandra-to-ximpol
   converter.
 * Added configuration files and analysis pipeline example for MCG-6-30-15, 
