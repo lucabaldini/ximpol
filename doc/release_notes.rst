@@ -1,5 +1,9 @@
 Release notes
 =============
+* Added script to make the polarization map of casa in examples
+* Added the option to draw the psf circle in the count map of casa in the main casa.py example.
+
+* Added the Cyg-X1 ascii files for the model at 40 degree inclination.
 
 
 *ximpol (0.44.2) - Fri, 10 Jun 2016 17:58:27 +0200*
