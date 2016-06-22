@@ -154,6 +154,25 @@ class TestSplineLinear(unittest.TestCase):
         err_msg = 'maximum absolute delta %.4e' % max_delta
         self.assertTrue(max_delta < 5e-4, err_msg)
 
+    def test_sort(self):
+        """Test the automatic sorting functionality.
+        """
+        _x = numpy.random.sample(100)
+        _y = _x**2
+        s = xInterpolatedUnivariateSplineLinear(_x, _y)
+        _x.sort()
+        self.assertTrue((s.x == _x).all())
+        self.assertTrue((s.y == _x**2).all())
+
+    def test_non_unique(self):
+        """The spline constructor must fail when non-unique values are passed.
+        """
+        _x = numpy.array([1, 1, 2, 3, 4])
+        _y = _x**2
+        with self.assertRaises(AssertionError):
+            s = xInterpolatedUnivariateSplineLinear(_x, _y)
+        
+        
 
 if __name__ == '__main__':
     unittest.main()

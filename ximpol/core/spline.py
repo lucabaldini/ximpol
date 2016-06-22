@@ -25,7 +25,7 @@ import numpy
 from scipy.interpolate import UnivariateSpline, InterpolatedUnivariateSpline
 from scipy.interpolate import RectBivariateSpline
 
-from ximpol.utils.logging_ import logger
+from ximpol.utils.logging_ import logger, abort
 
 
 def interpolate(xa, ya, xb, yb, x):
@@ -95,7 +95,7 @@ class xUnivariateSplineBase:
     Args
     ----
     x : array
-        Input x values (assumed to be sorted).
+        Input x values.
 
     y : array
         Input y values.
@@ -116,18 +116,20 @@ class xUnivariateSplineBase:
     ----
     This is a do-nothing class to be subclassed and not instantiated
     directly.
-
-    Warning
-    -------
-    Can we avoid copying the vectors in the constructor?
     """
 
     def __init__(self, x, y, xname=None, xunits=None, yname=None, yunits=None):
         """Constructor.
         """
-        assert(len(x) == len(y))
-        self.x = x.copy()
-        self.y = y.copy()
+        # Make sure the input vectors have the same lengths.
+        assert len(x) == len(y)
+        # numpy.unique is returning a sorted copy of the unique values of the
+        # x arrays, so this is effectively sorting x.
+        self.x, _index = numpy.unique(x, return_index=True)
+        # If some of the values were not unique, give up.
+        assert len(self.x) == len(x)
+        # Need to grab the y in the right order.
+        self.y = y[_index]
         self.xname = xname
         self.xunits = xunits
         self.yname = yname
