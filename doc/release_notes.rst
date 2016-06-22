@@ -1,6 +1,9 @@
 Release notes
 =============
 
+* Added checks in the univariate spline constructors to make sure that the
+  input x-values are sorted and unique (closing issue #84.)
+
 
 *ximpol (0.47.3) - Wed, 22 Jun 2016 08:56:35 +0200*
 
