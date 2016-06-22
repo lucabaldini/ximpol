@@ -2,6 +2,8 @@ Release notes
 =============
 
 
+*ximpol (0.48.0) - Wed, 22 Jun 2016 23:12:31 +0200*
+
 * Added script to make the polarization map of casa in examples
 * Added the option to draw the psf circle in the count map of casa in the main
   casa.py example.
