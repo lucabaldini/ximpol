@@ -35,19 +35,97 @@ from ximpol.config.grb_utils import parse_light_curve
 from ximpol.config.grb_utils import get_grb_spec_index
 
 
-MAX_ENERGY = 10.
-MIN_ENERGY = 0.3
+
+
 
 IRF_NAME = 'xipe_baseline'
+MIN_ENERGY = 2.
+MAX_ENERGY = 10.
+ENERGY_BINNING = numpy.array([MIN_ENERGY, MAX_ENERGY])
 
 from ximpol.irf import load_arf, load_mrf
 from ximpol.irf.mrf import mdp99
+from ximpol.srcmodel.spectrum import int_eflux2pl_norm, xCountSpectrum
 
 aeff = load_arf(IRF_NAME)
 modf = load_mrf(IRF_NAME)
 
 
 
+
+def build_count_spectrum(grb_name):
+    """
+    """
+    file_path = download_swift_grb_lc_file(grb_name)
+    if file_path is None:
+        return
+    logger.info('Parsing light curve data from %s...' % file_path)
+    light_curve = parse_light_curve(file_path, num_min_data=10.)
+    if light_curve is None:
+        return
+    logger.info('Done, light curve has %d point(s) between %.3f and %.3f s.' %\
+                (len(light_curve.x), light_curve.xmin(), light_curve.xmax()))
+    print light_curve.x, light_curve.y
+    light_curve.plot(overlay=True)
+    pl_index = get_grb_spec_index(file_path)
+    scale_factor = int_eflux2pl_norm(1., 0.3, 10., pl_index, erg=True)
+    pl_norm = light_curve.scale(scale_factor, yname='Power-law normalization',
+                                yunits='keV cm$^{-2}$ s$^{-1}$')
+
+
+
+    def energy_spectrum(E, t):
+        return pl_norm(t)*numpy.power(E, -pl_index)
+
+    return xCountSpectrum(energy_spectrum, aeff, light_curve.x)
+
+
+def process_grb(grb_name, tstart=21600., duration=30000., prompt_duration=600):
+    """
+    """
+    file_path = download_swift_grb_lc_file(grb_name)
+    if file_path is None:
+        return
+    pl_index = get_grb_spec_index(file_path)
+    light_curve = parse_light_curve(file_path, num_min_data=10.)
+    if light_curve is None:
+        return
+    t = light_curve.x
+    prompt_tstart = t[0]
+    prompt_tstop = t[0] + prompt_duration
+    prompt_flux = light_curve.integral(prompt_tstart, prompt_tstop)
+    logger.info('Integral energy flux in %.3f--%.3f s: %.3e erg cm^{-2}' %\
+                (prompt_tstart, prompt_tstop, prompt_flux))
+    tstart = max(tstart, t[0])
+    tstop = min(tstart + duration, t[-1])
+    logger.info('Effective time interval for the MDP: %.3f--%.3f s' %\
+                (tstart, tstop))
+    t = t[(t >= tstart)*(t <= tstop)]
+    if len(t) < 2:
+        return
+    
+    scale_factor = int_eflux2pl_norm(1., 0.3, 10., pl_index, erg=True)
+    pl_norm = light_curve.scale(scale_factor)# Fix the label.
+
+    def energy_spectrum(E, t):
+        return pl_norm(t)*numpy.power(E, -pl_index)
+    
+    count_spectrum = xCountSpectrum(energy_spectrum, aeff, t)
+    mdp_table = count_spectrum.build_mdp_table(ENERGY_BINNING, modf)
+    logger.info(mdp_table)
+
+
+def process_grb_list(tstart=21600., duration=30000.):
+    """
+    """
+    for grb_name in get_all_swift_grb_names()[:10]:
+        logger.info('Processing %s...' % grb_name)
+        #process_grb(grb_name, tstart, duration)
+        count_spectrum = build_count_spectrum(grb_name)
+        #if count_spectrum is not None:
+        #    count_spectrum.plot()
+    
+    
 
 def get_spectrum(_energy, norm, index):
     """Power law assumed for the energy. 
@@ -114,6 +192,7 @@ def get_grb_mdp(grb_name, repointing=21600., obs_time=100000):
                                 %int(num_evt))
                     mu = numpy.average(_modf,weights=_spectrum)
                     mdp = mdp99(mu,int(num_evt))
+                    print mdp
                     if not math.isnan(mdp):
                         logger.info('%.2f--%.2f keV: %i counts (%.1e s), mu %.2f, MDP %.2f%%'\
                                     %(MIN_ENERGY,MAX_ENERGY,int(num_evt),\
@@ -196,6 +275,7 @@ def main():
         c, good_grb = [], []
         for grb in grb_list:
             mdp = get_grb_mdp(grb,repointing=t_rep,obs_time=t_obs)
+            calculate_mdp(grb, t_rep, t_obs)
             flux, t0 = get_integral_flux(grb,delta_t=promt_time)
             if mdp is not None and flux is not None:
                 mdp_list1.append(mdp*100)
@@ -293,4 +373,5 @@ def main():
         plt.show()
 
 if __name__=='__main__':
-    main()
+    #main()
+    process_grb_list()
