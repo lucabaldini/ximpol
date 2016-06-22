@@ -252,7 +252,6 @@ class xBinnedCountSpectrum(xBinnedFileBase):
     def plot(self, show=True):
         """Overloaded plot method.
         """
-        fig = plt.figure('Count spectrum')
         plt.errorbar(self.channel, self.rate, yerr=self.error, fmt='o')
         plt.xlabel('PHA')
         plt.ylabel('Rate [Hz]')
@@ -426,7 +425,6 @@ class xBinnedLightCurve(xBinnedFileBase):
     def plot(self, show=True):
         """Overloaded plot method.
         """
-        fig = plt.figure('Light curve')
         plt.errorbar(self.time, self.counts/self.timedel,
                      yerr=self.error/self.timedel, fmt='o')
         plt.xlabel('Time [s]')
@@ -502,11 +500,12 @@ class xBinnedPhasogram(xBinnedFileBase):
         self.counts = self.data['COUNTS']
         self.error = self.data['ERROR']
 
-    def plot(self, show=True):
+    def plot(self, show=True, **kwargs):
         """Overloaded plot method.
         """
-        fig = plt.figure('Phasogram')
-        plt.errorbar(self.phase, self.counts, yerr=self.error, fmt='o')
+        if not kwargs.has_key('fmt'):
+            kwargs['fmt'] = 'o'
+        plt.errorbar(self.phase, self.counts, yerr=self.error, **kwargs)
         plt.xlabel('Phase')
         plt.ylabel('Counts/bin')
         if show:
