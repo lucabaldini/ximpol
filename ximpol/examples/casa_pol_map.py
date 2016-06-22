@@ -32,7 +32,7 @@ from ximpol.utils.matplotlib_ import pyplot as plt
 
 CFG_FILE = os.path.join(XIMPOL_CONFIG, 'casa.py')
 DURATION = 250000.
-E_BINNING = [1., 4., 8.]
+E_BINNING = [1., 10.]
 
 
 evt_file_path = os.path.join(XIMPOL_DATA, 'casa.fits')
@@ -47,10 +47,11 @@ ra_max =  350.733
 dec_min = 58.747
 dec_max = 58.877
 
-num_points = 5
-radius = 0.5
+num_points = 30
+RADIUS = 0.25
 
-OUTPUT_FILE = 'casa_polmap_info_Ebins_%s_%sarcmin.txt'%(num_points,radius)
+#OUTPUT_FILE = 'casa_polmap_info_Ebins_%s_%sarcmin.txt'%(num_points,radius)
+OUTPUT_FILE = 'casa_polmap_info_%s_%sarcmin.txt'%(num_points,RADIUS)
 
 _ra = numpy.linspace(ra_min, ra_max, num_points)
 _dec = numpy.linspace(dec_min, dec_max, num_points)
@@ -60,12 +61,12 @@ _dec = numpy.linspace(dec_min, dec_max, num_points)
 def get_sel_file_path(i,j):
     """
     """
-    return os.path.join(XIMPOL_DATA, 'casa_polmap_Ebins%02d%02d.fits' % (i,j))
+    return os.path.join(XIMPOL_DATA, 'casa_polmap_%02d%02d.fits' % (i,j))
 
 def get_mcube_file_path(i,j):
     """
     """
-    return os.path.join(XIMPOL_DATA, 'casa_polmap_Ebins%02d%02d_mcube.fits' % (i,j))
+    return os.path.join(XIMPOL_DATA, 'casa_polmap_%02d%02d_mcube.fits' % (i,j))
 
 
 def generate():
@@ -82,13 +83,11 @@ def get_output_file():
     
 #loop over ra and dec (two loops) and run xpselect and xpbin to get yourself some small regions. The radius of the region you are selecting should be of the order of the psf so roughly 20 arcsecs. Then make the mcube for each of these regions and fetch the pol degree. At this point you will have arrays for ra and dec of 1-d (n and m) and the array for the pol degree needs to be of dimensions nxm.
 
-def select_and_bin():
+def select_and_bin(radius = RADIUS):
     
     for i,ra in enumerate(_ra):
         for j,dec in enumerate(_dec):
-            #radius = 0.25 #roughly 12 arcseconds in arcminutes
-            radius = 0.5 #roughly 30 arcseconds in arcminutes
-         
+                   
             logger.info('Analyzing region at ra = %s, dec = %s' % (ra, dec))
             sel_file_path = get_sel_file_path(i,j)
             mcube_file_path = get_mcube_file_path(i,j)
@@ -120,16 +119,17 @@ def fit_pol_map():
                 emin = mcube.emin[j]
                 emax = mcube.emax[j]
                 
-                if degree>1.0:
-                    degree = 0
+                #These conditions are needed to make sure that we do not get unphysical values for the polarization degree due to low statistics in the fitting stage. 
+                if degree_error > degree or counts < 10000:
+                    degree = 0.0
+                  #  degree_error = 0.0
                 else:
                     degree = degree*100
                     degree_error = degree_error*100
-                if counts < 10000:
-                    degree = 0
+                
                 if degree > 50:
                     mcube.plot_bin(0)
-              
+                #write the fit values to a txt file the first time you run the code and then simply read the txt file for fast plotting after.
                 line = '%s,%s,%s,%s,%s,%s,%s\n'%(emin,emax,degree, degree_error, angle, angle_error, counts)
                 print "Info",line
                 output_file.write(line)
@@ -149,34 +149,49 @@ def plot_pol_map_from_ascii():
     _dec = numpy.linspace(dec_min, dec_max, num_points)
 
     _ra, _dec = numpy.meshgrid(_ra, _dec)
-    fig = plt.figure(figsize=(15,15),facecolor='w')
+   
+    fig = plt.figure()
     for i in range(len(E_BINNING) - 1):
         sigma_array = degree[emin==E_BINNING[i]]/degree_error[emin==E_BINNING[i]]
-        sigma_array = sigma_array.reshape((num_points,num_points))
         pol_array = degree[emin==E_BINNING[i]].reshape((num_points,num_points))
-        
-        ax1 = fig.add_subplot(2,1,1)
-        label_pol = 'Pol degree %.2f-%.2f keV' % (E_BINNING[i],E_BINNING[i+1])
+        sigma_array = sigma_array.reshape((num_points,num_points))  
+        ax1 = fig.add_subplot()
+        label = 'XIPE %.1d ks'%(DURATION/1000.)
+
         plt.contourf(_ra,_dec,pol_array)
-        plt.colorbar()
-        plt.text(0.02, 0.92, label_pol, transform=plt.gca().transAxes,
-                 fontsize=25)
+        cbar = plt.colorbar()
+        cbar.ax.set_ylabel('Polarization degree')
+        
+        plt.text(0.02, 0.92, label, transform=plt.gca().transAxes,
+                 fontsize=20,color='w')
         plt.xlabel('RA')
         plt.ylabel('DEC')
+       # fig.gca().add_artist(psf)
         plt.show()
-        ax2 = fig.add_subplot(2,2,1)
-        label_sigma = 'Pol sigma %.2f-%.2f keV' % (E_BINNING[i],E_BINNING[i+1])
-        plt.contourf(_ra,_dec,sigma_array)
-        plt.colorbar()
-        plt.text(0.02, 0.92, label_sigma, transform=plt.gca().transAxes,
-                fontsize=25)
-        plt.xlabel('RA')
-        plt.ylabel('DEC')
-        plt.show()
+        ax2 = fig.add_subplot()
     
+        plt.contourf(_ra,_dec,sigma_array)
+        cbar2 = plt.colorbar()
+        cbar2.ax.set_ylabel('Sigma')
+        plt.text(0.02, 0.92, label, transform=plt.gca().transAxes,
+                 fontsize=20,color='w')
+        plt.xlabel('RA')
+        plt.ylabel('DEC')
+        plt.show()
+
+
+def plot_input_model():
+    #Simply method to plot the input polarization degree used for the simulation.
+    from ximpol.srcmodel.polarization import xPolarizationMap
+    from ximpol.config.casa import polarization_map
+    polarization_map.plot_polarization_degree()
+
+
+        
 if __name__ == '__main__':
     
     #generate()
-    select_and_bin()
-    fit_pol_map()
+    #select_and_bin()
+    #fit_pol_map()
     plot_pol_map_from_ascii()
+    #plot_input_model()
