@@ -581,7 +581,7 @@ class xEventBinningMCUBE(xEventBinningBase):
             assert isinstance(ebinning, list)
             ebinning = numpy.array(ebinning, 'd')
         else:
-            abort('ebinalg %s not implemented yet' % ebinalg)
+            abort('ebinalg %s not implemented yet' % ebinalg)            
         phibinning = numpy.linspace(0, 2*numpy.pi, self.get('phibins') + 1)
         return (ebinning, phibinning)
 
@@ -605,6 +605,16 @@ class xEventBinningMCUBE(xEventBinningBase):
         effmu = []
         ncounts = []
         mdp = []
+        # If there's more than one bin in energy, we're also interested in all
+        # the basic quantities in the entire energy range. This involves
+        # extending the emin and emax arrays and summing up all the
+        # phi histograms across the various energy slices.
+        if len(emin) > 1:
+            emin = numpy.append(emin, emin[0])
+            emax = numpy.append(emax, emax[-1])
+            _d1, _d2 = phi_hist.shape
+            phi_hist_sum = numpy.sum(phi_hist, axis=0).reshape((1, _d2))
+            phi_hist = numpy.append(phi_hist, phi_hist_sum, axis=0)
         for _emin, _emax in zip(emin, emax):
             _mask = (energy > _emin)*(energy < _emax)
             _energy = energy[_mask]
