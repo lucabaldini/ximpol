@@ -497,6 +497,7 @@ class xBinnedPhasogram(xBinnedFileBase):
         xBinnedFileBase.__init__(self, file_path)
         self.data = self.hdu_list['RATE'].data
         self.phase = self.data['PHASE']
+        self.phase_delta = self.data['PHASEDEL']
         self.counts = self.data['COUNTS']
         self.error = self.data['ERROR']
 
@@ -505,7 +506,8 @@ class xBinnedPhasogram(xBinnedFileBase):
         """
         if not kwargs.has_key('fmt'):
             kwargs['fmt'] = 'o'
-        plt.errorbar(self.phase, self.counts, yerr=self.error, **kwargs)
+        plt.errorbar(self.phase, self.counts, yerr=self.error,
+                     xerr=0.5*self.phase_delta, **kwargs)
         plt.xlabel('Phase')
         plt.ylabel('Counts/bin')
         if show:
