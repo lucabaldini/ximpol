@@ -73,6 +73,12 @@ def _pha1_file_path(i):
     return '%s_interval%04d_pha1.fits' % (OUT_FILE_PATH_BASE, i)
 
 
+def calculate_mdp():
+    """
+    """
+    mdp_table = PIPELINE.xpmdp(configfile=CFG_FILE_PATH, tstart=10000,
+                               duration=10000)
+
 def generate():
     """Generate the events.
     """
@@ -218,6 +224,7 @@ def run(save_plots=False):
         logger.info('%s exists, delete it if you want to recreate it.' %\
                     ANALYSIS_FILE_PATH)
     else:
+        calculate_mdp()
         generate()
         prepare()
         analyze()

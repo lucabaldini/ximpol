@@ -94,7 +94,7 @@ class xPolMap(xPolMapBase):
     
     def add_ellipse(self,ra,dec,radius1,radius2,theta, pmax, ptype='circular',angle=0.0):
         ''' This implement the case of a circular shape'''
-        logger.info('add a ellipse at ra=%f, dec=%f, radius1=%f radius2=%f theta=%f. PMAX=%f'%(ra,dec,radius1,radius2,theta, pmax))
+        logger.info('add a ellipse at ra=%f, dec=%f, radius1=%f radius2=%f theta=%f. PMAX=%f, ANGLE=%f, PTYPE=%s.'%(ra,dec,radius1,radius2,theta, pmax,angle,ptype))
         theta_rad=numpy.deg2rad(theta)
         for i in range(self.nxpix):
             for j in range(self.nxpix):
@@ -107,27 +107,28 @@ class xPolMap(xPolMapBase):
                 #dy1   = dy0#-dx0*numpy.sin(theta_rad)+dy0*numpy.cos(theta_rad)
                 dx1   =  dx0*numpy.cos(theta_rad)-dy0*numpy.sin(theta_rad)
                 dy1   =  dx0*numpy.sin(theta_rad)+dy0*numpy.cos(theta_rad)
-                
                 dx    =  dx1/radius1 # Effect of the projection
                 dy    =  dy1/radius2
                 dx2 = dx*numpy.cos(theta_rad)+dy*numpy.sin(theta_rad)
                 dy2 = -dx*numpy.sin(theta_rad)+dy*numpy.cos(theta_rad)
                 
-                if ptype is 'linear':
+                if ptype == 'linear':
                     p_x = numpy.cos(numpy.deg2rad(angle))
                     p_y = numpy.sin(numpy.deg2rad(angle))
-                elif ptype is 'circular':
+                elif ptype == 'circular':
                     p_x = -dy2
                     p_y = +dx2
-                elif ptype is 'radial':
+                elif ptype == 'radial':
                     p_x = dx2
                     p_y = dy2
                     pass
                 dist = numpy.sqrt(dx*dx+dy*dy)
-                #print w_ra, w_dec, ra, dec, dist
                 if (dist>1):
                     p_x=0
                     p_y=0
+                    pass
+                else:
+                    #print w_ra, w_dec, ra, dec, dist, dx1,dy1, dx2,dy2,p_x, p_y
                     pass
                 self.pol_x[i,j]=self.pol_x[i,j]+p_x#*radius1
                 self.pol_y[i,j]=self.pol_y[i,j]+p_y#*radius2           
@@ -299,7 +300,6 @@ if __name__ == '__main__':
     Nregion = len(regions_img)
     out_files=[]
     for i in range(Nregion):
-        
         r=regions_word[i]
         # I need to create one polarization map per region
         print '===> region found... NAME:', r.name,'COORD SYS:',r.coord_format,'COMMENT:',r.comment
@@ -312,13 +312,13 @@ if __name__ == '__main__':
             ptype='radial'
             pass
         else:
-            ptype=raw_input('===> Type of polarization pattern [linear|circular|radial]....: ')
+            ptype=raw_input('===> Type of polarization pattern [linear|circular|radial]....: ').replace('\n','').strip()
             pass
-        
+        pangle=0
         if ptype=='linear':
             if r.comment is not None and 'pangle=' in r.comment:
                 pangle=float(r.comment.split('pangle=')[-1].split(' ')[0])
-                print 'Angle of polarization = %s degrees' % pangle
+                print 'Angle of polarization = %f degrees' % pangle
             else:
                 pangle=float(raw_input('===> Angle in degrees....: '))    
                 pass
@@ -326,7 +326,7 @@ if __name__ == '__main__':
         
         if r.comment is not None and 'pmax=' in r.comment:
             pmax=float(r.comment.split('pmax=')[-1].split(' ')[0])
-            print 'Maximum Degree of polarization of polarization = %s' % pmax
+            print 'Maximum Degree of polarization of polarization = %f' % pmax
         else:
             pmax=float(raw_input('===> maximum degree of polarization for region %s [0-100]....: ' %  r.name))/100.        
             pass
@@ -335,15 +335,15 @@ if __name__ == '__main__':
         out_files.append(outfile)
         myPolarizationMap = xPolMap(xref=xref, yref=yref,nxpix=npix,nypix=npix,binsz=binsz,proj='TAN',outfile=outfile)
         myPolarizationMap.create()
-        pmax*=Nregion # This is to account that in the simulation each 
+        #pmax*=Nregion # This is to account that in the simulation each 
         if r.name is 'circle':
             ra, dec, rad = r.coord_list
-            myPolarizationMap.add_ellipse(ra,dec,rad,rad,0.0,pmax,ptype)
+            myPolarizationMap.add_ellipse(ra,dec,rad,rad,0.0,pmax,ptype, pangle)
             #myPolarizationMap.add_circle(ra,dec,rad,pmax,ptype)
             pass
         elif r.name is 'ellipse':
             ra, dec, rad1, rad2, ang = r.coord_list
-            myPolarizationMap.add_ellipse(ra,dec,rad1,rad2,ang,pmax,ptype)            
+            myPolarizationMap.add_ellipse(ra,dec,rad1,rad2,ang,pmax,ptype, pangle)            
         else:
             myPolarizationMap.add_shape(myfilters[i],pmax=pmax,angle=pangle)
             pass

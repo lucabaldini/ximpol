@@ -1,0 +1,17 @@
+# Region file format: DS9 version 4.1
+# Filename: /Users/omodei/GRBWorkDir/MY_PYTHON_MODULES/ximpol/ximpol/config/fits/crab_0p3_10p0_keV.fits
+global color=green dashlist=8 3 width=1 font="helvetica 10 normal" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1
+fk5
+circle(83.641149,22.026244,16.135927")
+circle(83.631401,22.026244,16.135927")
+circle(83.621778,22.026128,16.135927")
+circle(83.641147,22.00794,16.135927")
+circle(83.631401,22.00794,16.135927")
+circle(83.621779,22.00794,16.135927")
+circle(83.641148,22.017208,16.135927")
+circle(83.631401,22.017208,16.135927")
+circle(83.621779,22.017092,16.135927")
+circle(83.636275,22.021842,16.135927")
+circle(83.626527,22.021842,16.135927")
+circle(83.636274,22.012805,16.135927")
+circle(83.626527,22.012806,16.135927")

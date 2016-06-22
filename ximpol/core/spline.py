@@ -25,7 +25,7 @@ import numpy
 from scipy.interpolate import UnivariateSpline, InterpolatedUnivariateSpline
 from scipy.interpolate import RectBivariateSpline
 
-from ximpol.utils.logging_ import logger
+from ximpol.utils.logging_ import logger, abort
 
 
 def interpolate(xa, ya, xb, yb, x):
@@ -95,7 +95,7 @@ class xUnivariateSplineBase:
     Args
     ----
     x : array
-        Input x values (assumed to be sorted).
+        Input x values.
 
     y : array
         Input y values.
@@ -116,18 +116,20 @@ class xUnivariateSplineBase:
     ----
     This is a do-nothing class to be subclassed and not instantiated
     directly.
-
-    Warning
-    -------
-    Can we avoid copying the vectors in the constructor?
     """
 
     def __init__(self, x, y, xname=None, xunits=None, yname=None, yunits=None):
         """Constructor.
         """
-        assert(len(x) == len(y))
-        self.x = x.copy()
-        self.y = y.copy()
+        # Make sure the input vectors have the same lengths.
+        assert len(x) == len(y)
+        # numpy.unique is returning a sorted copy of the unique values of the
+        # x arrays, so this is effectively sorting x.
+        self.x, _index = numpy.unique(x, return_index=True)
+        # If some of the values were not unique, give up.
+        assert len(self.x) == len(x)
+        # Need to grab the y in the right order.
+        self.y = y[_index]
         self.xname = xname
         self.xunits = xunits
         self.yname = yname
@@ -201,7 +203,9 @@ class xUnivariateSplineBase:
             yname = self.yname
         if yunits is None:
             yunits = self.yunits
-        return self.__class__(_x, _y)
+        fmt = dict(xname=self.xname, xunits=self.xunits, yname=yname,
+                   yunits=yunits)
+        return self.__class__(_x, _y, **fmt)
 
     @classmethod
     def label(cls, name, units=None):
@@ -234,7 +238,7 @@ class xUnivariateSplineBase:
         what the class of the original spline is.
         """
         _x = self.x
-        _y = numpy.array([self.integral(0, _xp) for _xp in _x])/self.norm()
+        _y = numpy.array([self.integral(_x[0], _xp) for _xp in _x])/self.norm()
         return xInterpolatedUnivariateSplineLinear(_x, _y)
 
     def build_ppf(self):
@@ -244,7 +248,7 @@ class xUnivariateSplineBase:
         what the class of the original spline is.
         """
         _y = self.x
-        _x = numpy.array([self.integral(0, _xp) for _xp in _y])
+        _x = numpy.array([self.integral(_y[0], _xp) for _xp in _y])
         _x, _mask = numpy.unique(_x, return_index=True)
         _x/= self.norm()
         _y = _y[_mask]

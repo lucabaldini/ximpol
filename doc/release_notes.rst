@@ -5,6 +5,60 @@ Release notes
 
 * Added the Cyg-X1 ascii files for the model at 40 degree inclination.
 
+* Added checks in the univariate spline constructors to make sure that the
+  input x-values are sorted and unique (closing issue #84.)
+
+
+*ximpol (0.47.3) - Wed, 22 Jun 2016 08:56:35 +0200*
+
+* Added M87 configuration files and analysis pipeline for chandra-to-ximpol
+  converter.
+* Added configuration files and analysis pipeline example for MCG-6-30-15, 
+  ARK 120 and NGC 1365.
+* Configuration file for GK Per slightly tweaked.
+  
+
+*ximpol (0.47.2) - Sat, 18 Jun 2016 06:56:49 +0200*
+
+* Minor doc update.
+* Added GK Per configuration file and analysis pipeline example.
+
+
+*ximpol (0.47.1) - Thu, 16 Jun 2016 16:39:40 +0200*
+
+* Slight tweak to the command-line switches for xpbin and xpselect, in order
+  to be able to set the mc keyword argument to True from the pipeline.
+* Fix for issue #105 (closing it).
+
+
+*ximpol (0.47.0) - Thu, 16 Jun 2016 15:34:41 +0200*
+
+* Redshift added to the simulation (issue #121).
+
+
+*ximpol (0.46.0) - Thu, 16 Jun 2016 15:26:42 +0200*
+
+* Interstellar absorption added to the simulation (closing issue #120).
+
+
+*ximpol (0.45.1) - Wed, 15 Jun 2016 15:00:50 +0200*
+
+* Minor bug fix.
+* ximpol.srcmodel.polarization module added to the documentation.
+
+
+*ximpol (0.45.0) - Wed, 15 Jun 2016 14:46:01 +0200*
+
+* Galactic absorption column density and redhsift added to all the model
+  components (working our way through issue #120).
+* Some cleanup of the Galactic absorption code (issue #120).
+* Unit test for the intertellar absorption added.
+* Fix for issue #103.
+* Some significant refactoring of the xpmdp code.
+* xpmdp added to the pipeline (closing issue #137).
+* Added a unit test comparing the xpmdp.py output with the figures from the
+  online sensitivity calculator.
+
 
 *ximpol (0.44.2) - Fri, 10 Jun 2016 17:58:27 +0200*
 

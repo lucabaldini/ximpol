@@ -24,7 +24,7 @@ import scipy
 import scipy.signal
 
 from ximpol.srcmodel.roi import xPointSource, xROIModel
-from ximpol.srcmodel.spectrum import power_law
+from ximpol.srcmodel.spectrum import power_law, int_eflux2pl_norm
 from ximpol.srcmodel.polarization import constant
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
 from ximpol import XIMPOL_CONFIG
@@ -101,12 +101,7 @@ ROI_MODEL = xROIModel(GRB_RA, GRB_DEC)
 
 lc_file_path = os.path.join(XIMPOL_CONFIG, 'ascii/GRB130427_Swift.dat')
 integral_flux_spline = parse_light_curve(lc_file_path)
-# This needs to be fixed---the conversion between integral energy flux
-# and differential flux is wrong.
-scale_factor = (2. - PL_INDEX)/(numpy.power(MAX_ENERGY, 2. - PL_INDEX) - \
-                                numpy.power(MIN_ENERGY, 2. - PL_INDEX))
-# Convert from erg to keV.
-scale_factor *= 6.242e8
+scale_factor = int_eflux2pl_norm(1, MIN_ENERGY, MAX_ENERGY, PL_INDEX)
 fmt = dict(yname='PL normalization', yunits='cm$^{-2}$ s$^{-1}$ keV$^{-1}$')
 pl_normalization_spline = integral_flux_spline.scale(scale_factor, **fmt)
 

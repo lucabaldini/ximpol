@@ -64,7 +64,8 @@ img_file_path = os.path.join(XIMPOL_CONFIG, 'fits', 'crab_0p3_10p0_keV.fits')
 #./xppolmap.py --image ../config/fits/crab_0p3_10p0_keV.fits --region ../config/fits/crab_nebula_complex.reg --output ../config/fits/crab_nebula_complex.fits
 ##############################
 
-base_names=['crab_nebula_complex_pmax020_reg000','crab_nebula_complex_pmax017_reg001','crab_nebula_complex_pmax010_reg002']
+base_names=['crab_nebula_pmax050_reg000','crab_nebula_pmax050_reg001','crab_nebula_pmax050_reg002']
+#base_names=['crab_nebula_pmax050_reg000']
 polarization_maps=[]
 for i,base_name in enumerate(base_names):
     energy_spectrum = power_law(9.59/len(base_names), 2.108) # This ineeds to be checked!

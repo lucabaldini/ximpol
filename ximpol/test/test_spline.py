@@ -22,6 +22,7 @@
 
 
 import unittest
+import scipy.special
 
 from ximpol.core.spline import *
 from ximpol.utils.logging_ import suppress_logging
@@ -141,6 +142,37 @@ class TestSplineLinear(unittest.TestCase):
         _delta = abs(ppf(1) - self.s3.xmax())
         self.assertTrue(_delta < 1e-3, 'ppf(1) - xmax %.9f' % _delta)
 
+    def test_cdf_erf(self):
+        """Test the cdf for a gaussian function.
+        """
+        _x = numpy.linspace(-5, 5, 100)
+        _y = 1./numpy.sqrt(2.*numpy.pi)*numpy.exp(-0.5*_x**2)
+        pdf = xInterpolatedUnivariateSplineLinear(_x, _y)
+        cdf = pdf.build_cdf()
+        delta = abs(cdf(_x) - 0.5*(1. + scipy.special.erf(_x/numpy.sqrt(2.))))
+        max_delta = delta.max()
+        err_msg = 'maximum absolute delta %.4e' % max_delta
+        self.assertTrue(max_delta < 5e-4, err_msg)
+
+    def test_sort(self):
+        """Test the automatic sorting functionality.
+        """
+        _x = numpy.random.sample(100)
+        _y = _x**2
+        s = xInterpolatedUnivariateSplineLinear(_x, _y)
+        _x.sort()
+        self.assertTrue((s.x == _x).all())
+        self.assertTrue((s.y == _x**2).all())
+
+    def test_non_unique(self):
+        """The spline constructor must fail when non-unique values are passed.
+        """
+        _x = numpy.array([1, 1, 2, 3, 4])
+        _y = _x**2
+        with self.assertRaises(AssertionError):
+            s = xInterpolatedUnivariateSplineLinear(_x, _y)
+        
+        
 
 if __name__ == '__main__':
     unittest.main()
