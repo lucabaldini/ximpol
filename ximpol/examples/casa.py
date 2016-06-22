@@ -159,12 +159,17 @@ def plot_doc():
     """
     img = xFITSImage(os.path.join(XIMPOL_DATA, 'casa_cmap.fits'))
     fig = img.plot(show=False)
+    #Option to draw the psf circle on the count map
+    RAD_PSF = 11/60.
+    fig.show_circles(350.769, 58.873, RAD_PSF/60., lw=2, color='white')
+    fig.add_label(0.73,0.90, 'PSF', relative=True, size='x-large',
+                                    color='white', horizontalalignment='left') 
     xFITSImage.add_label(fig, 'XIPE 250 ks')
     plt.show()
 
 
 if __name__ == '__main__':
-    generate()
-    select_and_bin()
-    plot(True)
-    #plot_doc()
+   # generate()
+   # select_and_bin()
+   # plot(True)
+    plot_doc()

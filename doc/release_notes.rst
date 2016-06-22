@@ -1,5 +1,9 @@
 Release notes
 =============
+* Added script to make the polarization map of casa in examples
+* Added the option to draw the psf circle in the count map of casa in the main casa.py example.
+
+* Added the Cyg-X1 ascii files for the model at 40 degree inclination.
 
 * Added checks in the univariate spline constructors to make sure that the
   input x-values are sorted and unique (closing issue #84.)
