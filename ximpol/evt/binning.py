@@ -33,6 +33,7 @@ from ximpol.srcmodel.img import xFITSImage
 from ximpol import xpColor
 
 
+
 class xEventBinningBase:
 
     """Base class for the event binning.
@@ -107,6 +108,40 @@ class xEventBinningBase:
         """
         assert bin_edges.ndim == 1
         return (bin_edges[1:] - bin_edges[:-1])
+
+    @classmethod
+    def bin_edge_pairs(cls, bin_edges, uber=False):
+        """Return a list of (min, max) tuples of length 2 given an array of 
+        bin edges. This is handy when one needs to loop explicitly over the
+        intervals defined by the array bounds, e.g., when running xpselect
+        in specific energy, time or phase intervals.
+
+        Arguments
+        ---------
+        bin_edges : 1-d array of length (n + 1).
+            The array with the bin edges.
+
+        uber : bool
+            If true, add the overall interval (i.e., a tuple with the absolute
+            minimum and maximum in the binning) at the end.
+
+        Example
+        -------
+        >>> import numpy
+        >>> from ximpol.evt.binning import xEventBinningBase
+        >>>
+        >>> energy_binning = numpy.array([2., 4., 8.])
+        >>> print(xEventBinningBase.bin_edge_pairs(energy_binning))
+        >>> [(2.0, 4.0), (4.0, 8.0)]
+        >>> print(xEventBinningBase.bin_edge_pairs(energy_binning, uber=True))
+        >>> [(2.0, 4.0), (4.0, 8.0), (2.0, 8.0)]
+
+        """
+        assert bin_edges.ndim == 1
+        pairs = zip(bin_edges[:-1], bin_edges[1:])
+        if uber and len(pairs) > 1:
+            pairs.append((bin_edges[0], bin_edges[-1]))
+        return pairs
 
     @classmethod
     def equipopulated_binning(cls, num_bins, vector, min_value=None,

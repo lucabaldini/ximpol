@@ -20,7 +20,8 @@
 """We need to import the ximpol executables but we don't have an __init__ file
 in there (and we don't want to add one).
 
-Also, we need to import the
+Also, we need to import all the parser object for passing command-line
+switches as keyword arguments.
 """
 from ximpol import XIMPOL_BIN
 import sys
@@ -45,6 +46,10 @@ except ImportError:
 class xPipeline:
 
     """Class describing a simulation/analysis pipeline.
+
+    This facility allows to streamline the execution of common operations,
+    such as simulating an observation, splitting the photon list in subsamples
+    and running any of the tools on these subsamples.
 
     Arguments
     ---------
