@@ -1,13 +1,20 @@
 Release notes
 =============
+
+
+*ximpol (0.48.0) - Wed, 22 Jun 2016 23:12:31 +0200*
+
 * Added script to make the polarization map of casa in examples
-* Added the option to draw the psf circle in the count map of casa in the main casa.py example.
-
+* Added the option to draw the psf circle in the count map of casa in the main
+  casa.py example.
 * Added the Cyg-X1 ascii files for the model at 40 degree inclination.
-
 * Added checks in the univariate spline constructors to make sure that the
   input x-values are sorted and unique (closing issue #84.)
-
+* evt.binning.py module modified in such a way that all the relevant quantities
+  are also calculated over the entire energy range when the energy
+  binning is longer than 1 (i.e., if you do 2--4 keV and 4--8 keV, you
+  get 2--8 keV for free).
+ 
 
 *ximpol (0.47.3) - Wed, 22 Jun 2016 08:56:35 +0200*
 

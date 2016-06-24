@@ -33,6 +33,7 @@ from ximpol.srcmodel.img import xFITSImage
 from ximpol import xpColor
 
 
+
 class xEventBinningBase:
 
     """Base class for the event binning.
@@ -107,6 +108,40 @@ class xEventBinningBase:
         """
         assert bin_edges.ndim == 1
         return (bin_edges[1:] - bin_edges[:-1])
+
+    @classmethod
+    def bin_edge_pairs(cls, bin_edges, uber=False):
+        """Return a list of (min, max) tuples of length 2 given an array of 
+        bin edges. This is handy when one needs to loop explicitly over the
+        intervals defined by the array bounds, e.g., when running xpselect
+        in specific energy, time or phase intervals.
+
+        Arguments
+        ---------
+        bin_edges : 1-d array of length (n + 1).
+            The array with the bin edges.
+
+        uber : bool
+            If true, add the overall interval (i.e., a tuple with the absolute
+            minimum and maximum in the binning) at the end.
+
+        Example
+        -------
+        >>> import numpy
+        >>> from ximpol.evt.binning import xEventBinningBase
+        >>>
+        >>> energy_binning = numpy.array([2., 4., 8.])
+        >>> print(xEventBinningBase.bin_edge_pairs(energy_binning))
+        >>> [(2.0, 4.0), (4.0, 8.0)]
+        >>> print(xEventBinningBase.bin_edge_pairs(energy_binning, uber=True))
+        >>> [(2.0, 4.0), (4.0, 8.0), (2.0, 8.0)]
+
+        """
+        assert bin_edges.ndim == 1
+        pairs = zip(bin_edges[:-1], bin_edges[1:])
+        if uber and len(pairs) > 1:
+            pairs.append((bin_edges[0], bin_edges[-1]))
+        return pairs
 
     @classmethod
     def equipopulated_binning(cls, num_bins, vector, min_value=None,
@@ -252,7 +287,6 @@ class xBinnedCountSpectrum(xBinnedFileBase):
     def plot(self, show=True):
         """Overloaded plot method.
         """
-        fig = plt.figure('Count spectrum')
         plt.errorbar(self.channel, self.rate, yerr=self.error, fmt='o')
         plt.xlabel('PHA')
         plt.ylabel('Rate [Hz]')
@@ -426,7 +460,6 @@ class xBinnedLightCurve(xBinnedFileBase):
     def plot(self, show=True):
         """Overloaded plot method.
         """
-        fig = plt.figure('Light curve')
         plt.errorbar(self.time, self.counts/self.timedel,
                      yerr=self.error/self.timedel, fmt='o')
         plt.xlabel('Time [s]')
@@ -499,14 +532,17 @@ class xBinnedPhasogram(xBinnedFileBase):
         xBinnedFileBase.__init__(self, file_path)
         self.data = self.hdu_list['RATE'].data
         self.phase = self.data['PHASE']
+        self.phase_delta = self.data['PHASEDEL']
         self.counts = self.data['COUNTS']
         self.error = self.data['ERROR']
 
-    def plot(self, show=True):
+    def plot(self, show=True, **kwargs):
         """Overloaded plot method.
         """
-        fig = plt.figure('Phasogram')
-        plt.errorbar(self.phase, self.counts, yerr=self.error, fmt='o')
+        if not kwargs.has_key('fmt'):
+            kwargs['fmt'] = 'o'
+        plt.errorbar(self.phase, self.counts, yerr=self.error,
+                     xerr=0.5*self.phase_delta, **kwargs)
         plt.xlabel('Phase')
         plt.ylabel('Counts/bin')
         if show:
@@ -581,7 +617,7 @@ class xEventBinningMCUBE(xEventBinningBase):
             assert isinstance(ebinning, list)
             ebinning = numpy.array(ebinning, 'd')
         else:
-            abort('ebinalg %s not implemented yet' % ebinalg)
+            abort('ebinalg %s not implemented yet' % ebinalg)            
         phibinning = numpy.linspace(0, 2*numpy.pi, self.get('phibins') + 1)
         return (ebinning, phibinning)
 
@@ -605,6 +641,16 @@ class xEventBinningMCUBE(xEventBinningBase):
         effmu = []
         ncounts = []
         mdp = []
+        # If there's more than one bin in energy, we're also interested in all
+        # the basic quantities in the entire energy range. This involves
+        # extending the emin and emax arrays and summing up all the
+        # phi histograms across the various energy slices.
+        if len(emin) > 1:
+            emin = numpy.append(emin, emin[0])
+            emax = numpy.append(emax, emax[-1])
+            _d1, _d2 = phi_hist.shape
+            phi_hist_sum = numpy.sum(phi_hist, axis=0).reshape((1, _d2))
+            phi_hist = numpy.append(phi_hist, phi_hist_sum, axis=0)
         for _emin, _emax in zip(emin, emax):
             _mask = (energy > _emin)*(energy < _emax)
             _energy = energy[_mask]

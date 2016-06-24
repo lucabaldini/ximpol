@@ -27,6 +27,7 @@ from ximpol.evt.binning import xBinnedModulationCube, xEventBinningBase
 from ximpol.evt.event import xEventFile
 from ximpol.utils.matplotlib_ import pyplot as plt
 from ximpol.utils.matplotlib_ import save_current_figure
+from ximpol.evt.binning import xBinnedPhasogram
 from ximpol.config.gk_per import phasogram_spline, pol_degree_spline,\
     pol_angle_spline
 
@@ -41,7 +42,7 @@ SIM_DURATION = 800000.
 #PHASE_BINNING = numpy.linspace(0., 1., 6)
 PHASE_BINNING = numpy.array([0., 0.30, 0.40, 0.50, 0.60, 0.70, 1.])
 PHASE_BINNING = zip(PHASE_BINNING[:-1], PHASE_BINNING[1:])
-E_BINNING = [2., 8.]
+E_BINNING = [2., 4., 8.]
 
 
 def _sel_file_path(i):
@@ -49,10 +50,20 @@ def _sel_file_path(i):
     """
     return '%s_phase%04d.fits' % (OUT_FILE_PATH_BASE, i)
 
+def _esel_file_path(i):
+    """Return the path to the i-th xpselect output file.
+    """
+    return '%s_energy%04d.fits' % (OUT_FILE_PATH_BASE, i)
+
 def _mcube_file_path(i):
     """Return the path to the i-th xpbin MCUBE output file.
     """
     return '%s_phase%04d_mcube.fits' % (OUT_FILE_PATH_BASE, i)
+
+def _phasg_file_path(i):
+    """
+    """
+    return '%s_energy%04d_phasg.fits' % (OUT_FILE_PATH_BASE, i)
 
 
 """Main pipeline object.
@@ -68,8 +79,15 @@ def generate():
 
 def bin():
     """Bin the event file in different flavors for the actual analysis.
-    """
+    """    
     PIPELINE.xpbin(EVT_FILE_PATH, algorithm='CMAP')
+    _ebinning = zip(E_BINNING[:-1], E_BINNING[1:])
+    if len(_ebinning) > 1:
+        _ebinning.append((E_BINNING[0], E_BINNING[-1]))
+    for i, (_emin, _emax) in enumerate(_ebinning):
+        PIPELINE.xpselect(EVT_FILE_PATH, emin=_emin, emax=_emax,
+                          outfile=_esel_file_path(i))
+        PIPELINE.xpbin(_esel_file_path(i), algorithm='PHASG', phasebins=10)
     for i, (_min, _max) in enumerate(PHASE_BINNING):
         PIPELINE.xpselect(EVT_FILE_PATH, phasemin=_min, phasemax=_max,
                           outfile=_sel_file_path(i))
@@ -88,7 +106,7 @@ def analyze():
     for i, (_min, _max) in enumerate(PHASE_BINNING):
         _mcube = xBinnedModulationCube(_mcube_file_path(i))
         _mcube.fit()
-        _fit_results = _mcube.fit_results[0]
+        _fit_results = _mcube.fit_results[-1]
         print _fit_results
         _phase = 0.5*(_min + _max)
         _phase_err = 0.5*(_max - _min)
@@ -120,10 +138,12 @@ def plot(save_plots=False):
                  fmt='o', label=sim_label, color='blue')
     plt.errorbar(_phase[_bad_fit], _pol_deg[_bad_fit],
                  xerr=_phase_err[_bad_fit], yerr=_pol_deg_err[_bad_fit],
-                 fmt='o', label=sim_label, color='gray')
+                 fmt='o', color='gray')
     pol_degree_spline.plot(show=False, label=mod_label, color='green')
     plt.axis([0., 1., 0., 0.1])
-    plt.legend(bbox_to_anchor=(0.45, 0.95))
+    plt.legend(bbox_to_anchor=(0.37, 0.95))
+    plt.figtext(0.6, 0.8, '%.2f--%.2f keV' %\
+                (E_BINNING[0], E_BINNING[-1]), size=16)
     if save_plots:
         plt.savefig('gk_per_polarization_degree.png')
     plt.figure('Polarization angle')
@@ -132,15 +152,32 @@ def plot(save_plots=False):
                  fmt='o', label=sim_label, color='blue')
     plt.errorbar(_phase[_bad_fit], _pol_angle[_bad_fit],
                  xerr=_phase_err[_bad_fit], yerr=_pol_angle_err[_bad_fit],
-                 fmt='o', label=sim_label, color='gray')
+                 fmt='o', color='gray')
     pol_angle_spline.plot(show=False, label=mod_label, color='green',
                           scale=numpy.radians(1.))
     plt.axis([0., 1., -0.1, 1.5])
     plt.xlabel('Rotational phase')
     plt.ylabel('Polarization angle [rad]')
-    plt.legend(bbox_to_anchor=(0.45, 0.95))
+    plt.legend(bbox_to_anchor=(0.37, 0.95))
+    plt.figtext(0.6, 0.8, '%.2f--%.2f keV' %\
+                (E_BINNING[0], E_BINNING[-1]), size=16)
     if save_plots:
         plt.savefig('gk_per_polarization_angle.png')
+    _ebinning = zip(E_BINNING[:-1], E_BINNING[1:])
+    if len(_ebinning) > 1:
+        _ebinning.append((E_BINNING[0], E_BINNING[-1]))
+    for i, (_emin, _emax) in enumerate(_ebinning):
+        plt.figure('Phasogram %d' % i)
+        phasogram = xBinnedPhasogram(_phasg_file_path(i))
+        _scale = phasogram.counts.sum()/phasogram_spline.norm()/\
+                 len(phasogram.counts)
+        phasogram_spline.plot(show=False, label=mod_label, scale=_scale,
+                              color='green')
+        phasogram.plot(show=False, color='blue', label=sim_label )
+        plt.legend(bbox_to_anchor=(0.37, 0.95))
+        plt.figtext(0.65, 0.8, '%.2f--%.2f keV' % (_emin, _emax), size=16)
+        if save_plots:
+            plt.savefig('gk_per_phasogram_%d.png' % i)
     plt.show()
 
 def run(save_plots):

@@ -20,7 +20,8 @@
 """We need to import the ximpol executables but we don't have an __init__ file
 in there (and we don't want to add one).
 
-Also, we need to import the
+Also, we need to import all the parser object for passing command-line
+switches as keyword arguments.
 """
 from ximpol import XIMPOL_BIN
 import sys
@@ -46,39 +47,76 @@ class xPipeline:
 
     """Class describing a simulation/analysis pipeline.
 
+    This facility allows to streamline the execution of common operations,
+    such as simulating an observation, splitting the photon list in subsamples
+    and running any of the tools on these subsamples.
+
     Arguments
     ---------
     clobber : bool or None
         Determines whether existing output files are overwritten. This global
         setting overrides whatever is passed as an argument to the single
         tools.
+    
+    base_file_path : str
+        The basic path used to construct the paths to all the output files.
     """
 
-    def __init__(self, output_path_base=None, clobber=None):
+    def __init__(self, base_file_path=None, clobber=None):
         """Constructor.
         """
+        self.base_file_path = base_file_path
         assert clobber in [None, True, False]
         self.clobber = clobber
 
     def evt_file_path(self):
+        """Return the path to the basic output event file.
         """
-        """
-        pass
+        return '%s.fits' % self.base_file_path
 
-    def phase_selected_file_path(self, index, label=''):
-        """
-        """
-        pass
+    def __bin_file_path(self, bin_type, bin_index, label=None):
+        """Unified interface to construct paths to output files containing
+        data subselections and associated products. This is handy, e.g.,
+        when you want to split an event file in phase or energy slices and
+        apply any of the pipeline tools to the said subselections.
+        
+        Arguments
+        ---------
+        bin_type : str
+            The data subselection type (e.g., can indicate a subselection in
+            phase, time, energy or position).
 
-    def time_selected_file_path(self, index, label=''):
-        """
-        """
-        pass
+        bin_index : int
+            The bin index.
 
-    def pos_selected_file_path(self, index, label=''):
+        label : str
+            An optional label (can indicate, e.g., the tool beeing run on a
+            specific subselection).
         """
+        file_path = '%s_%s%04d' % (self.base_file_path, bin_type, bin_index)
+        if label is not None:
+            file_path = '%s_%s' % (file_path, label)
+        return '%s.fits' % file_path
+
+    def energy_bin_file_path(self, bin_index, label=None):
+        """Output file path interface for binning events in energy.
         """
-        pass
+        return self.__bin_file_path('energy', bin_index, label)
+
+    def phase_bin_file_path(self, bin_index, label=None):
+        """Output file path interface for binning events in phase.
+        """
+        return self.__bin_file_path('phase', bin_index, label)
+
+    def time_bin_file_path(self, bin_index, label=None):
+        """Output file path interface for binning events in time.
+        """
+        return self.__bin_file_path('time', bin_index, label)
+
+    def region_bin_file_path(self, bin_index, label=None):
+        """Output file path interface for binning events in space.
+        """
+        return self.__bin_file_path('region', bin_index, label)
 
     def command_line(self, **kwargs):
         """Turn a dictionary into a string that is understood by argparse.
