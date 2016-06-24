@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* "xipe_goal" IRFs now used by default by all the xp tools.
+
 
 *ximpol (0.48.0) - Wed, 22 Jun 2016 23:12:31 +0200*
 

@@ -24,7 +24,7 @@ import os
 import numpy
 import imp
 
-from ximpol.irf import load_irfs
+from ximpol.irf import load_irfs, DEFAULT_IRF_NAME
 from ximpol.evt.event import xMonteCarloEventList
 from ximpol.utils.profile import xChrono
 from ximpol.utils.os_ import mkdir
@@ -44,7 +44,7 @@ PARSER.add_argument('--outfile', type=str, default=None,
                     help='the output FITS event file')
 PARSER.add_argument('--configfile', type=str, required=True,
                     help='the input configuration file')
-PARSER.add_argument('--irfname', type=str, default='xipe_baseline',
+PARSER.add_argument('--irfname', type=str, default=DEFAULT_IRF_NAME,
                     help='the input configuration file')
 PARSER.add_argument('--duration', type=float, default=10,
                     help='the duration (in s) of the simulation')

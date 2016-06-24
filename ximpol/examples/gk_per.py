@@ -75,7 +75,7 @@ def generate():
     """Generate the events.
     """
     PIPELINE.xpobssim(configfile=CFG_FILE_PATH, duration=SIM_DURATION,
-                      outfile=EVT_FILE_PATH)
+                      outfile=EVT_FILE_PATH, seed=2)
 
 def bin():
     """Bin the event file in different flavors for the actual analysis.
