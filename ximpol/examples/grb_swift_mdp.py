@@ -1,19 +1,19 @@
-#!/usr/bin/env python 
-#                                
-# Copyright (C) 2015--2016, the ximpol team.         
-#                    
+#!/usr/bin/env python
+#
+# Copyright (C) 2015--2016, the ximpol team.
+#
 # This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU GengReral Public Licensese as published by 
-# the Free Software Foundation; either version 3 of the License, or  
-# (at your option) any later version.            
-#                                     
-# This program is distributed in the hope that it will be useful,   
-# but WITHOUT ANY WARRANTY; without even the implied warranty of  
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the   
-# GNU General Public License for more details.          
-#                                       
+# it under the terms of the GNU GengReral Public Licensese as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
 # You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc., 
+# with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 import os
@@ -33,6 +33,7 @@ from ximpol.config.grb_swift_download import download_swift_grb_lc_file
 from ximpol.config.grb_swift_download import get_all_swift_grb_names
 from ximpol.config.grb_utils import parse_light_curve
 from ximpol.config.grb_utils import get_grb_spec_index, get_grb_position
+from ximpol.core.fitsio import xBinTableHDUBase, xPrimaryHDU
 
 
 
@@ -50,8 +51,35 @@ from ximpol.srcmodel.spectrum import int_eflux2pl_norm, xCountSpectrum
 aeff = load_arf(IRF_NAME)
 modf = load_mrf(IRF_NAME)
 
+class CustomBinTable(xBinTableHDUBase):
+
+    NAME = 'GRB_MAIN'
+    HEADER_KEYWORDS = []
+    DATA_SPECS = [
+        ('NAME'        , 'A20', None         , 'grb name'),
+        ('RA'          , 'E',   'degrees'    , 'grb right ascension'),
+        ('DEC'         , 'E',   'degrees'    , 'grb declination'),
+        ('INDEX'       , 'E',   None         , 'late spectral index'),
+        ('START'       , 'D',   's'          , 'observation start time'),
+        ('STOP'        , 'D',   's'          , 'observation stop time'),
+        ('PROMPT_FLUX' , 'E',   'erg/cm2/s'  , 'grb prompt flux'),
+        ('PROMPT_START', 'D',   's'          , 'grb prompt flux'),
+        ('PROMPT_STOP' , 'D',   's'          , 'grb prompt flux'),
+        ('GRB_START'   , 'D',   's'          , 'grb start time'),
+        ('GRB_STOP'    , 'D',   's'          , 'grb stop time'),
+        ('ENERGY_LO'   , 'E',    'keV'       , 'energy low'),
+        ('ENERGY_HI'   , 'E',    'keV'       , 'energy high'),
+        #('ENERGY_MEAN' , 'E',    'keV'       , 'energy mean'),
+        ('EFFECTIVE_MU', 'E',    None        , 'effective modulation factor'),
+        ('COUNTS'      , 'J',    None        , 'total counts'),
+        ('MDP 99%'     , 'E',    None        , 'mdp')
+    ]
 
 
+def build_grb_fits_file(data):
+    hdu = xPrimaryHDU()
+    # data è una lista di array ordinati (stessa lunghezza)
+    table1 = CustomBinTable(data)
 
 def build_count_spectrum(grb_name):
     """
@@ -111,8 +139,9 @@ def process_grb(grb_name, tstart=21600., duration=30000., prompt_duration=600):
     mdp_table = count_spectrum.build_mdp_table(ENERGY_BINNING, modf)
     logger.info(mdp_table)
     mdp = mdp_table.mdp_values()[0]
-    #return grb_name, ra, dec, pl_index, prompt_tstart, prompt_flux, mdp
-    return mdp, prompt_flux, prompt_tstart
+    #eff_mu =
+
+    return ra, dec, pl_index, tstart, tstop, prompt_flux, prompt_tstart,  prompt_tstop, t[0], t[-1] #manca da aggiungere eff_mu, counts, mdp
 
 def process_grb_list(tstart=21600., duration=30000.):
     """
@@ -123,11 +152,11 @@ def process_grb_list(tstart=21600., duration=30000.):
         count_spectrum = build_count_spectrum(grb_name)
         #if count_spectrum is not None:
         #    count_spectrum.plot()
-    
-    
+
+
 
 def get_spectrum(_energy, norm, index):
-    """Power law assumed for the energy. 
+    """Power law assumed for the energy.
        Returns the array with the spectrum values in [KeV-1 cm-2 s-1]
        given an energy array.
     """
@@ -184,7 +213,7 @@ def get_grb_mdp(grb_name, repointing=21600., obs_time=100000):
                                                                       _spectrum)
                 #plt.xlim(1.,10.)
                 #energy_spectrum.plot(logx=True,logy=True)
-                
+
                 num_evt = energy_spectrum.integral(MIN_ENERGY,MAX_ENERGY)
                 if not math.isnan(num_evt) and num_evt != 0.:
                     logger.info('Total estimated number of events: %i'\
@@ -206,12 +235,12 @@ def get_grb_mdp(grb_name, repointing=21600., obs_time=100000):
             return None
     else:
         return None
-                
+
 #get_grb_mdp('GRB 130427A')
 
 def plot_grb_mdp_vs_repoint(grb_name, _t_repoint, t_obs=100000, \
                             color='black', show=True):
-    """Plot all the MDP (changing the repointing elapsed time defined in *arg) 
+    """Plot all the MDP (changing the repointing elapsed time defined in *arg)
        for a given GRB.
     """
     mdp_list = []
@@ -234,7 +263,7 @@ def plot_grb_mdp_vs_repoint(grb_name, _t_repoint, t_obs=100000, \
 
 def plot_grb_mdp_vs_obstime(grb_name, _t_obs, t_repoint=21600, \
                             color='black', show=True):
-    """Plot all the MDP (changing the repointing elapsed time defined in *arg) 
+    """Plot all the MDP (changing the repointing elapsed time defined in *arg)
        for a given GRB.
     """
     mdp_list = []
@@ -258,12 +287,12 @@ def plot_grb_mdp_vs_obstime(grb_name, _t_obs, t_repoint=21600, \
 def main():
     """Produce some plots
     """
-    # If all_mdp = True, produces: 
-    # 1) the plot of the MDP for all the Swift GRBs 
+    # If all_mdp = True, produces:
+    # 1) the plot of the MDP for all the Swift GRBs
     #    and a given repointing time
     # 1.1) the cumulative of the previous histogram
-    # 2) the plot of the correlation between MDP for all the Swift 
-    #    GRBs and a given repointing time and the integral prompt 
+    # 2) the plot of the correlation between MDP for all the Swift
+    #    GRBs and a given repointing time and the integral prompt
     #    (first 10 min) flux
     all_mdp = True
     if all_mdp == True:
@@ -273,6 +302,24 @@ def main():
         promt_time = 600
         mdp_list1, mdp_list2, flux_list, t0_list = [], [], [], []
         c, good_grb = [], []
+
+        name = numpy.array([], dtype=str)
+        ra = numpy.array([])
+        dec = numpy.array([])
+        index = numpy.array([])
+        counts = numpy.array([], dtype=numpy.int64)
+        start = numpy.array([])
+        stop = numpy.array([])
+        prompt_start = numpy.array([])
+        prompt_stop = numpy.array([])
+        prompt_flux = numpy.array([])
+        grb_start = numpy.array([])
+        grb_stop = numpy.array([])
+        e_low = numpy.array([])
+        e_high = numpy.array([])
+        eff_mu = numpy.array([])
+        mdp = numpy.array([])
+
         for grb in grb_list:
             mdp, flux, t0 = process_grb(grb,tstart=t_rep,duration=t_obs,
                                         prompt_duration=promt_time)
@@ -295,6 +342,7 @@ def main():
         _mdp2 = numpy.array(mdp_list2)
         _flux = numpy.array(flux_list)
         _t0 = numpy.array(t0_list)
+
         # 1)------------------------------------------------------
         histo = plt.figure(figsize=(10, 6), dpi=80)
         bins = numpy.linspace(0, 100, 100)
@@ -332,11 +380,11 @@ def main():
         overlay_tag()
         save_current_figure('grb_MDP_prompt',clear=False)
         plt.show()
-    
-    # If mdp_vs_time = True Produces: 
-    # 1) the plot of the MDP for a given GRB 
+
+    # If mdp_vs_time = True Produces:
+    # 1) the plot of the MDP for a given GRB
     #    as a function of the repointing time
-    # 2) the plot of the MDP for a given GRB 
+    # 2) the plot of the MDP for a given GRB
     #    as a function of the observation duration
     mdp_vs_time = False
     color_list = []
@@ -375,5 +423,4 @@ def main():
         plt.show()
 
 if __name__=='__main__':
-    main()
-    
+    #main()
