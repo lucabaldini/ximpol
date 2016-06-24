@@ -32,7 +32,7 @@ from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
 from ximpol.config.grb_swift_download import download_swift_grb_lc_file
 from ximpol.config.grb_swift_download import get_all_swift_grb_names
 from ximpol.config.grb_utils import parse_light_curve
-from ximpol.config.grb_utils import get_grb_spec_index
+from ximpol.config.grb_utils import get_grb_spec_index, get_grb_position
 
 
 
@@ -65,18 +65,15 @@ def build_count_spectrum(grb_name):
         return
     logger.info('Done, light curve has %d point(s) between %.3f and %.3f s.' %\
                 (len(light_curve.x), light_curve.xmin(), light_curve.xmax()))
-    print light_curve.x, light_curve.y
-    light_curve.plot(overlay=True)
+    #print light_curve.x, light_curve.y
+    #light_curve.plot(overlay=True)
     pl_index = get_grb_spec_index(file_path)
+    ra, dec = get_grb_position(file_path)
     scale_factor = int_eflux2pl_norm(1., 0.3, 10., pl_index, erg=True)
     pl_norm = light_curve.scale(scale_factor, yname='Power-law normalization',
                                 yunits='keV cm$^{-2}$ s$^{-1}$')
-
-
-
     def energy_spectrum(E, t):
         return pl_norm(t)*numpy.power(E, -pl_index)
-
     return xCountSpectrum(energy_spectrum, aeff, light_curve.x)
 
 
@@ -85,11 +82,12 @@ def process_grb(grb_name, tstart=21600., duration=30000., prompt_duration=600):
     """
     file_path = download_swift_grb_lc_file(grb_name)
     if file_path is None:
-        return
+        return None, None, None
     pl_index = get_grb_spec_index(file_path)
-    light_curve = parse_light_curve(file_path, num_min_data=10.)
+    ra, dec = get_grb_position(file_path)
+    light_curve = parse_light_curve(file_path, num_min_data=5.)
     if light_curve is None:
-        return
+        return None, None, None
     t = light_curve.x
     prompt_tstart = t[0]
     prompt_tstop = t[0] + prompt_duration
@@ -102,18 +100,19 @@ def process_grb(grb_name, tstart=21600., duration=30000., prompt_duration=600):
                 (tstart, tstop))
     t = t[(t >= tstart)*(t <= tstop)]
     if len(t) < 2:
-        return
-    
+        return None, None, None
     scale_factor = int_eflux2pl_norm(1., 0.3, 10., pl_index, erg=True)
     pl_norm = light_curve.scale(scale_factor)# Fix the label.
 
     def energy_spectrum(E, t):
         return pl_norm(t)*numpy.power(E, -pl_index)
-    
+    #print 'lentissimo!!!!'
     count_spectrum = xCountSpectrum(energy_spectrum, aeff, t)
     mdp_table = count_spectrum.build_mdp_table(ENERGY_BINNING, modf)
     logger.info(mdp_table)
-
+    mdp = mdp_table.mdp_values()[0]
+    #return grb_name, ra, dec, pl_index, prompt_tstart, prompt_flux, mdp
+    return mdp, prompt_flux, prompt_tstart
 
 def process_grb_list(tstart=21600., duration=30000.):
     """
@@ -262,21 +261,24 @@ def main():
     # If all_mdp = True, produces: 
     # 1) the plot of the MDP for all the Swift GRBs 
     #    and a given repointing time
+    # 1.1) the cumulative of the previous histogram
     # 2) the plot of the correlation between MDP for all the Swift 
     #    GRBs and a given repointing time and the integral prompt 
     #    (first 10 min) flux
     all_mdp = True
     if all_mdp == True:
-        grb_list = get_all_swift_grb_names()[:10]
+        grb_list = get_all_swift_grb_names()
         t_rep = 21600
         t_obs = 100000
         promt_time = 600
-        mdp_list1,mdp_list2, flux_list, t0_list = [], [], [], []
+        mdp_list1, mdp_list2, flux_list, t0_list = [], [], [], []
         c, good_grb = [], []
         for grb in grb_list:
-            mdp = get_grb_mdp(grb,repointing=t_rep,obs_time=t_obs)
-            calculate_mdp(grb, t_rep, t_obs)
-            flux, t0 = get_integral_flux(grb,delta_t=promt_time)
+            mdp, flux, t0 = process_grb(grb,tstart=t_rep,duration=t_obs,
+                                        prompt_duration=promt_time)
+            #calculate_mdp(grb, t_rep, t_obs)
+            #flux, t0 = get_integral_flux(grb,delta_t=promt_time)
+            print mdp, flux, t0
             if mdp is not None and flux is not None:
                 mdp_list1.append(mdp*100)
                 if t0 < 350:
@@ -373,5 +375,5 @@ def main():
         plt.show()
 
 if __name__=='__main__':
-    #main()
-    process_grb_list()
+    main()
+    
