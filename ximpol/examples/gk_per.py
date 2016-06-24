@@ -81,6 +81,7 @@ def bin():
     """Bin the event file in different flavors for the actual analysis.
     """    
     PIPELINE.xpbin(EVT_FILE_PATH, algorithm='CMAP')
+    PIPELINE.xpbin(EVT_FILE_PATH, algorithm='PHA1')
     _ebinning = zip(E_BINNING[:-1], E_BINNING[1:])
     if len(_ebinning) > 1:
         _ebinning.append((E_BINNING[0], E_BINNING[-1]))
