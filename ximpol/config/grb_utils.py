@@ -81,9 +81,15 @@ def parse_light_curve(file_path, num_bins=150, num_min_data=5):
     input data, and finally we create a spline in linear space.
     """
     t, tp, tm, f, fp, fm = parse_light_curve_data(file_path)
+    t, _index = numpy.unique(t, return_index=True)
+    tp = tp[_index]
+    tm = tm[_index]
+    f = f[_index]
+    fp = fp[_index]
+    fm = fm[_index]
     if len(t) < num_min_data:
         return None
-    binning = numpy.logspace(numpy.log10(t[0]), numpy.log10(t[-1]), num_bins)
+    binning = numpy.logspace(numpy.log10(t[0]),numpy.log10(t[-1]), num_bins)
     tave = [t[0]]
     fave = [f[0]]
     for _tmin, _tmax in zip(binning[:-1], binning[1:]):
