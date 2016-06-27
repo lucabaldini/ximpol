@@ -21,8 +21,10 @@ import sys
 import numpy
 import math
 import random
+from astropy.io import fits
 
 from ximpol import XIMPOL_IRF
+from ximpol import XIMPOL_DATA
 from ximpol.irf.arf import xEffectiveArea
 from ximpol.irf.mrf import xModulationFactor
 from ximpol.utils.logging_ import logger
@@ -36,13 +38,11 @@ from ximpol.config.grb_utils import get_grb_spec_index, get_grb_position
 from ximpol.core.fitsio import xBinTableHDUBase, xPrimaryHDU
 
 
-
-
-
 IRF_NAME = 'xipe_baseline'
 MIN_ENERGY = 2.
 MAX_ENERGY = 10.
 ENERGY_BINNING = numpy.array([MIN_ENERGY, MAX_ENERGY])
+OUTFILE = os.path.join(XIMPOL_DATA,'GRBmainInfos.fits')
 
 from ximpol.irf import load_arf, load_mrf
 from ximpol.irf.mrf import mdp99
@@ -51,12 +51,15 @@ from ximpol.srcmodel.spectrum import int_eflux2pl_norm, xCountSpectrum
 aeff = load_arf(IRF_NAME)
 modf = load_mrf(IRF_NAME)
 
-class CustomBinTable(xBinTableHDUBase):
+
+class xBinTableGRBmain(xBinTableHDUBase):
 
     NAME = 'GRB_MAIN'
     HEADER_KEYWORDS = []
     DATA_SPECS = [
         ('NAME'        , 'A20', None         , 'grb name'),
+        ('ENERGY_LO'   , 'E',    'keV'       , 'energy low'),
+        ('ENERGY_HI'   , 'E',    'keV'       , 'energy high'),
         ('RA'          , 'E',   'degrees'    , 'grb right ascension'),
         ('DEC'         , 'E',   'degrees'    , 'grb declination'),
         ('INDEX'       , 'E',   None         , 'late spectral index'),
@@ -67,57 +70,34 @@ class CustomBinTable(xBinTableHDUBase):
         ('PROMPT_STOP' , 'D',   's'          , 'grb prompt flux'),
         ('GRB_START'   , 'D',   's'          , 'grb start time'),
         ('GRB_STOP'    , 'D',   's'          , 'grb stop time'),
-        ('ENERGY_LO'   , 'E',    'keV'       , 'energy low'),
-        ('ENERGY_HI'   , 'E',    'keV'       , 'energy high'),
-        #('ENERGY_MEAN' , 'E',    'keV'       , 'energy mean'),
         ('EFFECTIVE_MU', 'E',    None        , 'effective modulation factor'),
         ('COUNTS'      , 'J',    None        , 'total counts'),
         ('MDP 99%'     , 'E',    None        , 'mdp')
     ]
 
-
-def build_grb_fits_file(data):
-    hdu = xPrimaryHDU()
-    # data è una lista di array ordinati (stessa lunghezza)
-    table1 = CustomBinTable(data)
-
-def build_count_spectrum(grb_name):
-    """
-    """
-    file_path = download_swift_grb_lc_file(grb_name)
-    if file_path is None:
-        return
-    logger.info('Parsing light curve data from %s...' % file_path)
-    light_curve = parse_light_curve(file_path, num_min_data=10.)
-    if light_curve is None:
-        return
-    logger.info('Done, light curve has %d point(s) between %.3f and %.3f s.' %\
-                (len(light_curve.x), light_curve.xmin(), light_curve.xmax()))
-    #print light_curve.x, light_curve.y
-    #light_curve.plot(overlay=True)
-    pl_index = get_grb_spec_index(file_path)
-    ra, dec = get_grb_position(file_path)
-    scale_factor = int_eflux2pl_norm(1., 0.3, 10., pl_index, erg=True)
-    pl_norm = light_curve.scale(scale_factor, yname='Power-law normalization',
-                                yunits='keV cm$^{-2}$ s$^{-1}$')
-    def energy_spectrum(E, t):
-        return pl_norm(t)*numpy.power(E, -pl_index)
-    return xCountSpectrum(energy_spectrum, aeff, light_curve.x)
-
+def build_grb_fits_file(data,outfile):
+    primary_hdu = xPrimaryHDU()
+    grb_info_hdu = xBinTableGRBmain(data)
+    hdu_list = fits.HDUList([primary_hdu, grb_info_hdu])
+    hdu_list.info()
+    logger.info('Writing GRB main infos table to %s...' % outfile)
+    hdu_list.writeto(outfile, clobber=True)
+    logger.info('Done.')
 
 def process_grb(grb_name, tstart=21600., duration=30000., prompt_duration=600):
     """
     """
     file_path = download_swift_grb_lc_file(grb_name)
     if file_path is None:
-        return None, None, None
+        return None
     pl_index = get_grb_spec_index(file_path)
     ra, dec = get_grb_position(file_path)
     light_curve = parse_light_curve(file_path, num_min_data=5.)
     if light_curve is None:
-        return None, None, None
+        return None
     t = light_curve.x
-    prompt_tstart = t[0]
+    grb_start, prompt_tstart = t[0], t[0]
+    grb_stop = t[-1]
     prompt_tstop = t[0] + prompt_duration
     prompt_flux = light_curve.integral(prompt_tstart, prompt_tstop)
     logger.info('Integral energy flux in %.3f--%.3f s: %.3e erg cm^{-2}' %\
@@ -128,32 +108,67 @@ def process_grb(grb_name, tstart=21600., duration=30000., prompt_duration=600):
                 (tstart, tstop))
     t = t[(t >= tstart)*(t <= tstop)]
     if len(t) < 2:
-        return None, None, None
+        return None
     scale_factor = int_eflux2pl_norm(1., 0.3, 10., pl_index, erg=True)
     pl_norm = light_curve.scale(scale_factor)# Fix the label.
-
     def energy_spectrum(E, t):
         return pl_norm(t)*numpy.power(E, -pl_index)
-    #print 'lentissimo!!!!'
     count_spectrum = xCountSpectrum(energy_spectrum, aeff, t)
     mdp_table = count_spectrum.build_mdp_table(ENERGY_BINNING, modf)
     logger.info(mdp_table)
     mdp = mdp_table.mdp_values()[0]
-    #eff_mu =
+    eff_mu = [row.mu_effective for row in mdp_table.rows]
+    counts = [row.num_signal for row in mdp_table.rows]
+    grb_values = [ra, dec, pl_index, tstart, tstop, prompt_flux, prompt_tstart,\
+                  prompt_tstop, grb_start, grb_stop, eff_mu[0], counts[0], mdp]
+    return grb_values
 
-    return ra, dec, pl_index, tstart, tstop, prompt_flux, prompt_tstart,  prompt_tstop, t[0], t[-1] #manca da aggiungere eff_mu, counts, mdp
-
-def process_grb_list(tstart=21600., duration=30000.):
+def process_grb_list(tstart=21600., duration=30000., prompt_duration=600):
     """
     """
-    for grb_name in get_all_swift_grb_names()[:10]:
+    name = numpy.array([], dtype=str)
+    e_low = numpy.array([])
+    e_high = numpy.array([])
+    ra = numpy.array([])
+    dec = numpy.array([])
+    index = numpy.array([])
+    start = numpy.array([])
+    stop = numpy.array([])
+    prompt_start = numpy.array([])
+    prompt_stop = numpy.array([])
+    prompt_flux = numpy.array([])
+    grb_start = numpy.array([])
+    grb_stop = numpy.array([])
+    eff_mu = numpy.array([])
+    counts = numpy.array([], dtype=numpy.int64)
+    mdp = numpy.array([])
+    for grb_name in get_all_swift_grb_names():
         logger.info('Processing %s...' % grb_name)
-        #process_grb(grb_name, tstart, duration)
-        count_spectrum = build_count_spectrum(grb_name)
-        #if count_spectrum is not None:
-        #    count_spectrum.plot()
-
-
+        grb_values = process_grb(grb_name,tstart=tstart,duration=duration,\
+                                 prompt_duration=prompt_duration)
+        if grb_values is None:
+            continue
+        name = numpy.append(name,[grb_name])
+        e_low = numpy.append(e_low,[MIN_ENERGY])
+        e_high = numpy.append(e_high,[MAX_ENERGY])
+        ra = numpy.append(ra,[grb_values[0]])
+        dec = numpy.append(dec,[grb_values[1]])
+        index = numpy.append(index,[grb_values[2]])
+        start = numpy.append(start,[grb_values[3]])
+        stop = numpy.append(stop,[grb_values[4]])
+        prompt_flux = numpy.append(prompt_flux,[grb_values[5]])
+        prompt_start = numpy.append(prompt_start,[grb_values[6]])
+        prompt_stop = numpy.append(prompt_stop,[grb_values[7]])
+        grb_start = numpy.append(grb_start,[grb_values[8]])
+        grb_stop = numpy.append(grb_stop,[grb_values[9]])
+        eff_mu = numpy.append(eff_mu,[grb_values[10]])
+        counts = numpy.append(counts,[grb_values[11]])
+        mdp = numpy.append(mdp,[grb_values[12]])
+    grb_values_array = [name,e_low,e_high,ra,dec,index,start,stop,prompt_flux,\
+                        prompt_start,prompt_stop,grb_start,grb_stop,eff_mu,\
+                        counts,mdp]
+    return grb_values_array
+        
 
 def get_spectrum(_energy, norm, index):
     """Power law assumed for the energy.
@@ -162,81 +177,6 @@ def get_spectrum(_energy, norm, index):
     """
     return aeff(_energy)*norm*numpy.power(_energy, -index)
 
-
-def get_integral_flux(grb_name,delta_t=600):
-    file_path = download_swift_grb_lc_file(grb_name)
-    if file_path is not None:
-        index = get_grb_spec_index(file_path)
-        E_light_curve = parse_light_curve(file_path,num_min_data=10.)
-        if E_light_curve is not None:
-            scale_factor = (2. - index)/(numpy.power(MAX_ENERGY, 2. - index) - \
-                                     numpy.power(MIN_ENERGY, 2. - index))
-            scale_factor *= 6.242e8
-            light_curve = E_light_curve.scale(scale_factor)
-            t_min = light_curve.xmin()
-            t_max = t_min + delta_t
-            flux = light_curve.integral(t_min,t_max)
-            return flux, light_curve.xmin()
-        else:
-            return None, None
-    else:
-        return None, None
-
-def get_grb_mdp(grb_name, repointing=21600., obs_time=100000):
-    """Calculate the MDP, given GRB name, the repointing elapsed time [sec]
-       after the trigger, and the oservationrange of time [sec]
-    """
-    file_path = download_swift_grb_lc_file(grb_name)
-    if file_path is not None:
-        index = get_grb_spec_index(file_path)
-        E_light_curve = parse_light_curve(file_path,num_min_data=10.)
-        #E_light_curve.plot(logx=True,logy=True)
-        if E_light_curve is not None:
-            scale_factor = (2. - index)/(numpy.power(MAX_ENERGY, 2. - index) - \
-                                     numpy.power(MIN_ENERGY, 2. - index))
-            scale_factor *= 6.242e8
-            light_curve = E_light_curve.scale(scale_factor)
-            #light_curve.plot(logx=True,logy=True)
-            t_min = repointing
-            if t_min < light_curve.xmin():
-                logger.info('Repointing time < to the minimum time of the burst...')
-                return None
-            else:
-                t_max = t_min + obs_time
-                if t_max > light_curve.xmax():
-                    t_max = light_curve.xmax()
-                norm = light_curve.integral(t_min,t_max)
-                _energy = numpy.linspace(2.,MAX_ENERGY,1000)
-                _modf = modf(_energy)
-                _spectrum = get_spectrum(_energy,norm,index)
-                energy_spectrum = xInterpolatedUnivariateSplineLinear(_energy,\
-                                                                      _spectrum)
-                #plt.xlim(1.,10.)
-                #energy_spectrum.plot(logx=True,logy=True)
-
-                num_evt = energy_spectrum.integral(MIN_ENERGY,MAX_ENERGY)
-                if not math.isnan(num_evt) and num_evt != 0.:
-                    logger.info('Total estimated number of events: %i'\
-                                %int(num_evt))
-                    mu = numpy.average(_modf,weights=_spectrum)
-                    mdp = mdp99(mu,int(num_evt))
-                    print mdp
-                    if not math.isnan(mdp):
-                        logger.info('%.2f--%.2f keV: %i counts (%.1e s), mu %.2f, MDP %.2f%%'\
-                                    %(MIN_ENERGY,MAX_ENERGY,int(num_evt),\
-                                      obs_time,mu,mdp*100))
-                        return mdp
-                    else:
-                        return None
-                else:
-                    logger.info('Total number of events cannot be estimated...')
-                    return None
-        else:
-            return None
-    else:
-        return None
-
-#get_grb_mdp('GRB 130427A')
 
 def plot_grb_mdp_vs_repoint(grb_name, _t_repoint, t_obs=100000, \
                             color='black', show=True):
@@ -287,100 +227,68 @@ def plot_grb_mdp_vs_obstime(grb_name, _t_obs, t_repoint=21600, \
 def main():
     """Produce some plots
     """
-    # If all_mdp = True, produces:
+    # If process_grb_mdp = True, produces a fits file with all the 
+    # main infos on each grb
+    process_grb_mdp = True
+    if process_grb_mdp == True:
+        data = process_grb_list()
+        build_grb_fits_file(data,OUTFILE)
+
     # 1) the plot of the MDP for all the Swift GRBs
     #    and a given repointing time
-    # 1.1) the cumulative of the previous histogram
-    # 2) the plot of the correlation between MDP for all the Swift
+    # 2) the cumulative of the previous histogram
+    # 3) the plot of the correlation between MDP for all the Swift
     #    GRBs and a given repointing time and the integral prompt
     #    (first 10 min) flux
-    all_mdp = True
-    if all_mdp == True:
-        grb_list = get_all_swift_grb_names()
-        t_rep = 21600
-        t_obs = 100000
-        promt_time = 600
-        mdp_list1, mdp_list2, flux_list, t0_list = [], [], [], []
-        c, good_grb = [], []
 
-        name = numpy.array([], dtype=str)
-        ra = numpy.array([])
-        dec = numpy.array([])
-        index = numpy.array([])
-        counts = numpy.array([], dtype=numpy.int64)
-        start = numpy.array([])
-        stop = numpy.array([])
-        prompt_start = numpy.array([])
-        prompt_stop = numpy.array([])
-        prompt_flux = numpy.array([])
-        grb_start = numpy.array([])
-        grb_stop = numpy.array([])
-        e_low = numpy.array([])
-        e_high = numpy.array([])
-        eff_mu = numpy.array([])
-        mdp = numpy.array([])
+    # 1)------------------------------------------------------
+    plt.figure(figsize=(10, 6), dpi=80)
+    bins = numpy.linspace(0, 100, 100)
+    hdulist = fits.open(OUTFILE)
+    grbdata = hdulist[1].data
+    _mdp = grbdata['MDP 99%']
+    t_obs = '100000'
+    t_rep = '21600'
+    plt.title('%i GRBs, $\Delta t_{obs}=%s s,$ $t_{repoint}=%s s$'\
+              %(len(_mdp),t_obs,t_rep))
+    plt.hist(_mdp*100, bins, alpha=0.5)
+    plt.xlabel('2.-10. keV MDP (%)')
+    plt.ylabel('Number of GRBs')
+    overlay_tag()
+    save_current_figure('all_grbs_MDP_histo', clear=False)
 
-        for grb in grb_list:
-            mdp, flux, t0 = process_grb(grb,tstart=t_rep,duration=t_obs,
-                                        prompt_duration=promt_time)
-            #calculate_mdp(grb, t_rep, t_obs)
-            #flux, t0 = get_integral_flux(grb,delta_t=promt_time)
-            print mdp, flux, t0
-            if mdp is not None and flux is not None:
-                mdp_list1.append(mdp*100)
-                if t0 < 350:
-                    if mdp*100 <= 15:
-                        c.append('red')
-                    else:
-                        c.append('blue')
-                    mdp_list2.append(mdp*100)
-                    flux_list.append(flux)
-                    t0_list.append(t0)
-                else:
-                    continue
-        _mdp1 = numpy.array(mdp_list1)
-        _mdp2 = numpy.array(mdp_list2)
-        _flux = numpy.array(flux_list)
-        _t0 = numpy.array(t0_list)
+    # 2)----------------------------------------------------
+    plt.figure(figsize=(10, 6), dpi=80)
+    plt.title('%i GRBs, $\Delta t_{obs}=%s s,$ $t_{repoint}=%s s$'\
+              %(len(_mdp),t_obs,t_rep))
+    (n, bins, patches) = plt.hist(_mdp*100, bins, histtype='step', \
+                                  cumulative=True)
+    plt.xlabel('2.-10. keV MDP (%)')
+    plt.ylabel('Cumulative number of GRBs')
+    for i in range(0,30):
+        print 'MDP %.2f%%: %i GRBs'%(i,n[i])
+    overlay_tag()
+    save_current_figure('all_grbs_MDP_cumulative', clear=False)
 
-        # 1)------------------------------------------------------
-        histo = plt.figure(figsize=(10, 6), dpi=80)
-        bins = numpy.linspace(0, 100, 100)
-        plt.title('%i GRBs, $\Delta t_{obs}=%i s,$ $t_{repoint}=%i s$'\
-                  %(len(_mdp1),t_obs,t_rep))
-        plt.hist(_mdp1, bins, alpha=0.5)
-        plt.xlabel('2.-10. keV MDP (%)')
-        plt.ylabel('Number of GRBs')
-        overlay_tag()
-        save_current_figure('all_grbs_MDP_histo', clear=False)
-        plt.show()
-        # 1.1)----------------------------------------------------
-        histo = plt.figure(figsize=(10, 6), dpi=80)
-        bins = numpy.linspace(0, 100, 100)
-        plt.title('%i GRBs, $\Delta t_{obs}=%i s,$ $t_{repoint}=%i s$'\
-                  %(len(_mdp1),t_obs,t_rep))
-        (n, bins, patches) = plt.hist(_mdp1, bins, histtype='step', cumulative=True)
-        plt.xlabel('2.-10. keV MDP (%)')
-        plt.ylabel('Cumulative number of GRBs')
-        for i in range(0,len(bins)):
-            print 'MDP %.2f%%: %i GRBs'%(i,n[i])
-        overlay_tag()
-        save_current_figure('all_grbs_MDP_cumulative', clear=False)
-        plt.show()
-        # 2)------------------------------------------------------
-        plt.figure(figsize=(10, 6), dpi=80)
-        ax = plt.gca()
-        plt.scatter(_mdp2, _flux, s=30, marker='.', color=c)
-        plt.xlabel('2.-10. keV MDP (%)')
-        plt.ylabel('[keV$^{-1}$ cm$^{-2}$]')
-        plt.title('$\Delta t_{obs}=%i s,$ $t_{repoint}=%i s$'%(t_obs,t_rep))
-        plt.xlim(1, 100)
-        ax.set_yscale('log')
-        ax.set_xscale('log')
-        overlay_tag()
-        save_current_figure('grb_MDP_prompt',clear=False)
-        plt.show()
-
+    # 3)------------------------------------------------------
+    plt.figure(figsize=(10, 6), dpi=80)
+    ax = plt.gca()
+    _prompt_tstart = grbdata['PROMPT_START']
+    _flux = grbdata['PROMPT_FLUX']
+    _good_indexes = numpy.where(numpy.any(_prompt_tstart<350))
+    print _good_indexes
+    _flux = numpy.ma.masked_array(_flux, mask= _good_indexes)
+    plt.scatter(_mdp*100, _flux, s=30, marker='.', color='gray')
+    plt.xlabel('2.-10. keV MDP (%)')
+    plt.ylabel('[erg $\cdot$ cm$^{-2}$]')
+    plt.title('$\Delta t_{obs}=%s s,$ $t_{repoint}=%s s$'%(t_obs,t_rep))
+    plt.xlim(1, 100)
+    ax.set_yscale('log')
+    ax.set_xscale('log')
+    overlay_tag()
+    save_current_figure('grb_MDP_prompt',clear=False)
+    plt.show()
+    """
     # If mdp_vs_time = True Produces:
     # 1) the plot of the MDP for a given GRB
     #    as a function of the repointing time
@@ -421,6 +329,7 @@ def main():
         overlay_tag(x=0.5)
         save_current_figure('grb_MDP_vs_obstime',clear=False)
         plt.show()
+    """
 
 if __name__=='__main__':
-    #main()
+    main()
