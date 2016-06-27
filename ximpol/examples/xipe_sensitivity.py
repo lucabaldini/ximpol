@@ -27,6 +27,8 @@ from ximpol.utils.logging_ import logger
 from ximpol.utils.matplotlib_ import pyplot as plt
 from ximpol import XIMPOL_SRCMODEL
 
+numpy.random.seed(10)
+
 
 IRF_NAME = 'xipe_goal'
 E_MIN = 2.
@@ -35,6 +37,10 @@ PL_INDEX = 2.
 FLUX_REF = 1.e-10
 OBS_TIME_REF = 100.e3
 BLAZAR_LIST_PATH = os.path.join(XIMPOL_SRCMODEL, 'ascii', 'blazar_list.txt')
+
+
+GRID_COLOR = 'gray'
+BLAZAR_COLOR = None
 
 
 def parse_blazar_list():
@@ -78,14 +84,14 @@ logger.info('Reference MDP for %s s: %.3f' % (OBS_TIME_REF, mdp_ref))
 blazar_list = parse_blazar_list()
 
 
-plt.figure('', (14, 10))
+plt.figure('Maximum polarization degree', (14, 10))
 _x = numpy.logspace(-13, -7, 100)
-for obs_time in [10.e3, 100.e3, 1.e6]:
+for obs_time in [1.e3, 10.e3, 100.e3, 1.e6]:
     _y = 100.*mdp_ref * numpy.sqrt(OBS_TIME_REF/obs_time * FLUX_REF/_x)
-    plt.plot(_x, _y, color='blue', ls='dashed', lw=1)
+    plt.plot(_x, _y, color=GRID_COLOR, ls='dashed', lw=1)
     _i = 52
     plt.text(_x[_i], _y[_i], '$T_{obs} =$ %d ks' % (obs_time/1000.),
-             color='blue', rotation=-30.)
+             color=GRID_COLOR, rotation=-30.)
 plt.xscale('log')
 plt.yscale('log')
 plt.xlabel('Integral energy flux %.0f-%.0f keV [erg cm$^{-2}$ s$^{-1}$]' %\
@@ -94,10 +100,38 @@ plt.ylabel('MDP 99% CL [%]')
 for blazar in blazar_list:
     _x = [blazar['flux_min'], blazar['flux_max']]
     _y = [blazar['p_max']*numpy.random.uniform(0.9, 1.1)]*2
-    _p = plt.plot(_x, _y, 'o-', ls='solid')
+    _p = plt.plot(_x, _y, 'o-', ls='solid', color=BLAZAR_COLOR)
     plt.text(numpy.sqrt(_x[0]*_x[1]), _y[0]*1.04, blazar['name'],
              color=_p[0].get_color(), horizontalalignment='center')
+plt.text(0.62, 0.95, 'Maximum polarization degree', fontsize=18,
+         transform=plt.gca().transAxes)
 plt.axis([8e-13, 1e-9, 0.5, 50])
+plt.savefig('blazar_mdp_maximum.png')
+
+
+plt.figure('Average polarization degree', (14, 10))
+_x = numpy.logspace(-13, -7, 100)
+for obs_time in [1.e3, 10.e3, 100.e3, 1.e6]:
+    _y = 100.*mdp_ref * numpy.sqrt(OBS_TIME_REF/obs_time * FLUX_REF/_x)
+    plt.plot(_x, _y, color=GRID_COLOR, ls='dashed', lw=1)
+    _i = 52
+    plt.text(_x[_i], _y[_i], '$T_{obs} =$ %d ks' % (obs_time/1000.),
+             color=GRID_COLOR, rotation=-30.)
+plt.xscale('log')
+plt.yscale('log')
+plt.xlabel('Integral energy flux %.0f-%.0f keV [erg cm$^{-2}$ s$^{-1}$]' %\
+           (E_MIN, E_MAX))
+plt.ylabel('MDP 99% CL [%]')
+for blazar in blazar_list:
+    _x = [blazar['flux_min'], blazar['flux_max']]
+    _y = [blazar['p_ave']*numpy.random.uniform(0.9, 1.1)]*2
+    _p = plt.plot(_x, _y, 'o-', ls='solid', color=BLAZAR_COLOR)
+    plt.text(numpy.sqrt(_x[0]*_x[1]), _y[0]*1.04, blazar['name'],
+             color=_p[0].get_color(), horizontalalignment='center')
+plt.text(0.62, 0.95, 'Average polarization degree', fontsize=18,
+         transform=plt.gca().transAxes)    
+plt.axis([8e-13, 1e-9, 0.5, 50])
+plt.savefig('blazar_mdp_average.png')
 
 
 """
