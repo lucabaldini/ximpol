@@ -3,6 +3,10 @@ Release notes
 
 * Blazar sensitivity plot added in the examples folder.
 * New config file and associated pipeline added for J1708.
+* Avoid reading the modulation factor in evt.binning.xBinnedModulationCube
+  (using the effective factor written in the fits file instead, when it
+  comes to converting a visibility into a polarization fraction.)
+* One unit test added.
 
 
 *ximpol (0.49.0) - Fri, 24 Jun 2016 16:31:55 +0200*
