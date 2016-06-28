@@ -696,7 +696,6 @@ class xBinnedModulationCube(xBinnedFileBase):
         self.phi_x = 0.5*(self.phi_binning[:-1] + self.phi_binning[1:])
         from ximpol.irf import load_mrf
         irf_name = self.hdu_list['PRIMARY'].header['IRFNAME']
-        self.modf = load_mrf(irf_name)
         self.fit_results = []
 
     def __len__(self):
@@ -709,7 +708,7 @@ class xBinnedModulationCube(xBinnedFileBase):
         """
         hist = (self.phi_y[i], self.phi_binning, None)
         _fit_results = xAzimuthalResponseGenerator.fit_histogram(hist)
-        _fit_results.set_polarization(self.modf(self.emean[i]))
+        _fit_results.set_polarization(self.effective_mu[i])
         logger.info(_fit_results)
         self.fit_results.append(_fit_results)
         return _fit_results
