@@ -45,7 +45,6 @@ ENERGY_BINNING = numpy.array([MIN_ENERGY, MAX_ENERGY])
 OUTFILE = os.path.join(XIMPOL_DATA,'GRBmainInfos.fits')
 
 from ximpol.irf import load_arf, load_mrf
-from ximpol.irf.mrf import mdp99
 from ximpol.srcmodel.spectrum import int_eflux2pl_norm, xCountSpectrum
 
 aeff = load_arf(IRF_NAME)
@@ -178,14 +177,14 @@ def get_spectrum(_energy, norm, index):
     return aeff(_energy)*norm*numpy.power(_energy, -index)
 
 
-def plot_grb_mdp_vs_repoint(grb_name, _t_repoint, t_obs=100000, \
+def plot_grb_mdp_vs_repoint(grb_name, _t_repoint, t_obs=50000, \
                             color='black', show=True):
     """Plot all the MDP (changing the repointing elapsed time defined in *arg)
        for a given GRB.
     """
     mdp_list = []
     for repoint in _t_repoint:
-        mdp = get_grb_mdp(grb_name,repointing=repoint,obs_time=t_obs)
+        mdp = process_grb(grb_name,tstart=repoint,duration=t_obs)[-1]
         if mdp is not None:
             mdp_list.append(mdp)
         else:
@@ -208,8 +207,9 @@ def plot_grb_mdp_vs_obstime(grb_name, _t_obs, t_repoint=21600, \
     """
     mdp_list = []
     for obs in _t_obs:
-        mdp = get_grb_mdp(grb_name,repointing=t_repoint,obs_time=obs)
+        mdp = process_grb(grb_name,tstart=t_repoint,duration=obs)
         if mdp is not None:
+            mdp = mdp[-1]
             mdp_list.append(mdp)
         else:
             mdp_list.append(0.)
@@ -229,11 +229,11 @@ def main():
     """
     # If process_grb_mdp = True, produces a fits file with all the 
     # main infos on each grb
-    process_grb_mdp = True
+    process_grb_mdp = False
     if process_grb_mdp == True:
-        data = process_grb_list()
+        data = process_grb_list(duration=50000.)
         build_grb_fits_file(data,OUTFILE)
-
+    
     # 1) the plot of the MDP for all the Swift GRBs
     #    and a given repointing time
     # 2) the cumulative of the previous histogram
@@ -247,7 +247,7 @@ def main():
     hdulist = fits.open(OUTFILE)
     grbdata = hdulist[1].data
     _mdp = grbdata['MDP 99%']
-    t_obs = '100000'
+    t_obs = '50000'
     t_rep = '21600'
     plt.title('%i GRBs, $\Delta t_{obs}=%s s,$ $t_{repoint}=%s s$'\
               %(len(_mdp),t_obs,t_rep))
@@ -275,47 +275,55 @@ def main():
     ax = plt.gca()
     _prompt_tstart = grbdata['PROMPT_START']
     _flux = grbdata['PROMPT_FLUX']
-    _good_indexes = numpy.where(numpy.any(_prompt_tstart<350))
-    print _good_indexes
-    _flux = numpy.ma.masked_array(_flux, mask= _good_indexes)
-    plt.scatter(_mdp*100, _flux, s=30, marker='.', color='gray')
+    _good_indexes = numpy.where(_prompt_tstart>350)
+    _flux = numpy.delete(_flux,_good_indexes)
+    _mdp = numpy.delete(_mdp,_good_indexes)
+    plt.scatter(_mdp*100, _flux, s=30, marker='.', color='blue')
     plt.xlabel('2.-10. keV MDP (%)')
     plt.ylabel('[erg $\cdot$ cm$^{-2}$]')
-    plt.title('$\Delta t_{obs}=%s s,$ $t_{repoint}=%s s$'%(t_obs,t_rep))
+    plt.title('%i GRBs, $\Delta t_{obs}=%s s,$ $t_{repoint}=%s s$'%(len(_flux),\
+                                                                    t_obs,t_rep))
     plt.xlim(1, 100)
+    plt.ylim(1e-9,1e-4)
+    plt.plot([20, 20], [1e-9,1e-4], 'k--', lw=1, color='green')
     ax.set_yscale('log')
     ax.set_xscale('log')
     overlay_tag()
     save_current_figure('grb_MDP_prompt',clear=False)
     plt.show()
-    """
+
+
+
     # If mdp_vs_time = True Produces:
     # 1) the plot of the MDP for a given GRB
     #    as a function of the repointing time
     # 2) the plot of the MDP for a given GRB
     #    as a function of the observation duration
-    mdp_vs_time = False
-    color_list = []
+    mdp_vs_time = True
+    color_list = ['red','salmon','goldenrod','darkgreen','limegreen',\
+                  'royalblue','mediumpurple','darkviolet','deeppink']\
+                  #'yellow','darkcyan'] 
     if mdp_vs_time == True:
         grb_list = ['GRB 060729', 'GRB 080411', 'GRB 091127', 'GRB 111209A',\
                     'GRB 120711A', 'GRB 130427A', 'GRB 130505A', 'GRB 130907A',\
                     'GRB 150403A']
+
         #1)------------------------------------------------------
         plt.figure(figsize=(10, 6), dpi=80)
         ax = plt.gca()
-        for grb in grb_list:
-            c = [random.uniform(0,1),random.uniform(0,1),random.uniform(0,1)]
-            color_list.append(c)
-            repointing_time = numpy.logspace(2,4.8,30)
-            plot_grb_mdp_vs_repoint(grb,repointing_time,show=False,color=c)
+        for i,grb in enumerate(grb_list):
+            repointing_time = numpy.logspace(2,4.8,20)
+            plot_grb_mdp_vs_repoint(grb,repointing_time,show=False,\
+                                    color=color_list[i])
         ax.legend(loc='upper left', shadow=False, fontsize='small')
-        plt.plot([21600, 21600], [0, 30], 'k--', lw=1, color='green')
-        plt.plot([43200, 43200], [0, 30], 'k--', lw=1,color='green')
+        #plt.ylim(0,100)
+        plt.plot([21600, 21600], [0, 100], 'k--', lw=1, color='green')
+        plt.plot([43200, 43200], [0, 100], 'k--', lw=1,color='green')
         ax.set_yscale('log')
         ax.set_xscale('log')
         overlay_tag()
         save_current_figure('grb_MDP_vs_repoint',clear=False)
-        plt.show()
+
         #2)------------------------------------------------------
         plt.figure(figsize=(10, 6), dpi=80)
         ax = plt.gca()
@@ -323,13 +331,13 @@ def main():
             obs_time = numpy.logspace(3,5,30)
             plot_grb_mdp_vs_obstime(grb,obs_time,show=False,color=color_list[i])
         ax.legend(loc='upper right', shadow=False, fontsize='small')
-        plt.plot([50000, 50000], [0, 50], 'k--', lw=1, color='green')
+        #plt.ylim(0,100)
+        #plt.plot([50000, 50000], [0, 100], 'k--', lw=1, color='green')
         ax.set_yscale('log')
         ax.set_xscale('log')
         overlay_tag(x=0.5)
         save_current_figure('grb_MDP_vs_obstime',clear=False)
         plt.show()
-    """
 
 if __name__=='__main__':
     main()
