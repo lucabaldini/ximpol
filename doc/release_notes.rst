@@ -2,6 +2,7 @@ Release notes
 =============
 
 * Blazar sensitivity plot added in the examples folder.
+* New config file and associated pipeline added for J1708.
 
 
 *ximpol (0.49.0) - Fri, 24 Jun 2016 16:31:55 +0200*
