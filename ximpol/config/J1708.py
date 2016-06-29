@@ -138,6 +138,13 @@ if __name__ == '__main__':
     plt.legend(loc='upper right')
 
     plt.figure()
+    _x = numpy.linspace(1, 10, 100)
+    for ph in numpy.linspace(0, 0.1, 2):
+        _y = polarization_angle(_x, ph, 0, 0)
+        plt.plot(_x, _y, label='Phase = %.2f' % ph)
+    plt.legend(loc='upper right')
+
+    plt.figure()
     _x = numpy.linspace(0, 1, 100)
     for e in numpy.linspace(1, 10, 10):
         _y = polarization_degree(e, _x, 0, 0)
