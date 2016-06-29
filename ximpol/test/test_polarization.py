@@ -47,7 +47,6 @@ class TestPolarization(unittest.TestCase):
     def polarization_degree(self, energy):
         """
         """
-        #return numpy.full(energy.shape, 0.77)
         return (1. - (energy - self.emin)/(self.emax - self.emin))
 
     def test_simplest(self, size=100000, phase=0.):
@@ -60,7 +59,13 @@ class TestPolarization(unittest.TestCase):
         binning = numpy.linspace(0, 2*numpy.pi, 100)
         hist = plt.hist(phi, bins=binning)
         fit_results = self.generator.fit_histogram(hist)
-        #print fit_results
+        fit_results.set_polarization(modf)
+        fit_degree = fit_results.polarization_degree
+        mean_energy = numpy.mean(energy)
+        exp_degree = self.polarization_degree(mean_energy)
+        delta = abs(fit_degree - exp_degree)/exp_degree
+        msg = 'delta = %.3f' % delta
+        self.assertTrue(delta < 0.05, msg)
 
     def test_uniform(self, size=100000, phase=0.):
         """
@@ -74,10 +79,13 @@ class TestPolarization(unittest.TestCase):
         mean_energy = numpy.mean(energy)
         mu_effective = self.modf.weighted_average(energy)
         fit_results.set_polarization(mu_effective)
-        pol_degree = (self.polarization_degree(energy)*self.modf(energy))\
-                    .sum()/self.modf(energy).sum()
-        print fit_results
-        print mean_energy, self.polarization_degree(mean_energy), pol_degree
+        fit_degree = fit_results.polarization_degree
+        exp_degree = (self.polarization_degree(energy)*self.modf(energy))\
+                     .sum()/self.modf(energy).sum()
+        delta = abs(fit_degree - exp_degree)/exp_degree
+        msg = 'delta = %.3f' % delta
+        self.assertTrue(delta < 0.05, msg)
+
 
 
 if __name__ == '__main__':
