@@ -47,9 +47,9 @@ class TestPolarization(unittest.TestCase):
     def polarization_degree(self, energy):
         """
         """
-        return numpy.full(energy.shape, 0.77)
+        #return numpy.full(energy.shape, 0.77)
         return (1. - (energy - self.emin)/(self.emax - self.emin))
-        
+
     def test_simplest(self, size=100000, phase=0.):
         """
         """
@@ -74,10 +74,11 @@ class TestPolarization(unittest.TestCase):
         mean_energy = numpy.mean(energy)
         mu_effective = self.modf.weighted_average(energy)
         fit_results.set_polarization(mu_effective)
-        #print fit_results
-        #print mean_energy, self.polarization_degree(mean_energy)
-    
+        pol_degree = (self.polarization_degree(energy)*self.modf(energy))\
+                    .sum()/self.modf(energy).sum()
+        print fit_results
+        print mean_energy, self.polarization_degree(mean_energy), pol_degree
+
 
 if __name__ == '__main__':
     unittest.main()
-
