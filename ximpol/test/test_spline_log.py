@@ -22,11 +22,10 @@
 
 
 import unittest
-import scipy.special
 
 from ximpol.core.spline import *
 from ximpol.utils.logging_ import suppress_logging
-
+from ximpol.utils.matplotlib_ import pyplot as plt
 
 
 class TestSplineLog(unittest.TestCase):
@@ -55,11 +54,13 @@ class TestSplineLog(unittest.TestCase):
         num_points = 5
         _x = numpy.logspace(numpy.log10(emin), numpy.log10(emax), num_points)
         _y = norm*_x**(-index)
-        s = xUnivariateSplineLogLog(_x, _y)
-        print self.power_law_integral(norm, index, emin, emax)
-        print s.norm()
-        s.plot(logx=True, logy=True, overlay=True)
-        
+        slin = xInterpolatedUnivariateSplineLinear(_x, _y)
+        slog = xInterpolatedUnivariateLogSplineLinear(_x, _y)
+        #print self.power_law_integral(norm, index, emin, emax)
+        #print slin.norm()
+        #print slog.integral(numpy.log10(emin), numpy.log10(emax))
+        #slin.plot(logx=True, logy=True, overlay=True, show=False)
+        #slog.plot(logx=True, logy=True, overlay=True)
 
 
 

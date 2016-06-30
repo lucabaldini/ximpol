@@ -318,33 +318,6 @@ class xUnivariateSpline(xUnivariateSplineBase, UnivariateSpline):
         UnivariateSpline.__init__(self, self.x, self.y, w, bbox, k, s)
 
 
-
-class xUnivariateSplineLogLog(xUnivariateSplineBase, UnivariateSpline):
-
-    """
-    """
-
-    def __init__(self, x, y, w=None, bbox=[None, None], k=1, s=None,
-                 xname=None, xunits=None, yname=None, yunits=None):
-        """Constructor.
-        """
-        xUnivariateSplineBase.__init__(self, x, y, xname, xunits, yname, yunits)
-        UnivariateSpline.__init__(self, numpy.log10(self.x),
-                                  numpy.log10(self.y), w, bbox, k, s)
-        
-    def __call__(self, x):
-        """
-        """
-        _logy = UnivariateSpline.__call__(self, numpy.log10(x))
-        return 10.**_logy
-
-    def integral(self, x1, x2):
-        """
-        """
-        return 1.
-
-
-
 class xInterpolatedUnivariateSpline(xUnivariateSplineBase,
                                     InterpolatedUnivariateSpline):
 
@@ -429,6 +402,46 @@ class xInterpolatedUnivariateSplineLinear(xInterpolatedUnivariateSpline):
             dist = self.dist(oldx, oldy)
             logger.info('Relative (max/ave) dist. to original array: %e/%e' %\
                         (dist.max(), dist.sum()/len(dist)))
+
+
+class xInterpolatedUnivariateLogSpline(xUnivariateSplineBase, UnivariateSpline):
+
+    """
+    """
+
+    def __init__(self, x, y, w=None, bbox=[None, None], k=3,
+                 xname=None, xunits=None, yname=None, yunits=None):
+        """Constructor.
+        """
+        xUnivariateSplineBase.__init__(self, x, y, xname, xunits, yname, yunits)
+        _x = numpy.log10(x)
+        _y = numpy.log10(y)
+        UnivariateSpline.__init__(self, _x, _y, w, bbox, k, s=None)
+        
+    def __call__(self, x):
+        """Overloaded call method.
+        """
+        return numpy.power(10., UnivariateSpline.__call__(self, numpy.log10(x)))
+
+    def integral(self, x1, x2):
+        """Overloaded integral method.
+        """
+        from scipy.interpolate import dfitpack
+        tck = self._eval_args
+        return dfitpack.splint(*(tck + (x1, x2)))
+
+
+class xInterpolatedUnivariateLogSplineLinear(xInterpolatedUnivariateLogSpline):
+
+    """
+    """
+
+    def __init__(self, x, y, xname=None, xunits=None, yname=None, yunits=None):
+        """Constructor.
+        """
+        xInterpolatedUnivariateLogSpline.__init__(self, x, y, None,
+                                                  [None, None], 1, xname,
+                                                  xunits, yname, yunits)
 
 
 class xBivariateSplineBase:
