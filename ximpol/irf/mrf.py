@@ -20,7 +20,7 @@
 import numpy
 from astropy.io import fits
 
-from ximpol.utils.logging_ import logger
+from ximpol.utils.logging_ import logger, abort
 from ximpol.irf.base import OGIP_HEADER_SPECS
 from ximpol.core.fitsio import xBinTableHDUBase
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
@@ -489,6 +489,12 @@ class xModulationFactor(xInterpolatedUnivariateSplineLinear):
             The polarization angle, in radians. (This can either be a vector or
             an array of the same length as `energy`.)
         """
+        max_degree = polarization_degree.max()
+        min_degree = polarization_degree.min()
+        if max_degree > 1:
+            abort('The polarization degree must be <= 1')
+        if min_degree < 0:
+            abort('The polarization degree must be >= 0')
         visibility = self(energy)*polarization_degree
         return self.generator.rvs_phi(visibility, polarization_angle)
 
