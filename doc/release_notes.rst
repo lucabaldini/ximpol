@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.50.0) - Thu, 30 Jun 2016 14:56:31 +0200*
+
 * Blazar sensitivity plot added in the examples folder.
 * New config file and associated pipeline added for J1708.
 * Avoid reading the modulation factor in evt.binning.xBinnedModulationCube
