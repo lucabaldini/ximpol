@@ -209,6 +209,7 @@ class xCountSpectrum(xUnivariateAuxGenerator):
             _vals *= source_spectrum(E*(1 + redshift), t)
             return _vals
 
+        self.scale_factor = scale_factor
         fmt = dict(auxname='Time', auxunits='s', rvname='Energy',
                    rvunits='keV',  pdfname='dN/dE $\\times$ aeff',
                    pdfunits='s$^{-1}$ keV$^{-1}$')
@@ -306,7 +307,7 @@ class xCountSpectrum(xUnivariateAuxGenerator):
         mu_spectrum = xInterpolatedUnivariateSplineLinear(_x, _y)
         # Loop over the energy bins and calculate the actual MDP values.
         # Note that we also calculate the MDP on the entire energy range.
-        observation_time = self.xmax() - self.xmin()
+        observation_time = self.scale_factor*(self.xmax() - self.xmin())
         mdp_table = xMDPTable(observation_time)
         ebins = zip(energy_binning[:-1], energy_binning[1:])
         if len(energy_binning) > 2:
