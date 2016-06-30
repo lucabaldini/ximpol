@@ -55,9 +55,9 @@ class TestSplineLog(unittest.TestCase):
         num_points = 5
         _x = numpy.logspace(numpy.log10(emin), numpy.log10(emax), num_points)
         _y = norm*_x**(-index)
-        s = xInterpolatedUnivariateSplineLinear(_x, _y)
-        #print self.power_law_integral(norm, index, emin, emax)
-        #print s.norm()
+        s = xUnivariateSplineLogLog(_x, _y)
+        print self.power_law_integral(norm, index, emin, emax)
+        print s.norm()
         s.plot(logx=True, logy=True, overlay=True)
         
 

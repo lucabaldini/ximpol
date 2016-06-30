@@ -318,6 +318,33 @@ class xUnivariateSpline(xUnivariateSplineBase, UnivariateSpline):
         UnivariateSpline.__init__(self, self.x, self.y, w, bbox, k, s)
 
 
+
+class xUnivariateSplineLogLog(xUnivariateSplineBase, UnivariateSpline):
+
+    """
+    """
+
+    def __init__(self, x, y, w=None, bbox=[None, None], k=1, s=None,
+                 xname=None, xunits=None, yname=None, yunits=None):
+        """Constructor.
+        """
+        xUnivariateSplineBase.__init__(self, x, y, xname, xunits, yname, yunits)
+        UnivariateSpline.__init__(self, numpy.log10(self.x),
+                                  numpy.log10(self.y), w, bbox, k, s)
+        
+    def __call__(self, x):
+        """
+        """
+        _logy = UnivariateSpline.__call__(self, numpy.log10(x))
+        return 10.**_logy
+
+    def integral(self, x1, x2):
+        """
+        """
+        return 1.
+
+
+
 class xInterpolatedUnivariateSpline(xUnivariateSplineBase,
                                     InterpolatedUnivariateSpline):
 
