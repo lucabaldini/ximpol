@@ -87,7 +87,7 @@ class TestPolarization(unittest.TestCase):
         msg = 'delta = %.3f' % delta
         self.assertTrue(delta < 0.05, msg)
 
-    def test_power_law(self, size=100000, phase=0., index=2.):
+    def test_power_law(self, size=1000000, phase=0., index=2.):
         """
         """
         _x = numpy.linspace(self.emin, self.emax, 100)
@@ -109,6 +109,27 @@ class TestPolarization(unittest.TestCase):
         msg = 'delta = %.3f' % delta
         self.assertTrue(delta < 0.05, msg)
 
+    def test_exponential_law(self, size=1000000, phase=0., base=10.):
+        """
+        """
+        _x = numpy.linspace(self.emin, self.emax, 100)
+        _y = base**(-_x)
+        generator = xUnivariateGenerator(_x, _y)
+        energy = generator.rvs(size)
+        visibility = self.modf(energy)*self.polarization_degree(energy)
+        phi = self.generator.rvs_phi(visibility, phase)
+        binning = numpy.linspace(0, 2*numpy.pi, 100)
+        hist = plt.hist(phi, bins=binning)
+        fit_results = self.generator.fit_histogram(hist)
+        mean_energy = numpy.mean(energy)
+        mu_effective = self.modf.weighted_average(energy)
+        fit_results.set_polarization(mu_effective)
+        fit_degree = fit_results.polarization_degree
+        exp_degree = (self.polarization_degree(energy)*self.modf(energy))\
+                     .sum()/self.modf(energy).sum()
+        delta = abs(fit_degree - exp_degree)/exp_degree
+        msg = 'delta = %.3f' % delta
+        self.assertTrue(delta < 0.05, msg)
 
 
 if __name__ == '__main__':
