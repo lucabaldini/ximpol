@@ -502,14 +502,13 @@ class xBivariateSplineBase:
         return self.__class__(self.x.copy(), self.y.copy(), self.z*scale_factor)
 
 
-class xInterpolatedBivariateSplineLinear(xBivariateSplineBase,
-                                         RectBivariateSpline):
+class xInterpolatedBivariateSpline(xBivariateSplineBase, RectBivariateSpline):
 
-    """Bivariate linear interpolated spline on a rectangular grid.
+    """Bivariate interpolated spline on a rectangular grid.
     """
 
-    def __init__(self, x, y, z, xname=None, xunits=None, yname=None,
-                 yunits=None, zname=None, zunits=None):
+    def __init__(self, x, y, z, kx=1, ky=1, xname=None, xunits=None,
+                 yname=None, yunits=None, zname=None, zunits=None):
         """Constructor.
         """
         if hasattr(z, '__call__'):
@@ -519,7 +518,7 @@ class xInterpolatedBivariateSplineLinear(xBivariateSplineBase,
                                       yunits, zname, zunits)
         RectBivariateSpline.__init__(self, x, y, z,
                                      bbox=[None, None, None, None],
-                                     kx=1, ky=1, s=0)
+                                     kx=kx, ky=ky, s=0)
 
     def __call__(self, x, y, dx=0, dy=0, grid=False):
         """Overloaded __call__method.
@@ -618,6 +617,18 @@ class xInterpolatedBivariateSplineLinear(xBivariateSplineBase,
             bar.set_label(self.zlabel())
         if show:
             plt.show()
+
+            
+class xInterpolatedBivariateSplineLinear(xInterpolatedBivariateSpline):
+
+    """Bivariate linear interpolated spline on a rectangular grid.
+    """
+
+    def __init__(self, x, y, z, xname=None, xunits=None,
+                 yname=None, yunits=None, zname=None, zunits=None):
+        xInterpolatedBivariateSpline.__init__(self, x, y, z, 1, 1, xname,
+                                              xunits, yname, yunits, zname,
+                                              zunits)
 
 
 def main():
