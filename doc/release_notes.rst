@@ -10,6 +10,8 @@ Release notes
 * New bivariate spline class added supporting orders greater than 1 on both
   axes.
 * Bug fix for issue 143 (closing it).
+* xUnivariateAuxGenerator now supporting spline orders greater than 1 on
+  both axes (taking advantage of the new bivariate spline class).
 
 
 *ximpol (0.49.0) - Fri, 24 Jun 2016 16:31:55 +0200*
