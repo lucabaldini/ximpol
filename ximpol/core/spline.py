@@ -406,7 +406,25 @@ class xInterpolatedUnivariateSplineLinear(xInterpolatedUnivariateSpline):
 
 class xInterpolatedUnivariateLogSpline(xUnivariateSplineBase, UnivariateSpline):
 
-    """
+    """Poor man's attempt at a spline in logarithmic space.
+
+    The basic interpolation is trivial, as we simply take the logarithms of the
+    x and y values in the constructor and overload the __call__ method
+    to raise 10 to the power of the interpolated value.
+
+    The integral is more tricky, as obviously the implementation in the base
+    class operates in logarirthmic space and the result is just nonsense.
+    To this end we proceed by brute force and create a second spline, this time
+    in linear space, with a relatively large number of points to guarantee the
+    accuracy of the integral.
+
+    Warning
+    -------
+    This is not supporting the calculation of the derivatives or roots in any
+    sensible way, so just refrain from calling any other methods than the
+    overloaded ones, i.e., __call__() and integral(). In the future it might
+    make sense to overload all the other methods and simply abort the
+    executions whenever any of them is called.
     """
 
     def __init__(self, x, y, w=None, bbox=[None, None], k=3,
@@ -417,23 +435,41 @@ class xInterpolatedUnivariateLogSpline(xUnivariateSplineBase, UnivariateSpline):
         _x = numpy.log10(x)
         _y = numpy.log10(y)
         UnivariateSpline.__init__(self, _x, _y, w, bbox, k, s=None)
-        
+        self.__integral_spline = None
+
     def __call__(self, x):
         """Overloaded call method.
         """
         return numpy.power(10., UnivariateSpline.__call__(self, numpy.log10(x)))
 
+    def __build_integral_spline(self, num_points=1000):
+        """Build the underlying univariate linear interpolated spline to be
+        used to evaluate integrals.
+
+        Note that we try to save something in terms of speed by optimizing the
+        number of points, here.
+        """
+        _x = numpy.logspace(numpy.log10(self.xmin()), numpy.log10(self.xmax()),
+                            num_points)
+        _y = self(_x)
+        fmt = dict(xname=self.xname, xunits=self.xunits, yname=self.yname,
+                   yunits=self.yunits)
+        return xInterpolatedUnivariateSplineLinear(_x, _y, optimize=True, **fmt)
+
     def integral(self, x1, x2):
         """Overloaded integral method.
+
+        The integral spline is calculated and cached the first time this method
+        is called.
         """
-        from scipy.interpolate import dfitpack
-        tck = self._eval_args
-        return dfitpack.splint(*(tck + (x1, x2)))
+        if self.__integral_spline is None:
+            self.__integral_spline = self.__build_integral_spline()
+        return self.__integral_spline.integral(x1, x2)
 
 
 class xInterpolatedUnivariateLogSplineLinear(xInterpolatedUnivariateLogSpline):
 
-    """
+    """Subclass of xInterpolatedUnivariateLogSpline with k=1.
     """
 
     def __init__(self, x, y, xname=None, xunits=None, yname=None, yunits=None):

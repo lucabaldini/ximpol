@@ -21,6 +21,7 @@
 """
 
 
+import sys
 import unittest
 
 from ximpol.core.spline import *
@@ -37,7 +38,7 @@ class TestSplineLog(unittest.TestCase):
     def setUpClass(cls):
         """Setup.
         """
-        pass
+        cls.interactive = sys.flags.interactive
 
     def power_law_integral(self, norm, index, xmin, xmax):
         """
@@ -56,11 +57,16 @@ class TestSplineLog(unittest.TestCase):
         _y = norm*_x**(-index)
         slin = xInterpolatedUnivariateSplineLinear(_x, _y)
         slog = xInterpolatedUnivariateLogSplineLinear(_x, _y)
-        #print self.power_law_integral(norm, index, emin, emax)
-        #print slin.norm()
-        #print slog.integral(numpy.log10(emin), numpy.log10(emax))
-        #slin.plot(logx=True, logy=True, overlay=True, show=False)
-        #slog.plot(logx=True, logy=True, overlay=True)
+        target_norm = self.power_law_integral(norm, index, emin, emax)
+        lin_norm = slin.norm()
+        log_norm = slog.norm()
+        delta = abs(target_norm - log_norm)/target_norm
+        msg = 'delta = %.3e' % delta
+        self.assertTrue(delta < 0.01, msg)
+        if self.interactive:
+            plt.figure()
+            slin.plot(logx=True, logy=True, overlay=True, show=False)
+            slog.plot(logx=True, logy=True, overlay=True, show=False)
 
 
 

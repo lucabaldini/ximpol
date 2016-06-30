@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* First stub at implementing splines in log space (issue #20).
+
 
 *ximpol (0.50.0) - Thu, 30 Jun 2016 14:56:31 +0200*
 
