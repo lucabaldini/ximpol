@@ -755,7 +755,7 @@ class xBinnedModulationCube(xBinnedFileBase):
         # appear in the plot, se we brutally get rid of it.
         if len(self.fit_results) > 1:
             _x = _x[:-1]
-            _dx = _dx[:-1]
+            _dx = [_x - self.emin[:-1], self.emax[:-1] - _x]
             _y = _y[:-1]
             _dy = _dy[:-1]
         plt.errorbar(_x, _y, _dy, _dx, fmt='o', **kwargs)
@@ -782,7 +782,7 @@ class xBinnedModulationCube(xBinnedFileBase):
         # appear in the plot, se we brutally get rid of it.
         if len(self.fit_results) > 1:
             _x = _x[:-1]
-            _dx = _dx[:-1]
+            _dx = [_x - self.emin[:-1], self.emax[:-1] - _x]
             _y = _y[:-1]
             _dy = _dy[:-1]
         plt.errorbar(_x, _y, _dy, _dx, fmt='o', **kwargs)
