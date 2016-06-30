@@ -7,6 +7,8 @@ Release notes
   (using the effective factor written in the fits file instead, when it
   comes to converting a visibility into a polarization fraction.)
 * One unit test added.
+* New bivariate spline class added supporting orders greater than 1 on both
+  axes.
 
 
 *ximpol (0.49.0) - Fri, 24 Jun 2016 16:31:55 +0200*
