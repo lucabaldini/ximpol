@@ -34,7 +34,7 @@ def plot_swift_lc(grb_list,show=True):
     plt.title('Swift XRT light curves')
     num_grb = 0
     for grb_name in grb_list:
-        flux_outfile = download_swift_grb_lc_file(grb_name)
+        flux_outfile = download_swift_grb_lc_file(grb_name, min_obs_time=21600)
         if flux_outfile is not None:
             integral_flux_spline = parse_light_curve(flux_outfile)
             if integral_flux_spline is not None:
@@ -49,6 +49,8 @@ def plot_swift_lc(grb_list,show=True):
                                               logy=True,show=False,\
                                               color='%f'%c,linewidth=1.0)
                     num_grb += 1
+        else:
+            continue
     logger.info('%i GRBs included in the plot.'%num_grb)
     if show:
         plt.show()
@@ -58,8 +60,8 @@ def main(interactive=False):
     """Test the script plotting the light curve og GRB 130427A
     """
     #If you want all the GRBs use the following line:    
-    #grb_list = get_all_swift_grb_names()
-    grb_list = ['GRB 130427A']
+    grb_list = get_all_swift_grb_names()
+    #grb_list = ['GRB 130427A','GRB 050124']
     plot_swift_lc(grb_list,show=False)
     overlay_tag()
     save_current_figure('Swift_XRT_light_curves',

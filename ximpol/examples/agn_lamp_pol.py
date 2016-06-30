@@ -37,14 +37,14 @@ elif i is 2:
 
 NAME_LIST = ['mcg_6_30_15', 'ark_120', 'ngc_1365']
 CFG_FILE = os.path.join(XIMPOL_CONFIG, NAME_LIST[i]+'.py')
-TIME = 1000000.
-E_BINNING = [2.,4.,8.]
-SIM_NUM = 10
+TIME = 30000000.
+E_BINNING = [2.,4.,6.,8.]
+SIM_NUM = 5
 
-pol_degree_array = numpy.empty([SIM_NUM, (len(E_BINNING)-1)])
-pol_degree_error_array = numpy.empty([SIM_NUM, (len(E_BINNING)-1)])
-pol_angle_array = numpy.empty([SIM_NUM, (len(E_BINNING)-1)])
-pol_angle_error_array = numpy.empty([SIM_NUM, (len(E_BINNING)-1)])
+pol_degree_array = numpy.empty([SIM_NUM, len(E_BINNING)])
+pol_degree_error_array = numpy.empty([SIM_NUM, len(E_BINNING)])
+pol_angle_array = numpy.empty([SIM_NUM, len(E_BINNING)])
+pol_angle_error_array = numpy.empty([SIM_NUM, len(E_BINNING)])
 
 pipeline = xPipeline(clobber=True)
 for j in range(0, SIM_NUM):
@@ -64,56 +64,50 @@ for j in range(0, SIM_NUM):
     pol_angle_error_array[j,:] = numpy.array([numpy.degrees(r.phase_error) for
                                               r in mod_cube.fit_results])
 
-cnts_tot = 0
-mu_tot = 0.
 for i in range(0, len(mod_cube.emax)):
     cnts = mod_cube.counts[i]
-    cnts_tot += cnts
-    mu_tot += mod_cube.effective_mu[i]*cnts
-    mdp = mdp99(mod_cube.effective_mu[i], cnts)
     logger.info('%.2f--%.2f keV: %d counts in %d s, mu %.3f, MDP %.2f%%' %\
-                            (mod_cube.emin[i], mod_cube.emax[i], cnts, TIME,
-                            mod_cube.effective_mu[i], 100*mdp))
-mu_tot /= cnts_tot
-mdp_tot = mdp99(mu_tot, cnts_tot)
-logger.info('%.2f--%.2f keV: %d counts in %d s, mu %.3f, MDP %.2f%%' %\
-        (mod_cube.emin[0], mod_cube.emax[len(mod_cube.emax)-1], cnts_tot,
-        TIME, mu_tot, 100*mdp_tot))
+            (mod_cube.emin[i], mod_cube.emax[i], mod_cube.counts[i], TIME,
+             mod_cube.effective_mu[i], 100*mod_cube.mdp99[i]))
 logger.info('Done.')
 
 pol_deg = numpy.mean(pol_degree_array, axis=0)
-pol_deg_err = numpy.mean(pol_degree_error_array, axis = 0)
+pol_deg_err = numpy.mean(pol_degree_error_array, axis=0)
 pol_ang = numpy.mean(pol_angle_array, axis=0)
-pol_ang_err = numpy.mean(pol_angle_error_array, axis = 0)
+pol_ang_err = numpy.mean(pol_angle_error_array, axis=0)
 
 fig = plt.figure('Polarization degree')
 plt.xlabel('Energy [keV]')
 plt.ylabel('Polarization degree')
 bad = pol_deg < 3*pol_deg_err
 good = numpy.invert(bad)
+bad[len(E_BINNING)-1] = False
+good[len(E_BINNING)-1] = False
 _dx = numpy.array([mod_cube.emean - mod_cube.emin, mod_cube.emax - mod_cube.emean])
 if bad.sum() > 0:
     plt.errorbar(mod_cube.emean[bad], pol_deg[bad], pol_deg_err[bad],
-                            _dx[bad], fmt='o', label='Data', color='gray')
+                            _dx.T[bad].T, fmt='o', label='Data', color='gray')
 if good.sum() > 0:
     plt.errorbar(mod_cube.emean[good], pol_deg[good], pol_deg_err[good],
-                            _dx[good], fmt='o', label='Data', color='blue')
+                            _dx.T[good].T, fmt='o', label='Data', color='blue')
 pol_degree.plot(show=False, label='Model', linestyle='dashed', color='green')
 plt.legend(bbox_to_anchor=(0.30, 0.95))
 plt.axis([1, 10, 0, 0.1])
-#plt.savefig('/home/nicco/MGC_0_4_10x1Ms_polarization_degree.png')
+#plt.savefig('/home/nicco/%s_0_0_10x%dMs_polarization_degree.png' %\
+#                                                (NAME_LIST[0:3], TIME/100000))
 
 fig = plt.figure('Polarization angle')
 plt.xlabel('Energy [keV]')
 plt.ylabel('Polarization angle [$^\circ$]')
 if bad.sum() > 0:
     plt.errorbar(mod_cube.emean[bad], pol_ang[bad], pol_ang_err[bad],
-                            _dx[bad], fmt='o', label='Data', color='gray')
+                            _dx.T[bad].T, fmt='o', label='Data', color='gray')
 if good.sum() > 0:
     plt.errorbar(mod_cube.emean[good], pol_ang[good], pol_ang_err[good],
-                            _dx[good], fmt='o', label='Data', color='blue')
+                            _dx.T[good].T, fmt='o', label='Data', color='blue')
 pol_angle.plot(show=False, label='Model', linestyle='dashed', color='green')
 plt.legend(bbox_to_anchor=(0.95, 0.95))
 plt.axis([1, 10, 0, 180])
-#plt.savefig('/home/nicco/MGC_0_4_10x1Ms_polarization_angle.png')
+#plt.savefig('/home/nicco/%s_0_0_10x%dMs_polarization_angle.png'%\
+#                                                (NAME_LIST[0:3], TIME/100000))
 plt.show()

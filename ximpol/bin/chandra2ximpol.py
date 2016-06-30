@@ -28,7 +28,7 @@ import pyregion._region_filter as filter
 
 from astropy import wcs
 from astropy.io import fits
-from ximpol.irf import load_irfs
+from ximpol.irf import load_irfs, DEFAULT_IRF_NAME
 from ximpol.utils.os_ import mkdir
 from ximpol.utils.profile import xChrono
 from ximpol import XIMPOL_IRF, XIMPOL_DATA
@@ -37,6 +37,7 @@ from ximpol.srcmodel.polarization import constant
 from ximpol.evt.event import xMonteCarloEventList
 from ximpol.utils.logging_ import logger, startmsg, abort
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
+
 
 """Command-line switches.
 """
@@ -59,7 +60,7 @@ PARSER.add_argument('--mc', type=ast.literal_eval, choices=[True, False],
                     help='use chandra coordinates for source id definition')
 PARSER.add_argument('--duration', type=float, default=numpy.nan,
                     help='the duration (in s) of the simulation')
-PARSER.add_argument('--irfname', type=str, default='xipe_baseline',
+PARSER.add_argument('--irfname', type=str, default=DEFAULT_IRF_NAME,
                     help='the input configuration file')
 PARSER.add_argument('--acis', type=str, default='i', choices=['i', 's'],
                     help='the chandra acis detector name')

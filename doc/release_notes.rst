@@ -1,13 +1,32 @@
 Release notes
 =============
+
+* Blazar sensitivity plot added in the examples folder.
+* New config file and associated pipeline added for J1708.
+* Avoid reading the modulation factor in evt.binning.xBinnedModulationCube
+  (using the effective factor written in the fits file instead, when it
+  comes to converting a visibility into a polarization fraction.)
+* One unit test added.
+
+
+*ximpol (0.49.0) - Fri, 24 Jun 2016 16:31:55 +0200*
+
+* "xipe_goal" IRFs now used by default by all the xp tools.
+
+
+*ximpol (0.48.0) - Wed, 22 Jun 2016 23:12:31 +0200*
+
 * Added script to make the polarization map of casa in examples
-* Added the option to draw the psf circle in the count map of casa in the main casa.py example.
-
+* Added the option to draw the psf circle in the count map of casa in the main
+  casa.py example.
 * Added the Cyg-X1 ascii files for the model at 40 degree inclination.
-
 * Added checks in the univariate spline constructors to make sure that the
   input x-values are sorted and unique (closing issue #84.)
-
+* evt.binning.py module modified in such a way that all the relevant quantities
+  are also calculated over the entire energy range when the energy
+  binning is longer than 1 (i.e., if you do 2--4 keV and 4--8 keV, you
+  get 2--8 keV for free).
+ 
 
 *ximpol (0.47.3) - Wed, 22 Jun 2016 08:56:35 +0200*
 

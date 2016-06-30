@@ -28,6 +28,12 @@ from ximpol.utils.logging_ import logger
 from ximpol.utils.os_ import check_input_file
 
 
+"""Name of the IRF set to be used by default throughout the package.
+"""
+DEFAULT_IRF_NAME = 'xipe_goal'
+
+
+
 def irf_file_path(irf_name, irf_type, folder_path=None, check_file=True):
     """Return the full file path to a particular IRF file.
     """

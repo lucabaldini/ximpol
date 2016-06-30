@@ -24,7 +24,7 @@ import os
 import numpy
 import imp
 
-from ximpol.irf import load_arf, load_mrf
+from ximpol.irf import load_arf, load_mrf, DEFAULT_IRF_NAME
 from ximpol.srcmodel.spectrum import xCountSpectrum
 from ximpol.srcmodel.roi import xPeriodicPointSource
 from ximpol.utils.logging_ import logger, startmsg, abort
@@ -47,7 +47,7 @@ PARSER = argparse.ArgumentParser(description=__description__,
 #                    help='the output FITS event file')
 PARSER.add_argument('--configfile', type=str, required=True,
                     help='the input configuration file')
-PARSER.add_argument('--irfname', type=str, default='xipe_baseline',
+PARSER.add_argument('--irfname', type=str, default=DEFAULT_IRF_NAME,
                     help='the input configuration file')
 PARSER.add_argument('--duration', type=float, default=10,
                     help='the duration (in s) of the simulation')
