@@ -67,6 +67,7 @@ class TestSplineLog(unittest.TestCase):
             plt.figure()
             slin.plot(logx=True, logy=True, overlay=True, show=False)
             slog.plot(logx=True, logy=True, overlay=True, show=False)
+            plt.show()
 
 
 
