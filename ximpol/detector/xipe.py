@@ -74,18 +74,9 @@ INSTR_KEYWORDS = [
     ('DETNAM'  , 'ALL'  , 'specific detector name in use')
 ]
 
-"""Comments fields for the FITS headers.
-"""
-INSTR_COMMENTS = [
-    'Gas mixture: %s' % GAS_MIXTURE,
-    'Pressure: %.3f Atm' % GAS_PRESSURE,
-    'Absorption gap: %.3f cm' % ABS_GAP_THICKNESS,
-    'Quality cut efficiency: %.3f' % QUAL_CUT_EFFICIENCY,
-    'Window: %s, %d um' % (WINDOW_MATERIAL, WINDOW_THICKNESS)
-]
 
-
-def make_arf(aeff_file_path, qeff_file_path, irf_name, off_axis_data=[]):
+def make_arf(aeff_file_path, qeff_file_path, irf_name, off_axis_data=[],
+             comments = []):
     """Write the XIPE effective area response function.
     """
     logger.info('Creating XIPE effective area fits file...')
@@ -102,11 +93,11 @@ def make_arf(aeff_file_path, qeff_file_path, irf_name, off_axis_data=[]):
     aeff = opt_aeff*gpd_eff
     specresp = aeff(ENERGY_CENTER)
     logger.info('Creating PRIMARY HDU...')
-    primary_hdu = xPrimaryHDU('ximpol', INSTR_KEYWORDS, INSTR_COMMENTS)
+    primary_hdu = xPrimaryHDU('ximpol', INSTR_KEYWORDS, comments)
     print(repr(primary_hdu.header))
     logger.info('Creating SPECRESP HDU...')
     data = [ENERGY_LO, ENERGY_HI, specresp]
-    specresp_hdu = xBinTableHDUSPECRESP(data, INSTR_KEYWORDS, INSTR_COMMENTS)
+    specresp_hdu = xBinTableHDUSPECRESP(data, INSTR_KEYWORDS, comments)
     print(repr(specresp_hdu.header))
     logger.info('Processing off-axis data...')
     energy = numpy.linspace(ENERGY_MIN, ENERGY_MAX, 100)
@@ -130,7 +121,7 @@ def make_arf(aeff_file_path, qeff_file_path, irf_name, off_axis_data=[]):
     logger.info('Done.')
 
 
-def make_mrf(modf_file_path, irf_name):
+def make_mrf(modf_file_path, irf_name, comments=[]):
     """Write the XIPE modulation factor response function.
     """
     logger.info('Creating XIPE effective area fits file...')
@@ -144,11 +135,11 @@ def make_mrf(modf_file_path, irf_name):
     logger.info('Filling in arrays...')
     modfresp = modf(ENERGY_CENTER)
     logger.info('Creating PRIMARY HDU...')
-    primary_hdu = xPrimaryHDU('ximpol', INSTR_KEYWORDS, INSTR_COMMENTS)
+    primary_hdu = xPrimaryHDU('ximpol', INSTR_KEYWORDS, comments)
     print(repr(primary_hdu.header))
     logger.info('Creating MODFRESP HDU...')
     data = [ENERGY_LO, ENERGY_HI, modfresp]
-    modfresp_hdu = xBinTableHDUMODFRESP(data, INSTR_KEYWORDS, INSTR_COMMENTS)
+    modfresp_hdu = xBinTableHDUMODFRESP(data, INSTR_KEYWORDS, comments)
     print(repr(modfresp_hdu.header))
     logger.info('Writing output file %s...' % output_file_path)
     hdulist = fits.HDUList([primary_hdu, modfresp_hdu])
@@ -157,8 +148,12 @@ def make_mrf(modf_file_path, irf_name):
     logger.info('Done.')
 
 
-def make_psf(irf_name):
+def make_psf(irf_name, scale_factor=1., comments=[]):
     """Write the XIPE PSF parameters.
+
+    The scale_factor parameter allows for a parametric change in the
+    PSF HEW, starting from the values in  `Fabiani et al., 2014
+    <http://arxiv.org/abs/1403.7200>`_.
     """
     logger.info('Creating XIPE effective area fits file...')
     output_file_name = '%s.psf' % irf_name
@@ -166,11 +161,13 @@ def make_psf(irf_name):
     if os.path.exists(output_file_path):
         rm(output_file_path)
     logger.info('Creating PRIMARY HDU...')
-    primary_hdu = xPrimaryHDU('ximpol', INSTR_KEYWORDS, INSTR_COMMENTS)
+    primary_hdu = xPrimaryHDU('ximpol', INSTR_KEYWORDS, comments)
     print(repr(primary_hdu.header))
     logger.info('Creating PSF HDU...')
     data = PSF_PARAMETERS
-    psf_hdu = xBinTableHDUPSF(data, [], INSTR_COMMENTS)
+    data[1] *= scale_factor
+    data[3] *= scale_factor
+    psf_hdu = xBinTableHDUPSF(data, [], comments)
     print(repr(psf_hdu.header))
     logger.info('Writing output file %s...' % output_file_path)
     hdulist = fits.HDUList([primary_hdu, psf_hdu])
@@ -179,7 +176,7 @@ def make_psf(irf_name):
     logger.info('Done.')
 
 
-def make_rmf(eres_file_path, irf_name):
+def make_rmf(eres_file_path, irf_name, comments=[]):
     """Write the XIPE edisp response function.
 
     The specifications are describes at page ~15 of the following document:
@@ -193,7 +190,7 @@ def make_rmf(eres_file_path, irf_name):
     _x, _y = numpy.loadtxt(eres_file_path, unpack=True)
     edisp_fwhm = xInterpolatedUnivariateSplineLinear(_x, _y)
     logger.info('Creating PRIMARY HDU...')
-    primary_hdu = xPrimaryHDU('ximpol', INSTR_KEYWORDS, INSTR_COMMENTS)
+    primary_hdu = xPrimaryHDU('ximpol', INSTR_KEYWORDS, comments)
     print(repr(primary_hdu.header))
     keyword = ('DETCHANS', NUM_CHANNELS, 'Total number of detector channels')
     rmf_header_keywords = INSTR_KEYWORDS + [keyword]
@@ -211,14 +208,14 @@ def make_rmf(eres_file_path, irf_name):
         matrix = numpy.vstack([matrix, rv.pdf(ch)])
     data = [ENERGY_LO, ENERGY_HI, ngrp, fchan, nchan, matrix]
     matrix_hdu = xBinTableHDUMATRIX(NUM_CHANNELS, data, rmf_header_keywords,
-                                    INSTR_COMMENTS)
+                                    comments)
     print(repr(matrix_hdu.header))
     logger.info('Creating EBOUNDS HDU...')
     ch = numpy.arange(NUM_CHANNELS)
     emin = ch*E_CHAN_SLOPE + E_CHAN_OFFSET
     emax = (ch + 1)*E_CHAN_SLOPE + E_CHAN_OFFSET
     data = [ch, emin, emax]
-    ebounds_hdu = xBinTableHDUEBOUNDS(data, rmf_header_keywords, INSTR_COMMENTS)
+    ebounds_hdu = xBinTableHDUEBOUNDS(data, rmf_header_keywords, comments)
     print(repr(ebounds_hdu.header))
     logger.info('Writing output file %s...' % output_file_path)
     hdulist = fits.HDUList([primary_hdu, matrix_hdu, ebounds_hdu])
@@ -227,8 +224,16 @@ def make_rmf(eres_file_path, irf_name):
     logger.info('Done.')
 
 
-def make_all():
+def make_all_legacy():
     """Create all the XIPE response functions.
+    
+    This was the original implementation and we soon realized that calling
+    IRF sets "baseline" and "goal" was not capturing the variety of
+    configurations that we can build up starting from the basic block.
+
+    Since there are simulations around done with these IRF names, we keep
+    this function here and the associated fits files in the repository,
+    but this is deprecated in favor of the make_all() method.
     """
     # Effective area.
     aeff_file_path = _full_path('Area_XIPE_201602b_x3.asc')
@@ -255,6 +260,58 @@ def make_all():
     # Point-spread function.
     make_psf('xipe_baseline')
     make_psf('xipe_goal')
+
+
+def make_all():
+    """
+    """
+    
+    baseline_gpd_info = [
+        'Gas mixture: %s' % GAS_MIXTURE,
+        'Pressure: %.3f Atm' % GAS_PRESSURE,
+        'Absorption gap: %.3f cm' % ABS_GAP_THICKNESS,
+        'Quality cut efficiency: %.3f' % QUAL_CUT_EFFICIENCY,
+        'Window: %s, %d um' % (WINDOW_MATERIAL, WINDOW_THICKNESS)
+    ]
+    
+    # Effective area configuration file(s).
+    qeff_file_path = _full_path('eff_hedme8020_1atm_1cm_cuts80p_be50um_p_x.asc')
+    aeff_file_path = _full_path('Area_XIPE_201602g_x3.asc')   
+    off_axis_data = [(4., _full_path('Area_XIPE_201602g_x3_4arcmin.asc')),
+                     (7., _full_path('Area_XIPE_201602g_x3_7arcmin.asc')),
+                     (10., _full_path('Area_XIPE_201602g_x3_10arcmin.asc'))
+    ]
+    # Energy dispersion configuration file(s).
+    eres_file_path = _full_path('eres_fwhm_hedme8020_1atm_1cm.asc')
+    # Modulation factor configuration file(s).
+    modf_file_path = _full_path('modfact_hedme8020_1atm_1cm_mng.asc')
+
+    
+    # Optics with 4 m focal length and 30 shells, baseline GPD, JET-X PSF.
+    irf_name = 'xipe_mirror-30s-f4_psf-jetx_gpd-baseline'
+    comments = [
+        'Mirrors: 30 shells, 4-m focal length',
+        'PSF: measured with the JET-X optics, http://arxiv.org/abs/1403.7200'
+    ] + baseline_gpd_info
+    
+    make_arf(aeff_file_path, qeff_file_path, irf_name, off_axis_data, comments)
+    make_rmf(eres_file_path, irf_name)
+    make_mrf(modf_file_path, irf_name)
+    make_psf(irf_name)
+
+    
+    # Same as above, but with the PSF rescaled to get an HEW of 30 arcsec.
+    irf_name = 'xipe_mirror-30s-f4_psf-jetx-rescaled-hew30_gpd-baseline'
+    comments = [
+        'Mirrors: 30 shells, 4-m focal length',
+        'PSF: rescaled from the JET-X values to get a HEW of 30 arcsec'
+    ] + baseline_gpd_info
+    
+    make_arf(aeff_file_path, qeff_file_path, irf_name, off_axis_data, comments)
+    make_rmf(eres_file_path, irf_name)
+    make_mrf(modf_file_path, irf_name)
+    make_psf(irf_name, scale_factor=1.316)
+
 
 
 if __name__ == '__main__':
