@@ -23,6 +23,7 @@ from astropy.io import fits
 from ximpol.utils.logging_ import logger
 from ximpol.irf.base import OGIP_HEADER_SPECS
 from ximpol.core.fitsio import xBinTableHDUBase
+from ximpol.core.spline import xInterpolatedUnivariateSpline
 from ximpol.core.rand import xUnivariateGenerator
 
 
@@ -41,7 +42,7 @@ class xBinTableHDUPSF(xBinTableHDUBase):
     ]
 
 
-class xPointSpreadFunction(xUnivariateGenerator):
+class xPointSpreadFunction(xInterpolatedUnivariateSpline):
 
     """Class describing a (simplified, energy independent) PSF.
 
@@ -75,7 +76,9 @@ class xPointSpreadFunction(xUnivariateGenerator):
     we stick with the values at 4.51 keV in the table.
     """
 
-    def __init__(self, psf_file_path, rmax=150.):
+    MAX_RADIUS = 150.
+
+    def __init__(self, psf_file_path):
         """Constructor.
         """
         logger.info('Reading PSF data from %s...' % psf_file_path)
@@ -87,19 +90,42 @@ class xPointSpreadFunction(xUnivariateGenerator):
         N = _data['N']
         r_c = _data['R_C']
         eta = _data['ETA']
-        _r = numpy.linspace(0, rmax, 100)
-        _psf = 2*numpy.pi*_r*(W*numpy.exp(-(_r**2/(2*sigma**2))) +\
-                                                   N*(1 + (_r/r_c)**2)**(-eta))
-        fmt = dict(rvname='r', rvunits='arcsec', pdfname='PSF',
-                   pdfunits='sr$^{-1}$')
-        xUnivariateGenerator.__init__(self, _r, _psf, **fmt)
+        # Tabulate the actual PASF values.
+        _r = numpy.linspace(0, self.MAX_RADIUS, 250)
+        _y = W*numpy.exp(-(_r**2/(2*sigma**2))) + N*(1 + (_r/r_c)**2)**(-eta)
+        fmt = dict(xname='r', xunits='arcsec', yname='PSF', yunits='sr$^{-1}$')
+        xInterpolatedUnivariateSpline.__init__(self, _r, _y, k=2, **fmt)
+        # And now include the solid angle for the actual underlying random
+        # generator.
+        _y *= 2*numpy.pi*_r
+        fmt = dict(rvname='r', rvunits='arcsec',
+                   pdfname='$2 \\pi r \\times$ PSF', pdfunits='')
+        self.generator = xUnivariateGenerator(_r, _y, k=1, **fmt)
+        self.eef = self.build_eef()
+        #print 2*numpy.pi*W*sigma**2 + numpy.pi*r_c**2*N/(eta - 1.)
 
-    def plot(self, num_points=1000, overlay=False, logx=False, logy=True,
-             show=True):
+    def build_eef(self):
+        """
+        """
+        return self.generator.build_cdf()
+
+    def plot(self, show=True):
         """Overloaded plot method (with default log scale on the y-axis).
         """
-        xUnivariateGenerator.plot(self, num_points, overlay, logx, logy,
-                                  show=show)
+        from ximpol.utils.matplotlib_ import pyplot as plt
+        plt.figure('PSF')
+        xInterpolatedUnivariateSpline.plot(self, logy=True, show=False)
+        plt.figure('Solid-angle convolution')
+        self.generator.plot(logy=True, show=False)
+        plt.figure('EEF')
+        self.eef.plot(show=False)
+        if show:
+            plt.show()
+
+    def rvs(self, size):
+        """
+        """
+        return self.generator.rvs(size)
 
     def delta(self, size=1):
         """Return an array of random offset (in ra, dec or L, B) due to the PSF.
