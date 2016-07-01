@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* Bug fix in the check for the polarization degree (see issue #73).
+
 
 *ximpol (0.51.0) - Fri, 01 Jul 2016 12:00:53 +0200*
 

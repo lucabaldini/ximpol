@@ -489,8 +489,13 @@ class xModulationFactor(xInterpolatedUnivariateSplineLinear):
             The polarization angle, in radians. (This can either be a vector or
             an array of the same length as `energy`.)
         """
-        max_degree = polarization_degree.max()
-        min_degree = polarization_degree.min()
+        try:
+            min_degree = polarization_degree.min()
+            max_degree = polarization_degree.max()
+        except AttributeError:
+            # This is catching the case where the polarization degree is
+            # constant and is passed through as a float.
+            min_degree = max_degree = polarization_degree
         if max_degree > 1:
             abort('The polarization degree must be <= 1')
         if min_degree < 0:
