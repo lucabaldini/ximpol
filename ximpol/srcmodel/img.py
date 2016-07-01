@@ -54,10 +54,10 @@ class xFITSImage:
         self.hdu_list.info()
         self.wcs = wcs.WCS(self.hdu_list['PRIMARY'].header)
         self.data = self.hdu_list['PRIMARY'].data.transpose()
-        self.vmin=None
-        self.vmax=None
+        self.vmin = None
+        self.vmax = None
         if build_cdf:
-            self.build_cdf()
+            self.cdf = self.build_cdf()
 
     def build_cdf(self):
         """Build the cumulative distribution function.
@@ -65,8 +65,9 @@ class xFITSImage:
         (This is used to extract random positions from the image when
         simulating extended sources.)
         """
-        self.cdf = numpy.cumsum(self.data.ravel())
-        self.cdf /= self.cdf[-1]
+        cdf = numpy.cumsum(self.data.ravel())
+        cdf /= cdf[-1]
+        return cdf
 
     def rvs_coordinates(self, size=1, randomize=True):
         """Generate random coordinates based on the image map.
@@ -102,6 +103,16 @@ class xFITSImage:
         """
         return self.data[i][j]
 
+    def apply_vignetting(self, effective_area):
+        """Apply the vignetting for a give effective area to the image.
+        """
+        #w, h = self.data.shape
+        #it = numpy.nditer(self.data, flags=['multi_index'])
+        #while not it.finished:
+        #    print "%d <%s>" % (it[0], it.multi_index),
+        #    it.iternext()
+        pass
+
     def __str__(self):
         """String formatting.
         """
@@ -126,7 +137,7 @@ class xFITSImage:
             else:
                 fig = aplpy.FITSFigure(self.hdu_list[0], figure=plt.figure(0,figsize=(10*subplot[1], 10*subplot[0])), subplot=subplot)
         fig.add_grid()
-        fig.show_colorscale(cmap = 'afmhot',vmin=self.vmin,vmax=self.vmax)
+        fig.show_colorscale(cmap = 'afmhot', vmin=self.vmin, vmax=self.vmax)
         fig.add_colorbar()
         fig.colorbar.set_axis_label_text(zlabel)
         if show:
@@ -147,8 +158,8 @@ def main():
     """
     """
     import os
-    from ximpol import XIMPOL_SRCMODEL
-    file_path = os.path.join(XIMPOL_SRCMODEL, 'fits', 'crab_0p3_10p0_keV.fits')
+    from ximpol import XIMPOL_CONFIG
+    file_path = os.path.join(XIMPOL_CONFIG, 'fits', 'crab_0p3_10p0_keV.fits')
     img = xFITSImage(file_path)
     ra, dec = img.rvs_coordinates(1000000)
     print(ra)
