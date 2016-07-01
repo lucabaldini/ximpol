@@ -3,7 +3,7 @@
 # Copyright (C) 2015, the ximpol team.
 #
 # This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU GengReral Public License as published by
+# it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
 #
@@ -211,7 +211,7 @@ class xUnivariateSplineBase:
     def label(cls, name, units=None):
         """Compose an axis label given a name and some units.
         """
-        if units is None:
+        if units is None or units == '':
             return name
         else:
             return '%s [%s]' % (name, units)

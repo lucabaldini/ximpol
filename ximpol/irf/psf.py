@@ -3,7 +3,7 @@
 # Copyright (C) 2015, the ximpol team.
 #
 # This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU GengReral Public License as published by
+# it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
 #
@@ -25,6 +25,70 @@ from ximpol.irf.base import OGIP_HEADER_SPECS
 from ximpol.core.fitsio import xBinTableHDUBase
 from ximpol.core.spline import xInterpolatedUnivariateSpline
 from ximpol.core.rand import xUnivariateGenerator
+
+
+def gauss_king(r, W, sigma, N, r_c, eta):
+    """Functional representation of the Gaussian plus King PSF profile
+    described in `Fabiani et al., 2014 <http://arxiv.org/abs/1403.7200>`_,
+    equation (2):
+
+    .. math::
+        \\text{PSF}(r) = W \\exp^{-(\\frac{r^2}{2\\sigma^2})} + 
+        N\\left( 1 + \\left( \\frac{r}{r_c} \\right)^2 \\right)^{-\\eta}   
+
+    Arguments
+    ---------
+    r : float or array
+        The radial distance from the true source position is arcsec.
+
+    W : float
+        Normalization of the Gaussian component.
+
+    sigma : float
+        Width of the Gaussian component.
+
+    N : float
+        Normalization of the King component.
+
+    r_c : float
+        Characteristic radius of the King component.
+
+    eta : float
+        Exponent of the King component.
+    """
+    return W*numpy.exp(-(r**2/(2*sigma**2))) + N*(1 + (r/r_c)**2)**(-eta)
+
+
+def gauss_king_eef_at_infinity(W, sigma, N, r_c, eta):
+    """Return the value of the Encircled Energy Fraction (EEF) at infinity,
+    given the parameters of the functional representation, see equation (4)
+    of `Fabiani et al., 2014 <http://arxiv.org/abs/1403.7200>`_.
+
+    .. math::
+        \\text{EEF}(\\infty) = 2\\pi W\\sigma^2 + 
+        \\pi\\frac{r_c^2 N}{\\eta - 1}
+
+    Arguments
+    ---------
+    r : float or array
+        The radial distance from the true source position is arcsec.
+
+    W : float
+        Normalization of the Gaussian component.
+
+    sigma : float
+        Width of the Gaussian component.
+
+    N : float
+        Normalization of the King component.
+
+    r_c : float
+        Characteristic radius of the King component.
+
+    eta : float
+        Exponent of the King component.
+    """
+    return 2*numpy.pi*W*sigma**2 + numpy.pi*r_c**2*N/(eta - 1.)
 
 
 class xBinTableHDUPSF(xBinTableHDUBase):
@@ -77,6 +141,7 @@ class xPointSpreadFunction(xInterpolatedUnivariateSpline):
     """
 
     MAX_RADIUS = 150.
+    PARAM_NAMES = ['W', 'sigma', 'N', 'r_c', 'eta']
 
     def __init__(self, psf_file_path):
         """Constructor.
@@ -90,24 +155,32 @@ class xPointSpreadFunction(xInterpolatedUnivariateSpline):
         N = _data['N']
         r_c = _data['R_C']
         eta = _data['ETA']
-        # Tabulate the actual PASF values.
+        self.__params = (W, sigma, N, r_c, eta)
+        # Tabulate the actual PSF values.
         _r = numpy.linspace(0, self.MAX_RADIUS, 250)
-        _y = W*numpy.exp(-(_r**2/(2*sigma**2))) + N*(1 + (_r/r_c)**2)**(-eta)
+        _y = gauss_king(_r, *self.__params)
         fmt = dict(xname='r', xunits='arcsec', yname='PSF', yunits='sr$^{-1}$')
         xInterpolatedUnivariateSpline.__init__(self, _r, _y, k=2, **fmt)
-        # And now include the solid angle for the actual underlying random
-        # generator.
+        # Include the solid angle for the actual underlying random generator.
         _y *= 2*numpy.pi*_r
         fmt = dict(rvname='r', rvunits='arcsec',
                    pdfname='$2 \\pi r \\times$ PSF', pdfunits='')
         self.generator = xUnivariateGenerator(_r, _y, k=1, **fmt)
-        self.eef = self.build_eef()
-        #print 2*numpy.pi*W*sigma**2 + numpy.pi*r_c**2*N/(eta - 1.)
+        # Finally, calculate the 
+        self.eef, self.hew = self.build_eef()
+        logger.info(self)
 
     def build_eef(self):
+        """Build the Encircled Energy Fraction (EEF) as a function of r.
+        
+        And, while we're at it, we also calculate and cache the HEW.
         """
-        """
-        return self.generator.build_cdf()
+        _r = self.x
+        _y = numpy.array([self.generator.integral(_r[0], _rp) for _rp in _r])
+        _y /= gauss_king_eef_at_infinity(*self.__params)
+        hew = 2*xInterpolatedUnivariateSpline(_y, _r, k=2)(0.5)
+        fmt = dict(xname='r', xunits='arcsec', yname='EEF')
+        return xInterpolatedUnivariateSpline(_r, _y, k=1, **fmt), hew
 
     def plot(self, show=True):
         """Overloaded plot method (with default log scale on the y-axis).
@@ -123,7 +196,7 @@ class xPointSpreadFunction(xInterpolatedUnivariateSpline):
             plt.show()
 
     def rvs(self, size):
-        """
+        """Extract values of the radial distance according to the PSF shape.
         """
         return self.generator.rvs(size)
 
@@ -149,27 +222,12 @@ class xPointSpreadFunction(xInterpolatedUnivariateSpline):
         delta_ra, delta_dec = self.delta(ra.size)
         return ra + delta_ra/numpy.cos(numpy.radians(dec)), dec + delta_dec
 
+    def __str__(self):
+        """String formatting.
+        """
+        text = 'Gauss + King PSF, '
+        for i, name in enumerate(self.PARAM_NAMES):
+            text += '%s = %.3e, ' % (name, self.__params[i])
+        text += 'HEW = %.1f arcsec' % self.hew
+        return text
 
-def main():
-    """
-    """
-    import os
-    from ximpol import XIMPOL_IRF
-    from ximpol.utils.matplotlib_ import pyplot as plt
-
-    file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.psf')
-    psf = xPointSpreadFunction(file_path)
-    print(psf.rvs(10))
-    ra, dec = 1., 1.
-    print(psf.smear_single(ra, dec, 10))
-    rmax = 100
-    plt.hist(psf.rvs(1000000), rmax, (0, rmax), rwidth=1, histtype='step',
-             lw=2, normed=True)
-    _r = numpy.linspace(0, rmax, rmax)
-    _psf = psf(_r)/psf.norm()
-    plt.plot(_r, _psf)
-    plt.show()
-
-
-if __name__ == '__main__':
-    main()
