@@ -38,18 +38,21 @@ from ximpol.config.grb_utils import get_grb_spec_index, get_grb_position
 from ximpol.core.fitsio import xBinTableHDUBase, xPrimaryHDU
 
 
-IRF_NAME = 'xipe_baseline'
+
 MIN_ENERGY = 2.
 MAX_ENERGY = 10.
 ENERGY_BINNING = numpy.array([MIN_ENERGY, MAX_ENERGY])
 OUTFILE = os.path.join(XIMPOL_DATA,'GRBmainInfos.fits')
 
 from ximpol.irf import load_arf, load_mrf
+from ximpol.irf import DEFAULT_IRF_NAME
 from ximpol.srcmodel.spectrum import int_eflux2pl_norm, xCountSpectrum
 
-aeff = load_arf(IRF_NAME)
-modf = load_mrf(IRF_NAME)
+aeff = load_arf(DEFAULT_IRF_NAME)
+modf = load_mrf(DEFAULT_IRF_NAME)
 
+process_grb_mdp = False
+mdp_vs_time = False
 
 class xBinTableGRBmain(xBinTableHDUBase):
 
@@ -229,7 +232,6 @@ def main():
     """
     # If process_grb_mdp = True, produces a fits file with all the 
     # main infos on each grb
-    process_grb_mdp = False
     if process_grb_mdp == True:
         data = process_grb_list(duration=50000.)
         build_grb_fits_file(data,OUTFILE)
@@ -299,7 +301,6 @@ def main():
     #    as a function of the repointing time
     # 2) the plot of the MDP for a given GRB
     #    as a function of the observation duration
-    mdp_vs_time = True
     color_list = ['red','salmon','goldenrod','darkgreen','limegreen',\
                   'royalblue','mediumpurple','darkviolet','deeppink']\
                   #'yellow','darkcyan'] 
@@ -331,8 +332,6 @@ def main():
             obs_time = numpy.logspace(3,5,30)
             plot_grb_mdp_vs_obstime(grb,obs_time,show=False,color=color_list[i])
         ax.legend(loc='upper right', shadow=False, fontsize='small')
-        #plt.ylim(0,100)
-        #plt.plot([50000, 50000], [0, 100], 'k--', lw=1, color='green')
         ax.set_yscale('log')
         ax.set_xscale('log')
         overlay_tag(x=0.5)
