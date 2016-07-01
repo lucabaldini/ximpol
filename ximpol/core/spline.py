@@ -3,7 +3,7 @@
 # Copyright (C) 2015, the ximpol team.
 #
 # This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU GengReral Public License as published by
+# it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
 #
@@ -211,7 +211,7 @@ class xUnivariateSplineBase:
     def label(cls, name, units=None):
         """Compose an axis label given a name and some units.
         """
-        if units is None:
+        if units is None or units == '':
             return name
         else:
             return '%s [%s]' % (name, units)
@@ -404,6 +404,82 @@ class xInterpolatedUnivariateSplineLinear(xInterpolatedUnivariateSpline):
                         (dist.max(), dist.sum()/len(dist)))
 
 
+class xInterpolatedUnivariateLogSpline(xUnivariateSplineBase, UnivariateSpline):
+
+    """Poor man's attempt at a spline in logarithmic space.
+
+    The basic interpolation is trivial, as we simply take the logarithms of the
+    x and y values in the constructor and overload the __call__ method
+    to raise 10 to the power of the interpolated value.
+
+    The integral is more tricky, as obviously the implementation in the base
+    class operates in logarirthmic space and the result is just nonsense.
+    To this end we proceed by brute force and create a second spline, this time
+    in linear space, with a relatively large number of points to guarantee the
+    accuracy of the integral.
+
+    Warning
+    -------
+    This is not supporting the calculation of the derivatives or roots in any
+    sensible way, so just refrain from calling any other methods than the
+    overloaded ones, i.e., __call__() and integral(). In the future it might
+    make sense to overload all the other methods and simply abort the
+    executions whenever any of them is called.
+    """
+
+    def __init__(self, x, y, w=None, bbox=[None, None], k=3,
+                 xname=None, xunits=None, yname=None, yunits=None):
+        """Constructor.
+        """
+        xUnivariateSplineBase.__init__(self, x, y, xname, xunits, yname, yunits)
+        _x = numpy.log10(x)
+        _y = numpy.log10(y)
+        UnivariateSpline.__init__(self, _x, _y, w, bbox, k, s=None)
+        self.__integral_spline = None
+
+    def __call__(self, x):
+        """Overloaded call method.
+        """
+        return numpy.power(10., UnivariateSpline.__call__(self, numpy.log10(x)))
+
+    def __build_integral_spline(self, num_points=1000):
+        """Build the underlying univariate linear interpolated spline to be
+        used to evaluate integrals.
+
+        Note that we try to save something in terms of speed by optimizing the
+        number of points, here.
+        """
+        _x = numpy.logspace(numpy.log10(self.xmin()), numpy.log10(self.xmax()),
+                            num_points)
+        _y = self(_x)
+        fmt = dict(xname=self.xname, xunits=self.xunits, yname=self.yname,
+                   yunits=self.yunits)
+        return xInterpolatedUnivariateSplineLinear(_x, _y, optimize=True, **fmt)
+
+    def integral(self, x1, x2):
+        """Overloaded integral method.
+
+        The integral spline is calculated and cached the first time this method
+        is called.
+        """
+        if self.__integral_spline is None:
+            self.__integral_spline = self.__build_integral_spline()
+        return self.__integral_spline.integral(x1, x2)
+
+
+class xInterpolatedUnivariateLogSplineLinear(xInterpolatedUnivariateLogSpline):
+
+    """Subclass of xInterpolatedUnivariateLogSpline with k=1.
+    """
+
+    def __init__(self, x, y, xname=None, xunits=None, yname=None, yunits=None):
+        """Constructor.
+        """
+        xInterpolatedUnivariateLogSpline.__init__(self, x, y, None,
+                                                  [None, None], 1, xname,
+                                                  xunits, yname, yunits)
+
+
 class xBivariateSplineBase:
 
     """Base class for all the bivariate spline classes.
@@ -502,14 +578,13 @@ class xBivariateSplineBase:
         return self.__class__(self.x.copy(), self.y.copy(), self.z*scale_factor)
 
 
-class xInterpolatedBivariateSplineLinear(xBivariateSplineBase,
-                                         RectBivariateSpline):
+class xInterpolatedBivariateSpline(xBivariateSplineBase, RectBivariateSpline):
 
-    """Bivariate linear interpolated spline on a rectangular grid.
+    """Bivariate interpolated spline on a rectangular grid.
     """
 
-    def __init__(self, x, y, z, xname=None, xunits=None, yname=None,
-                 yunits=None, zname=None, zunits=None):
+    def __init__(self, x, y, z, kx=1, ky=1, xname=None, xunits=None,
+                 yname=None, yunits=None, zname=None, zunits=None):
         """Constructor.
         """
         if hasattr(z, '__call__'):
@@ -519,7 +594,7 @@ class xInterpolatedBivariateSplineLinear(xBivariateSplineBase,
                                       yunits, zname, zunits)
         RectBivariateSpline.__init__(self, x, y, z,
                                      bbox=[None, None, None, None],
-                                     kx=1, ky=1, s=0)
+                                     kx=kx, ky=ky, s=0)
 
     def __call__(self, x, y, dx=0, dy=0, grid=False):
         """Overloaded __call__method.
@@ -618,6 +693,18 @@ class xInterpolatedBivariateSplineLinear(xBivariateSplineBase,
             bar.set_label(self.zlabel())
         if show:
             plt.show()
+
+            
+class xInterpolatedBivariateSplineLinear(xInterpolatedBivariateSpline):
+
+    """Bivariate linear interpolated spline on a rectangular grid.
+    """
+
+    def __init__(self, x, y, z, xname=None, xunits=None,
+                 yname=None, yunits=None, zname=None, zunits=None):
+        xInterpolatedBivariateSpline.__init__(self, x, y, z, 1, 1, xname,
+                                              xunits, yname, yunits, zname,
+                                              zunits)
 
 
 def main():

@@ -1,8 +1,34 @@
 Release notes
 =============
 
+
+*ximpol (0.51.1) - Fri, 01 Jul 2016 14:04:20 +0200*
+
+* Bug fix in the check for the polarization degree (see issue #73).
+
+
+*ximpol (0.51.0) - Fri, 01 Jul 2016 12:00:53 +0200*
+
+* First stub at implementing splines in log space (issue #20).
+* Complete PSF refactoring.
+* New sets of IRFs created, and default now pointing to
+  'xipe_mirror-30s-f4_psf-jetx-rescaled-hew30_gpd-baseline'
+
+
+*ximpol (0.50.0) - Thu, 30 Jun 2016 14:56:31 +0200*
+
 * Blazar sensitivity plot added in the examples folder.
 * New config file and associated pipeline added for J1708.
+* Avoid reading the modulation factor in evt.binning.xBinnedModulationCube
+  (using the effective factor written in the fits file instead, when it
+  comes to converting a visibility into a polarization fraction.)
+* One unit test added.
+* New bivariate spline class added supporting orders greater than 1 on both
+  axes.
+* Bug fix for issue #143 (closing it).
+* xUnivariateAuxGenerator now supporting spline orders greater than 1 on
+  both axes (taking advantage of the new bivariate spline class).
+* Fix for issue #73 (clsing it).
 
 
 *ximpol (0.49.0) - Fri, 24 Jun 2016 16:31:55 +0200*

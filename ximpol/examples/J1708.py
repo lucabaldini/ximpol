@@ -30,6 +30,8 @@ from ximpol.utils.matplotlib_ import save_current_figure
 from ximpol.evt.binning import xBinnedPhasogram
 from ximpol.config.J1708 import energy_spectrum, polarization_degree,\
     polarization_angle
+from ximpol.evt.event import xEventFile
+from ximpol.irf import load_mrf
 
 
 """Script-wide simulation and analysis settings.
@@ -102,13 +104,22 @@ def analyze():
         logger.info('%s exists, delete it if you want to recreate it.' %\
                     ANALYSIS_FILE_PATH)
         return
+    modf = load_mrf('xipe_goal')
     logger.info('Opening output file %s...' % ANALYSIS_FILE_PATH)
     analysis_file = open(ANALYSIS_FILE_PATH, 'w')
     for i, (_min, _max) in enumerate(PHASE_BINNING):
+        _evt_file = xEventFile(_sel_file_path(i))
+        _energy = _evt_file.event_data['ENERGY']
+        _phase = _evt_file.event_data['PHASE']
+        exp = (polarization_degree(_energy, _phase, 0, 0)*modf(_energy)).sum()/\
+              modf(_energy).sum()
         _mcube = xBinnedModulationCube(_mcube_file_path(i))
         _mcube.fit()
         _fit_results = _mcube.fit_results[-1]
         print _fit_results
+        print exp
+        print polarization_degree(_mcube.emean[-1], _phase, 0, 0)
+        raw_input()
         _phase = 0.5*(_min + _max)
         _phase_err = 0.5*(_max - _min)
         _pol_deg = _fit_results.polarization_degree

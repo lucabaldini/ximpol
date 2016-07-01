@@ -24,7 +24,7 @@
 import numpy
 
 from ximpol.core.spline import xInterpolatedUnivariateSpline
-from ximpol.core.spline import xInterpolatedBivariateSplineLinear
+from ximpol.core.spline import xInterpolatedBivariateSpline
 
 
 class xUnivariateGenerator(xInterpolatedUnivariateSpline):
@@ -87,7 +87,7 @@ class xUnivariateGeneratorLinear(xUnivariateGenerator):
                                       rvname, rvunits, pdfname, pdfunits)
 
 
-class xUnivariateAuxGenerator(xInterpolatedBivariateSplineLinear):
+class xUnivariateAuxGenerator(xInterpolatedBivariateSpline):
 
     """Univariate random generator where the pdf of the random variable
     might depend on an additional auxiliary variable.
@@ -171,8 +171,8 @@ class xUnivariateAuxGenerator(xInterpolatedBivariateSplineLinear):
     If `pdf` is a callable, than a meshgrid is created and the callable is
     evaluated on the meshgrid itself.
     """
-    def __init__(self, aux, rv, pdf, auxname='aux', auxunits=None, rvname='rv',
-                 rvunits=None, pdfname=None, pdfunits=None):
+    def __init__(self, aux, rv, pdf, kx=1, ky=1, auxname='aux', auxunits=None,
+                 rvname='rv', rvunits=None, pdfname=None, pdfunits=None):
         """Constructor.
         """
         if pdfname is None:
@@ -182,10 +182,9 @@ class xUnivariateAuxGenerator(xInterpolatedBivariateSplineLinear):
         if hasattr(pdf, '__call__'):
             _rv, _aux = numpy.meshgrid(rv, aux)
             pdf = pdf(_rv, _aux)
-        xInterpolatedBivariateSplineLinear.__init__(self, aux, rv, pdf,
-                                                    auxname, auxunits,
-                                                    rvname, rvunits,
-                                                    pdfname, pdfunits)
+        xInterpolatedBivariateSpline.__init__(self, aux, rv, pdf, kx, ky,
+                                              auxname, auxunits, rvname,
+                                              rvunits, pdfname, pdfunits)
         self.vppf = self.build_vppf()
 
     def pdf(self, aux, rv):

@@ -696,7 +696,6 @@ class xBinnedModulationCube(xBinnedFileBase):
         self.phi_x = 0.5*(self.phi_binning[:-1] + self.phi_binning[1:])
         from ximpol.irf import load_mrf
         irf_name = self.hdu_list['PRIMARY'].header['IRFNAME']
-        self.modf = load_mrf(irf_name)
         self.fit_results = []
 
     def __len__(self):
@@ -709,7 +708,7 @@ class xBinnedModulationCube(xBinnedFileBase):
         """
         hist = (self.phi_y[i], self.phi_binning, None)
         _fit_results = xAzimuthalResponseGenerator.fit_histogram(hist)
-        _fit_results.set_polarization(self.modf(self.emean[i]))
+        _fit_results.set_polarization(self.effective_mu[i])
         logger.info(_fit_results)
         self.fit_results.append(_fit_results)
         return _fit_results
@@ -751,13 +750,21 @@ class xBinnedModulationCube(xBinnedFileBase):
         _dx = [self.emean - self.emin, self.emax - self.emean]
         _y = [r.polarization_degree for r in self.fit_results]
         _dy = [r.polarization_degree_error for r in self.fit_results]
+        # If there's more than one energy binning we also fit the entire
+        # energy interval, but we don't want the corresponding data point to
+        # appear in the plot, se we brutally get rid of it.
+        if len(self.fit_results) > 1:
+            _x = _x[:-1]
+            _dx = [_x - self.emin[:-1], self.emax[:-1] - _x]
+            _y = _y[:-1]
+            _dy = _dy[:-1]
         plt.errorbar(_x, _y, _dy, _dx, fmt='o', **kwargs)
         plt.xlabel('Energy [keV]')
         plt.ylabel('Polarization degree')
         if show:
             plt.show()
 
-    def plot_polarization_angle(self, show=True, degree=True, **kwargs):
+    def plot_polarization_angle(self, show=True, degree=False, **kwargs):
         """Plot the polarization angle as a function of energy.
         """
         if self.fit_results == []:
@@ -770,9 +777,20 @@ class xBinnedModulationCube(xBinnedFileBase):
         else:
             _y = [(r.phase) for r in self.fit_results]
             _dy = [(r.phase_error) for r in self.fit_results]
+        # If there's more than one energy binning we also fit the entire
+        # energy interval, but we don't want the corresponding data point to
+        # appear in the plot, se we brutally get rid of it.
+        if len(self.fit_results) > 1:
+            _x = _x[:-1]
+            _dx = [_x - self.emin[:-1], self.emax[:-1] - _x]
+            _y = _y[:-1]
+            _dy = _dy[:-1]
         plt.errorbar(_x, _y, _dy, _dx, fmt='o', **kwargs)
         plt.xlabel('Energy [keV]')
-        plt.ylabel('Polarization angle [$^\circ$]')
+        if degree:
+            plt.ylabel('Polarization angle [$^\circ$]')
+        else:
+            plt.ylabel('Polarization angle [rad]')
         if show:
             plt.show()
 

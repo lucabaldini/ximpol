@@ -393,6 +393,7 @@ class xPeriodicPointSource(xPointSource):
         # Extract the number of events to be generated based on the integral
         # of the light curve over the simulation time.
         num_events = numpy.random.poisson(num_expected_events)
+        logger.info('About to generate %d events...' % num_events)
         # Extract the event phases and sort them.
         col_phase = count_spectrum.light_curve.rvs(num_events)
         event_list.set_column('PHASE', col_phase)

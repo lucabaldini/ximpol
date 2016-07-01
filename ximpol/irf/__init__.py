@@ -30,7 +30,7 @@ from ximpol.utils.os_ import check_input_file
 
 """Name of the IRF set to be used by default throughout the package.
 """
-DEFAULT_IRF_NAME = 'xipe_goal'
+DEFAULT_IRF_NAME = 'xipe_mirror-30s-f4_psf-jetx-rescaled-hew30_gpd-baseline'
 
 
 
