@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.51.0) - Fri, 01 Jul 2016 12:00:53 +0200*
+
 * First stub at implementing splines in log space (issue #20).
 * Complete PSF refactoring.
 * New sets of IRFs created, and default now pointing to
