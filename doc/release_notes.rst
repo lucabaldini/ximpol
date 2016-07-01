@@ -3,6 +3,8 @@ Release notes
 
 * First stub at implementing splines in log space (issue #20).
 * Complete PSF refactoring.
+* New sets of IRFs created, and default now pointing to
+  'xipe_mirror-30s-f4_psf-jetx-rescaled-hew30_gpd-baseline'
 
 
 *ximpol (0.50.0) - Thu, 30 Jun 2016 14:56:31 +0200*
