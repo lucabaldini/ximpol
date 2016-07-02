@@ -33,8 +33,8 @@ def gauss_king(r, W, sigma, N, r_c, eta):
     equation (2):
 
     .. math::
-        \\text{PSF}(r) = W \\exp^{-(\\frac{r^2}{2\\sigma^2})} + 
-        N\\left( 1 + \\left( \\frac{r}{r_c} \\right)^2 \\right)^{-\\eta}   
+        \\text{PSF}(r) = W \\exp^{-(\\frac{r^2}{2\\sigma^2})} +
+        N\\left( 1 + \\left( \\frac{r}{r_c} \\right)^2 \\right)^{-\\eta}
 
     Arguments
     ---------
@@ -65,7 +65,7 @@ def gauss_king_eef_at_infinity(W, sigma, N, r_c, eta):
     of `Fabiani et al., 2014 <http://arxiv.org/abs/1403.7200>`_.
 
     .. math::
-        \\text{EEF}(\\infty) = 2\\pi W\\sigma^2 + 
+        \\text{EEF}(\\infty) = 2\\pi W\\sigma^2 +
         \\pi\\frac{r_c^2 N}{\\eta - 1}
 
     Arguments
@@ -166,13 +166,13 @@ class xPointSpreadFunction(xInterpolatedUnivariateSpline):
         fmt = dict(rvname='r', rvunits='arcsec',
                    pdfname='$2 \\pi r \\times$ PSF', pdfunits='')
         self.generator = xUnivariateGenerator(_r, _y, k=1, **fmt)
-        # Finally, calculate the 
+        # Finally, calculate the
         self.eef, self.hew = self.build_eef()
         logger.info(self)
 
     def build_eef(self):
         """Build the Encircled Energy Fraction (EEF) as a function of r.
-        
+
         And, while we're at it, we also calculate and cache the HEW.
         """
         _r = self.x
@@ -231,3 +231,24 @@ class xPointSpreadFunction(xInterpolatedUnivariateSpline):
         text += 'HEW = %.1f arcsec' % self.hew
         return text
 
+    def draw_psf_circle(self, image, x, y, text='PSF', color='white', lw=2):
+        """Add the PSF circle to the image with labels. This function must be
+        called after the (possible) image recenter.
+
+        Note the x and y are coordinates relative to the figure axes (0.0 is
+        left or bottom and 1.0 is right or top).
+        """
+        psf_rad = self.hew/(2.*60.**2) #degrees
+        xpix_low, xpix_high = image._ax1.get_xbound()
+        ypix_low, ypix_high = image._ax1.get_ybound()
+        xpix_circ = x*(xpix_high-xpix_low) + xpix_low
+        ypix_circ = y*(ypix_high-ypix_low) + ypix_low
+        ra_circ, dec_circ = image.pixel2world(xpix_circ, ypix_circ)
+        dec_text_up = dec_circ+1.7*psf_rad
+        dec_text_down = dec_circ-1.9*psf_rad
+        image.add_label(ra_circ, dec_text_up, text, size='x-large', color=color,
+                        horizontalalignment='center')
+        image.show_circles(ra_circ, dec_circ, psf_rad, lw=lw, color=color)
+        text_psf = '%d"' %round(self.hew)
+        image.add_label(ra_circ, dec_text_down, text_psf, size='large',
+                        color=color, horizontalalignment='center')
