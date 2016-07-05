@@ -233,7 +233,7 @@ class xModelComponentBase:
         # Extract the MC sky positions and smear them with the PSF.
         col_mc_ra, col_mc_dec = self.rvs_sky_coordinates(num_events)
         event_list.set_column('MC_RA', col_mc_ra)
-        event_list.set_column('MC_DEC', col_mc_dec)
+        event_list.set_column('MC_DEC', col_mc_dec)        
         col_ra, col_dec = psf.smear(col_mc_ra, col_mc_dec)
         event_list.set_column('RA', col_ra)
         event_list.set_column('DEC', col_dec)
@@ -247,7 +247,7 @@ class xModelComponentBase:
         # Set the source ID.
         event_list.set_column('MC_SRC_ID', self.identifier)
         # Set the phase to rnd [0-1] for all non-periodic sources.
-        phase=numpy.random.uniform(0,1,len(col_pe_angle))
+        phase = numpy.random.uniform(0., 1., len(col_pe_angle))
         event_list.set_column('PHASE', phase)
         return event_list
 
@@ -693,8 +693,11 @@ class xROIModel(OrderedDict):
         """
         event_list = xMonteCarloEventList()
         for source in self.values():
+            logger.info('Generating event list for source "%s"...' %\
+                        source.name)
             event_list += source.rvs_event_list(aeff, psf, modf, edisp,
                                                 **kwargs)
+            #event_list.apply_vignetting(aeff, self.ra, self.dec)
         event_list.sort()
         return event_list
 

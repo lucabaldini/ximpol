@@ -19,7 +19,6 @@
 
 from astropy.io import fits
 from astropy.wcs import wcs
-from astropy.coordinates import SkyCoord
 import numpy
 
 from ximpol.utils.logging_ import logger

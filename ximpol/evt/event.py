@@ -24,6 +24,7 @@
 import numpy
 import numbers
 from astropy.io import fits
+from astropy.coordinates import SkyCoord
 
 from ximpol.utils.logging_ import logger
 from ximpol.core.fitsio import xPrimaryHDU, xBinTableHDUBase
@@ -152,6 +153,22 @@ class xMonteCarloEventList(dict):
         _index = numpy.argsort(self['TIME'])
         for name in xBinTableHDUMonteCarloEvents.spec_names():
             self.set_column(name, self[name][_index])
+
+    def apply_vignetting(self, aeff, ra_pointing, dec_pointing):
+        """Apply the effective area vignetting to the event list.
+        """
+        logger.info('Applying vignetting to the event list...')
+        num_initial_events = len(self)
+        evt_ra = self['MC_RA']
+        evt_dec = self['MC_DEC']
+        evt_energy = self['MC_ENERGY']
+        evt_skycoord = SkyCoord(evt_ra, evt_dec, unit='deg')
+        ref_skyccord = SkyCoord(ra_pointing, dec_pointing, unit='deg')
+        evt_angsep = evt_skycoord.separation(ref_skyccord).arcmin
+        vignetting = aeff.vignetting(evt_energy, evt_angsep)
+        print evt_energy, evt_angsep, vignetting
+        logger.info('Done, %d events out of %d remaining.' %\
+                    (len(self), num_initial_events))
 
     def write_fits(self, file_path, simulation_info):
         """Write the event list and associated ancillary information to file.
