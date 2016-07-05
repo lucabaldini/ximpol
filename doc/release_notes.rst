@@ -5,6 +5,7 @@ Release notes
 * Added a function to draw the psf circle in irf.psf.xPointSpreadFunction
   (issue closing #151).
 * Scripts to simulate GRS1519+105 and the txt files provided by Banafsheh.
+* Minor refactoring of the IRF plotting code (closing issue #150).
 
   
 *ximpol (0.51.1) - Fri, 01 Jul 2016 14:04:20 +0200*
