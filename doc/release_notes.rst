@@ -1,6 +1,7 @@
 Release notes
 =============
 
+* Scripts to simulate GRS1519+105 and the txt files provided by Banafsheh
 
 *ximpol (0.51.1) - Fri, 01 Jul 2016 14:04:20 +0200*
 
