@@ -28,6 +28,7 @@ import pyregion._region_filter as filter
 
 from astropy import wcs
 from astropy.io import fits
+from astropy.coordinates import SkyCoord
 from ximpol.irf import load_irfs, DEFAULT_IRF_NAME
 from ximpol.utils.os_ import mkdir
 from ximpol.utils.profile import xChrono
@@ -36,7 +37,8 @@ from ximpol.srcmodel.roi import xROIModel
 from ximpol.srcmodel.polarization import constant
 from ximpol.evt.event import xMonteCarloEventList
 from ximpol.utils.logging_ import logger, startmsg, abort
-from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
+from ximpol.core.spline import xInterpolatedUnivariateSplineLinear, \
+                               xInterpolatedBivariateSplineLinear
 
 
 """Command-line switches.
@@ -123,7 +125,7 @@ def _get_radec(hdr, tbdata):
     return ra_dec[:,0], ra_dec[:,1]
 
 def _load_chandra_arf(arf_file):
-    """Load the Chandra effective area data.
+    """Load the Chandra effective area data from file.
     """
     hdu_list = fits.open(arf_file)
     tbdata = hdu_list['SPECRESP'].data
@@ -133,7 +135,37 @@ def _load_chandra_arf(arf_file):
                yunits='cm$^2$')
     return xInterpolatedUnivariateSplineLinear(_x, _y, **fmt)
 
-def time_scaling(scale, col_mc_energy, col_time, col_mc_ra, col_mc_dec):
+def _load_chandra_vign(vign_file):
+    """Load the Chandra vignetting data from file.
+    """
+    hdu_list = fits.open(vign_file)
+    tbdata = hdu_list[1].data
+    _x = 0.5*(tbdata.field('ENERG_LO') + tbdata.field('ENERG_HI'))[0,:]
+    _y = tbdata.field('THETA')[0,:]
+    _vignet = tbdata.field('VIGNET')
+    _z = numpy.mean(_vignet[0,:,:,:], axis=0)
+    _mask = _y <= 10 #arcmin
+    _y = _y[_mask]
+    _z = _z[_mask, :]
+    fmt = dict(xname='Energy', xunits='keV', yname='Off-axis angle',
+               yunits='arcmin', zname='Vignetting')
+    return xInterpolatedBivariateSplineLinear(_x, _y, _z.T, **fmt)
+
+def _make_aeff_ratio(aeff, c_aeff, c_vign, emin=0.3, emax=10.):
+    """Make the ratio between ximpol and Chandra effective area taking in
+    account the vignetting.
+    """
+    _x = aeff.x[(aeff.x >= emin)*(aeff.x <= emax)]
+    _aeff_ratio = aeff(_x)/c_aeff(_x)
+    _y = aeff.vignetting.y
+    _x_mesh, _y_mesh = numpy.meshgrid(_x, _y)
+    _vign_ratio = (aeff.vignetting(_x_mesh, _y_mesh)/c_vign(_x_mesh, _y_mesh)).T
+    _z = (_vign_ratio.T*_aeff_ratio).T
+    fmt = dict(xname='Energy', xunits='keV', yname='Off-axis angle',
+                                yunits='arcmin', zname='Effective area ratio')
+    return xInterpolatedBivariateSplineLinear(_x, _y, _z, **fmt)
+
+def _time_scaling(scale, col_mc_energy, col_time, col_mc_ra, col_mc_dec):
     """Make the scaling from Chandra observation time to an arbitrary time
     provided with duration parameter.
     """
@@ -141,13 +173,13 @@ def time_scaling(scale, col_mc_energy, col_time, col_mc_ra, col_mc_dec):
     time = numpy.array([])
     mc_ra = numpy.array([])
     mc_dec = numpy.array([])
-    delta_time = col_time[-1]-col_time[0]
+    delta_time = col_time[-1] - col_time[0]
     for i in range(0, int(scale[1])):
         mc_energy = numpy.append(mc_energy, col_mc_energy)
         time = numpy.append(time, i*delta_time + col_time)
         mc_ra = numpy.append(mc_ra, col_mc_ra)
         mc_dec = numpy.append(mc_dec, col_mc_dec)
-    index = 1+int(scale[0]*len(col_mc_energy))
+    index = 1 + int(scale[0]*len(col_mc_energy))
     mc_energy = numpy.append(mc_energy, col_mc_energy[:index])
     time = numpy.append(time, (i+1)*delta_time + col_time[:index])
     mc_ra = numpy.append(mc_ra, col_mc_ra[:index])
@@ -177,13 +209,15 @@ def chandra2ximpol(file_path, **kwargs):
     c_aeff_file = os.path.join(XIMPOL_IRF, 'fits', c_aeff_name)
     logger.info('Reading Chandra effective area data from %s...' % c_aeff_file)
     c_aeff = _load_chandra_arf(c_aeff_file)
-    _x = aeff.x
-    _y = aeff.y/c_aeff(_x)
-    aeff_ratio = xInterpolatedUnivariateSplineLinear(_x, _y)
-    logger.info('Loading the input FITS event file...')
-    hdu_list = fits.open(file_path)
+    c_vign_name = 'chandra_vignet.fits'
+    c_vign_file = os.path.join(XIMPOL_IRF, 'fits', c_vign_name)
+    logger.info('Reading Chandra vignetiing data from %s...' % c_vign_file)
+    c_vign = _load_chandra_vign(c_vign_file)
+    aeff_ratio = _make_aeff_ratio(aeff, c_aeff, c_vign)
     logger.info('Done %s.' % chrono)
 
+    logger.info('Loading the input FITS event file...')
+    hdu_list = fits.open(file_path)
     hdr = hdu_list[1].header
     tbdata = hdu_list[1].data
     tstart = hdr['TSTART']
@@ -196,22 +230,27 @@ def chandra2ximpol(file_path, **kwargs):
 
     logger.info('Reading Chandra data...')
     col_mc_energy = tbdata['energy']*0.001 # eV -> keV
+    col_mc_ra, col_mc_dec = _get_radec(hdr, tbdata)
+    ref_skyccord = SkyCoord(ra_pnt, dec_pnt, unit='deg')
+    evt_skycoord = SkyCoord(col_mc_ra, col_mc_dec, unit='deg')
+    separation = evt_skycoord.separation(ref_skyccord).arcmin
+
+    logger.info('Converting from Chandra to ximpol...')
     rnd_ratio = numpy.random.random(len(col_mc_energy))
     # The condition col_mc_energy < 10. is needed to avoid to take the bunch of
     # events with energy > 10 keV included into the Chandra photon list (we
     # actually don't know the reason).
-    _mask = (rnd_ratio < aeff_ratio(col_mc_energy))*(col_mc_energy<10.)
+    _mask = (rnd_ratio < aeff_ratio(col_mc_energy, separation))*\
+                                                            (col_mc_energy<10.)
     # This is needed for over-sample the events in case of effective area ratio
     # greater than 1.
-    _mask_ratio = (rnd_ratio < (aeff_ratio(col_mc_energy)-1.))*\
+    _mask_ratio = (rnd_ratio < (aeff_ratio(col_mc_energy, separation)-1.))*\
                                                             (col_mc_energy<10.)
     col_mc_energy = numpy.append(col_mc_energy[_mask],
                                                     col_mc_energy[_mask_ratio])
-
-    col_time = numpy.append(tbdata['time'][_mask],tbdata['time'][_mask_ratio])
-    col_mc_ra, col_mc_dec = _get_radec(hdr, tbdata)
     col_mc_ra = numpy.append(col_mc_ra[_mask], col_mc_ra[_mask_ratio])
     col_mc_dec = numpy.append(col_mc_dec[_mask], col_mc_dec[_mask_ratio])
+    col_time = numpy.append(tbdata['time'][_mask],tbdata['time'][_mask_ratio])
 
     # If duration parameter is provided the counts are down- or oversampled.
     duration = kwargs['duration']
@@ -220,11 +259,11 @@ def chandra2ximpol(file_path, **kwargs):
         scale = numpy.modf(duration/obs_time)
         tstop = tstart + duration
         logger.info('Scaling counts according to observation time...')
-        col_mc_energy, col_time, col_mc_ra, col_mc_dec = time_scaling(scale,
+        col_mc_energy, col_time, col_mc_ra, col_mc_dec = _time_scaling(scale,
                                 col_mc_energy, col_time, col_mc_ra, col_mc_dec)
 
     # The Ra Dec coordinates are calculated here because they are needed in
-    # source id definition (in case of kwargs['chandra]==False)
+    # source id definition (in case of kwargs['chandra']==False)
     col_ra, col_dec = psf.smear(col_mc_ra, col_mc_dec)
     # The default source id in case of no regfile and for regions not selected
     # is zero. For regions selected in the regfile the source id is determined
@@ -239,7 +278,7 @@ def chandra2ximpol(file_path, **kwargs):
                 mask = filter_region(region, col_mc_ra, col_mc_dec)
             else:
                 mask = filter_region(region, col_ra, col_dec)
-            src_id[mask]=n_reg+1
+            src_id[mask]= n_reg + 1
 
     # If configuration file is not provided we assume a non-polarized source.
     # In case of configfile with polarization model defined in different
@@ -262,13 +301,12 @@ def chandra2ximpol(file_path, **kwargs):
     for key, pol_list in pol_dict.items():
         _mask_src = src_id == key
         pol_degree = pol_list[0](col_mc_energy[_mask_src], col_time[_mask_src],
-                                col_mc_ra[_mask_src], col_mc_dec[_mask_src])
+                                 col_mc_ra[_mask_src], col_mc_dec[_mask_src])
         pol_angle = pol_list[1](col_mc_energy[_mask_src], col_time[_mask_src],
                                 col_mc_ra[_mask_src], col_mc_dec[_mask_src])
         col_pe_angle[_mask_src] = modf.rvs_phi(col_mc_energy[_mask_src],
-                                                        pol_degree, pol_angle)
+                                               pol_degree, pol_angle)
 
-    logger.info('Converting from Chandra to ximpol...')
     gti_list = [(tstart, tstop)]
     event_list = xMonteCarloEventList()
     event_list.set_column('TIME', col_time)
