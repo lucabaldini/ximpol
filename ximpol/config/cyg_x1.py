@@ -38,15 +38,20 @@ CYGX1_DEC = 6.59
 MIN_ENERGY = 0.1
 MAX_ENERGY = 15.
 
-PL_INDEX = 2.3
-#I intgrated the spline from 1 -10 keV
-PL_NORM = 2.08
 
-POL_DEGREE_FILE_PATH = os.path.join(XIMPOL_CONFIG, 'ascii', 'CygX1_poldegree_model.txt')
+#These are the files corresponding to the first version of the model
+#POL_DEGREE_FILE_PATH = os.path.join(XIMPOL_CONFIG, 'ascii', 'CygX1_poldegree_model.txt')
+#POL_ANGLE_FILE_PATH = os.path.join(XIMPOL_CONFIG, 'ascii', 'CygX1_polangle_model.txt')
+#FLUX_FILE_PATH = os.path.join(XIMPOL_CONFIG, 'ascii', 'CygX1_flux_model.txt')
+#
 
-POL_ANGLE_FILE_PATH = os.path.join(XIMPOL_CONFIG, 'ascii', 'CygX1_polangle_model.txt')
+#These are the files sent on June 8, 2016
+model_type = 'spherical'
+POL_DEGREE_FILE_PATH = os.path.join(XIMPOL_CONFIG, 'ascii', '%s_corona/cyg_x1_pol_degree_%s_corona_model_more_data.txt'%(model_type,model_type))
 
-FLUX_FILE_PATH = os.path.join(XIMPOL_CONFIG, 'ascii', 'CygX1_flux_model.txt')
+POL_ANGLE_FILE_PATH = os.path.join(XIMPOL_CONFIG, 'ascii', '%s_corona/cyg_x1_pol_angle_%s_corona_model_more_data.txt'%(model_type,model_type))
+
+FLUX_FILE_PATH = os.path.join(XIMPOL_CONFIG, 'ascii', '%s_corona/cyg_x1_flux_%s_corona_model_more_data.txt'%(model_type,model_type))
 
 
 def polarization_degree(E, t, ra, dec):
@@ -61,7 +66,10 @@ def energy_spectrum(E, t):
 
 # Build the polarization degree as a function of the energy.
 _energy, _pol_degree = numpy.loadtxt(POL_DEGREE_FILE_PATH, unpack=True)
+
+#Switch to have degrees
 _pol_degree /= 100.
+#_pol_degree = _pol_degree
 #print "Here are the energy and pol degree values"
 #print _energy
 #print
@@ -78,6 +86,10 @@ pol_degree_spline = xInterpolatedUnivariateSpline(_energy, _pol_degree, k=1, **f
 # Build the polarization angle as a function of the energy.
 _energy, _pol_angle = numpy.loadtxt(POL_ANGLE_FILE_PATH, unpack=True)
 _pol_angle = numpy.deg2rad(_pol_angle)
+
+#Switched to have degrees and not radians
+
+#_pol_angle = _pol_angle
 #print "Here are the energy and pol angle values"
 #print _energy
 #print

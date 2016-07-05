@@ -45,9 +45,9 @@ NUM_RUNS = 2
 #SPHERICAL_CFG_FILE = os.path.join(XIMPOL_CONFIG, 'cyg_x1_spherical.py')
 
 
-WEDGE_MCUBE_PATH = os.path.join(XIMPOL_DATA,'cyg_x1_wedge_corona_mcube.fits')
+WEDGE_MCUBE_PATH = os.path.join(XIMPOL_DATA,'cyg_x1_wedge_corona_40_inclination_mcube.fits')
 
-SPHERICAL_MCUBE_PATH = os.path.join(XIMPOL_DATA,'cyg_x1_spherical_corona_mcube.fits')
+SPHERICAL_MCUBE_PATH = os.path.join(XIMPOL_DATA,'cyg_x1_spherical_corona_40_inclination_mcube.fits')
 
 
 def plot():
@@ -65,13 +65,13 @@ def plot():
     plt.figure('Polarization degree')
     
     spherical_mcube.plot_polarization_degree(show=False, color='blue')
-    pol_degree_spline_spherical.plot(color='lightblue',label='Model spherical corona', show=False)
+    pol_degree_spline_spherical.plot(color='lightblue',label='Spherical corona model (40 degree inclination)', show=False)
 
     wedge_mcube.plot_polarization_degree(show=False, color='red')
-    pol_degree_spline_wedge.plot(color='lightsalmon',label='Model wedge corona', show=False)
+    pol_degree_spline_wedge.plot(color='lightsalmon',label='Wedge corona model  (40 degree inclination)', show=False)
     
     plt.figtext(0.2, 0.85,'XIPE %s ks'%((SIM_DURATION*NUM_RUNS)/1000.),size=18)
-
+    plt.xlim([1,10])
     plt.legend()
     plt.show()
 

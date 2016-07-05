@@ -22,7 +22,7 @@ import os
 
 from ximpol.srcmodel.roi import xExtendedSource, xROIModel
 from ximpol.srcmodel.spectrum import power_law
-from ximpol.srcmodel.polarization import xPolMap, constant
+from ximpol.srcmodel.polarization import xPolarizationMap, constant
 from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
 from ximpol.utils.logging_ import logger
 from ximpol import XIMPOL_CONFIG
@@ -86,7 +86,7 @@ thermal_polarization_degree = constant(0.)
 # Read the polarization maps for the non-thermal component.
 pol_mapx_path = os.path.join(XIMPOL_CONFIG, 'fits', 'tycho_x.fits')
 pol_mapy_path = os.path.join(XIMPOL_CONFIG, 'fits', 'tycho_y.fits')
-polarization_map = xPolMap(pol_mapx_path, pol_mapy_path)
+polarization_map = xPolarizationMap(pol_mapx_path, pol_mapy_path)
 
 
 def nonthermal_polarization_angle(E, t, ra, dec):

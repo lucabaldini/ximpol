@@ -45,13 +45,21 @@ MAX_ENERGY = 15.
 #FLUX_FILE_PATH = os.path.join(XIMPOL_CONFIG, 'ascii', 'CygX1_flux_model.txt')
 #
 
-#These are the files sent on June 8, 2016
 model_type = 'spherical'
-POL_DEGREE_FILE_PATH = os.path.join(XIMPOL_CONFIG, 'ascii', '%s_corona/cyg_x1_pol_degree_%s_corona_model_more_data.txt'%(model_type,model_type))
 
-POL_ANGLE_FILE_PATH = os.path.join(XIMPOL_CONFIG, 'ascii', '%s_corona/cyg_x1_pol_angle_%s_corona_model_more_data.txt'%(model_type,model_type))
+#These are the files sent on June 8, 2016, for 63 degree inclination
+#POL_DEGREE_FILE_PATH = os.path.join(XIMPOL_CONFIG, 'ascii', '%s_corona/cyg_x1_pol_degree_%s_corona_model_more_data.txt'%(model_type,model_type))
 
-FLUX_FILE_PATH = os.path.join(XIMPOL_CONFIG, 'ascii', '%s_corona/cyg_x1_flux_%s_corona_model_more_data.txt'%(model_type,model_type))
+#POL_ANGLE_FILE_PATH = os.path.join(XIMPOL_CONFIG, 'ascii', '%s_corona/cyg_x1_pol_angle_%s_corona_model_more_data.txt'%(model_type,model_type))
+
+#FLUX_FILE_PATH = os.path.join(XIMPOL_CONFIG, 'ascii', '%s_corona/cyg_x1_flux_%s_corona_model_more_data.txt'%(model_type,model_type))
+
+#For 40 degree inclination
+POL_DEGREE_FILE_PATH = os.path.join(XIMPOL_CONFIG, 'ascii', '%s_corona/cyg_x1_pol_degree_%s_corona_model_40_inclination.txt'%(model_type,model_type))
+
+POL_ANGLE_FILE_PATH = os.path.join(XIMPOL_CONFIG, 'ascii', '%s_corona/cyg_x1_pol_angle_%s_corona_model_40_inclination.txt'%(model_type,model_type))
+
+FLUX_FILE_PATH = os.path.join(XIMPOL_CONFIG, 'ascii', '%s_corona/cyg_x1_flux_%s_corona_model_40_inclination.txt'%(model_type,model_type))
 
 
 def polarization_degree(E, t, ra, dec):

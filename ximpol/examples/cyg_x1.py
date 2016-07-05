@@ -31,6 +31,7 @@ from ximpol.utils.matplotlib_ import pyplot as plt
 
 #Here you need to speficy which configuration file you want, it must coincide with the model for the corona
 from ximpol.config.cyg_x1_wedge_corona import pol_degree_spline, pol_angle_spline
+from ximpol.config.cyg_x1_wedge_corona import model_type
 
 from ximpol.utils.os_ import rm
 from ximpol.utils.system_ import cmd
@@ -38,9 +39,9 @@ from ximpol.utils.system_ import cmd
 
 """Script-wide simulation and analysis settings.
 """
-model_type = 'wedge'
+#model_type = 'spherical'
 
-base_name = 'cyg_x1_%s_corona'%model_type
+base_name = 'cyg_x1_%s_corona_40_inclination'%model_type
 
 CFG_FILE = os.path.join(XIMPOL_CONFIG, 'cyg_x1_%s_corona.py'%model_type)
 OUT_FILE_PATH_BASE = os.path.join(XIMPOL_DATA, base_name)
@@ -48,7 +49,7 @@ OUT_FILE_PATH_BASE = os.path.join(XIMPOL_DATA, base_name)
 MCUBE_FILE_PATH = '%s_mcube.fits'%OUT_FILE_PATH_BASE
 ANALYSIS_FILE_PATH = '%s_analysis.txt' % OUT_FILE_PATH_BASE
 EVT_FILE_PATH = '%s.fits' % OUT_FILE_PATH_BASE
-SIM_DURATION = 70000.
+SIM_DURATION = 90000.
 
 #2.0 - 3.0 keV, 3.0 - 4.5 keV,  4.5 keV - 6.0 keV, 6.0 - 8.0 
 
@@ -59,7 +60,7 @@ PIPELINE = xPipeline(clobber=False)
 
 #Added this method in run() so that we can simulate several runs with different seeds and merge the output files. This is needed for bright sources which have large amount of events in the output file.
 
-def run(repeat=2):
+def run(repeat=3):
     #First simulate the events
     file_list = []
     for i in range(repeat):
@@ -134,7 +135,7 @@ def view():
     plt.errorbar(emean,mdp,xerr=width, label='MDP99',marker='o',linestyle='--')
     plt.figtext(0.2, 0.85,'XIPE %s ks'%(SIM_DURATION/1000.),size=18)
     plt.xlim([1,10])
-    plt.ylabel('MPD 99\%')
+    plt.ylabel('MPD 99 %')
     plt.xlabel('Energy (keV)')
     #plt.legend()
     plt.show()

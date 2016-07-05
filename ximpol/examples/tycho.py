@@ -33,7 +33,7 @@ from ximpol.utils.matplotlib_ import pyplot as plt
 
 
 CFG_FILE = os.path.join(XIMPOL_CONFIG, 'tycho.py')
-DURATION = 300000.
+DURATION = 200000.
 E_BINNING = [1., 4., 6.]
 
 evt_file_path = os.path.join(XIMPOL_DATA, 'tycho.fits')
