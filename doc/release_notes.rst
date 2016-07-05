@@ -1,6 +1,9 @@
 Release notes
 =============
 
+* Implemented the vignetting in the chandra2ximpol converter.
+* Added a function to draw the psf circle in irf.psf.xPointSpreadFunction (issue
+  #151).
 
 *ximpol (0.51.1) - Fri, 01 Jul 2016 14:04:20 +0200*
 
