@@ -154,6 +154,14 @@ class xMonteCarloEventList(dict):
         for name in xBinTableHDUMonteCarloEvents.spec_names():
             self.set_column(name, self[name][_index])
 
+    def trim(self, mask):
+        """Trim all the data columns according to a generic input mask.
+        """
+        assert len(mask) == len(self)
+        for name in xBinTableHDUMonteCarloEvents.spec_names():
+            self[name] = self[name][mask]
+        self.length = numpy.count_nonzero(mask)
+
     def apply_vignetting(self, aeff, ra_pointing, dec_pointing):
         """Apply the effective area vignetting to the event list.
         """
@@ -166,7 +174,7 @@ class xMonteCarloEventList(dict):
         ref_skyccord = SkyCoord(ra_pointing, dec_pointing, unit='deg')
         evt_angsep = evt_skycoord.separation(ref_skyccord).arcmin
         vignetting = aeff.vignetting(evt_energy, evt_angsep)
-        print evt_energy, evt_angsep, vignetting
+        self.trim(numpy.random.random(vignetting.shape) <= vignetting)
         logger.info('Done, %d events out of %d remaining.' %\
                     (len(self), num_initial_events))
 

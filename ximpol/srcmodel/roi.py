@@ -697,7 +697,7 @@ class xROIModel(OrderedDict):
                         source.name)
             event_list += source.rvs_event_list(aeff, psf, modf, edisp,
                                                 **kwargs)
-            #event_list.apply_vignetting(aeff, self.ra, self.dec)
+            event_list.apply_vignetting(aeff, self.ra, self.dec)
         event_list.sort()
         return event_list
 
