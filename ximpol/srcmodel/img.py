@@ -19,6 +19,7 @@
 
 from astropy.io import fits
 from astropy.wcs import wcs
+from astropy.coordinates import SkyCoord
 import numpy
 
 from ximpol.utils.logging_ import logger
@@ -58,6 +59,12 @@ class xFITSImage:
         self.vmax = None
         if build_cdf:
             self.cdf = self.build_cdf()
+
+    def center(self):
+        """Return the (ra, dec) coordinates of the image center.
+        """
+        w, h = self.data.shape
+        return self.wcs.wcs_pix2world(w/2, h/2, True)
 
     def build_cdf(self):
         """Build the cumulative distribution function.
@@ -102,16 +109,6 @@ class xFITSImage:
         """Return the value of the underlying map for a given pixel.
         """
         return self.data[i][j]
-
-    def apply_vignetting(self, effective_area):
-        """Apply the vignetting for a give effective area to the image.
-        """
-        #w, h = self.data.shape
-        #it = numpy.nditer(self.data, flags=['multi_index'])
-        #while not it.finished:
-        #    print "%d <%s>" % (it[0], it.multi_index),
-        #    it.iternext()
-        pass
 
     def __str__(self):
         """String formatting.

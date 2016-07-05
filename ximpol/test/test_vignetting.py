@@ -42,10 +42,8 @@ class TestVignetting(unittest.TestCase):
         from ximpol import XIMPOL_CONFIG
         file_path = os.path.join(XIMPOL_CONFIG, 'fits', 'casa_1p5_3p0_keV.fits')
         aeff = load_arf(DEFAULT_IRF_NAME)
-        original_image = xFITSImage(file_path)
-        vignetted_image = xFITSImage(file_path)
-        vignetted_image.apply_vignetting(aeff)
-        #original_image.plot()
+        image = xFITSImage(file_path)
+        
 
 
 
