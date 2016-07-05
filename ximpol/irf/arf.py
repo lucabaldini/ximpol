@@ -96,7 +96,7 @@ class xEffectiveArea(xInterpolatedUnivariateSplineLinear):
     >>> aeff = xEffectiveArea(file_path)
     >>> x = numpy.arange(1, 10, 1)
     >>> print(aeff(x))
-    >>> aeff.plot()
+    >>> aeff.view()
     """
 
     def __init__(self, arf_file_path):
@@ -123,7 +123,7 @@ class xEffectiveArea(xInterpolatedUnivariateSplineLinear):
         """
         return self(energy)*self.vignetting(energy, theta)
 
-    def plot(self, off_axis_angle = 10., show=True):
+    def view(self, off_axis_angle = 10., show=True):
         """Plot the effective area.
         """
         from ximpol.utils.matplotlib_ import pyplot as plt
@@ -138,20 +138,7 @@ class xEffectiveArea(xInterpolatedUnivariateSplineLinear):
         if show:
             plt.show()
 
-
-def main():
-    """
-    """
-    import os
-    import numpy
-    from ximpol import XIMPOL_IRF
-
-    file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.arf')
-    aeff = xEffectiveArea(file_path)
-    x = numpy.arange(1, 10, 1)
-    print(aeff(x))
-    aeff.plot()
-
+            
 
 if __name__ == '__main__':
     main()

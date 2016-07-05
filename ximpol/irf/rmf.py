@@ -171,50 +171,27 @@ class xEnergyDispersion:
         self.matrix = xEnergyDispersionMatrix(self.hdu_list['MATRIX'])
         self.ebounds = xEnergyDispersionBounds(self.hdu_list['EBOUNDS'])
 
-    def plot(self, show=True):
+    def view(self, show=True):
         """Plot the energy dispersion.
         """
         from ximpol.utils.matplotlib_ import pyplot as plt
-        from ximpol.utils.matplotlib_ import context_two_by_two
-        emin = self.matrix.xmin()
-        emax = self.matrix.xmax()
-
-        def _plot_vslice(energy, position):
-            """Convenience function to plot a generic vertical slice of the
-            energy dispersion.
-            """
-            ax = plt.subplot(2, 2, position)
-            vslice = self.matrix.vslice(energy)
-            vslice.plot(overlay=False, show=False)
-            plt.text(0.1, 0.9, '$E = %.2f\\ \\rm{keV}$' % energy,
-                     transform=ax.transAxes)
-            ppf = vslice.build_ppf()
-            eres = 0.5*(ppf(0.8413) - ppf(0.1586))/ppf(0.5)
-            plt.text(0.1, 0.85, '$\sigma_E/E = %.3f$' % eres,
-                     transform=ax.transAxes)
-
-        with context_two_by_two():
-            plt.figure(1)
-            ax = plt.subplot(2, 2, 1)
-            self.matrix.plot(show=False)
-            ax = plt.subplot(2, 2, 2)
-            self.ebounds.plot(overlay=False, show=False)
-            _plot_vslice(emin + 0.333*(emax - emin), 3)
-            _plot_vslice(emin + 0.666*(emax - emin), 4)
+        plt.figure('Energy redistribution')
+        self.matrix.plot(show=False)
+        plt.figure('Energy bounds')
+        self.ebounds.plot(overlay=False, show=False)
+        energy = 0.5*(self.matrix.xmin() + self.matrix.xmax())
+        plt.figure('Energy dispersion @ %.2f keV' % energy)
+        vslice = self.matrix.vslice(energy)
+        vslice.plot(overlay=False, show=False)
+        plt.text(0.1, 0.9, '$E = %.2f\\ \\rm{keV}$' % energy,
+                 transform=plt.gca().transAxes)
+        ppf = vslice.build_ppf()
+        eres = 0.5*(ppf(0.8413) - ppf(0.1586))/ppf(0.5)
+        plt.text(0.1, 0.85, '$\sigma_E/E = %.3f$' % eres,
+                 transform=plt.gca().transAxes)
         if show:
             plt.show()
 
-
-def main():
-    """
-    """
-    import os
-    import numpy
-    from ximpol import XIMPOL_IRF
-
-    file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.rmf')
-    edisp = xEnergyDispersion(file_path)
-    edisp.plot()
 
 
 if __name__ == '__main__':

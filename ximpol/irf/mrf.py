@@ -429,7 +429,7 @@ class xModulationFactor(xInterpolatedUnivariateSplineLinear):
     >>> modf = xModulationFactor(file_path)
     >>> x = numpy.arange(1, 10, 1)
     >>> print(modf(x))
-    >>> modf.plot()
+    >>> modf.view()
 
     More interestingly, it can generate random `phi` values, given a vector
     of event energies and corresponding vectors (or simple floats) representing
@@ -517,21 +517,11 @@ class xModulationFactor(xInterpolatedUnivariateSplineLinear):
         """
         return self(energy).sum()/len(energy)
 
+    def view(self, show=True, **kwargs):
+        """Overloaded method for the xpirfview application.
+        """
+        self.plot(show=show, **kwargs)
 
-def main():
-    """
-    """
-    import os
-    import numpy
-    from ximpol import XIMPOL_IRF
-
-    file_path = os.path.join(XIMPOL_IRF,'fits','xipe_baseline.mrf')
-    modf = xModulationFactor(file_path)
-    x = numpy.linspace(1, 10, 10)
-    print(modf(x))
-    modf.plot(overlay=True)
-    modf.generator.plot()
-    modf.generator.slice(0.5).plot()
 
 
 if __name__ == '__main__':

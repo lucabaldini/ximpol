@@ -182,7 +182,7 @@ class xPointSpreadFunction(xInterpolatedUnivariateSpline):
         fmt = dict(xname='r', xunits='arcsec', yname='EEF')
         return xInterpolatedUnivariateSpline(_r, _y, k=1, **fmt), hew
 
-    def plot(self, show=True):
+    def view(self, show=True):
         """Overloaded plot method (with default log scale on the y-axis).
         """
         from ximpol.utils.matplotlib_ import pyplot as plt

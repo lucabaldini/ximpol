@@ -45,7 +45,7 @@ def xpirfview(file_path):
     if not file_ext in CLASS_DICT.keys():
         abort('Unrecognized file extension (.%s)' % file_ext)
     irf = CLASS_DICT[file_ext](file_path)
-    irf.plot()
+    irf.view()
 
 
 if __name__ == '__main__':
