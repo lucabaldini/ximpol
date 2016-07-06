@@ -55,6 +55,7 @@ def xpxspec(file_path, **kwargs):
     """Do a spectral fit in XSPEC
     """
     fitter = xSpectralFitter(file_path, **kwargs)
+    fitter.fit()
     if kwargs['plot']:
         fitter.plot()
     return fitter
