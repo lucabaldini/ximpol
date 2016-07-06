@@ -17,8 +17,16 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-__description__ = 'Calculate the MPD for a given source model'
-
+__description__ = \
+"""Calculate the minimum detectable polarization (MDP) for a given source model.
+The program takes the same python configuration modules that can be fed
+into xpobbsim and calculates the MDP by direct numerical integration of the
+input spectrum (i.e., there are no event lists involved). As a consequence,
+part of the richness of the detector response (most notably, the energy
+dispersion and the effective area vignetting) is not captured here. For use
+cases beyond simple stationary point sources, the use of xpobbsim and xpbin
+in MCUBE mode are recommended, as this approach offers the maximum flexibility. 
+"""
 
 import os
 import numpy
@@ -43,13 +51,13 @@ import argparse
 formatter = argparse.ArgumentDefaultsHelpFormatter
 PARSER = argparse.ArgumentParser(description=__description__,
                                  formatter_class=formatter)
-#PARSER.add_argument('--outfile', type=str, default=None,
-#                    help='the output FITS event file')
+PARSER.add_argument('--outfile', type=str, default=None,
+                    help='the output text file')
 PARSER.add_argument('--configfile', type=str, required=True,
                     help='the input configuration file')
 PARSER.add_argument('--irfname', type=str, default=DEFAULT_IRF_NAME,
                     help='the input configuration file')
-PARSER.add_argument('--duration', type=float, default=10,
+PARSER.add_argument('--duration', type=float, default=10000,
                     help='the duration (in s) of the simulation')
 PARSER.add_argument('--tstart', type=float, default=0.,
                     help='the start time (MET in s) of the simulation')
@@ -152,6 +160,11 @@ def xpmdp(**kwargs):
     ebinning =_make_energy_binning(**kwargs)
     mdp_table = count_spectrum.build_mdp_table(ebinning, modf)
     logger.info(mdp_table)
+    file_path = kwargs['outfile']
+    if file_path is not None:
+        logger.info('Writing output file path %s...' % file_path)
+        open(file_path, 'w').write('%s\n\n%s' % (kwargs, mdp_table))
+        logger.info('Done.')
     return mdp_table
 
 
