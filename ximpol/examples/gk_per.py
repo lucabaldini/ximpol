@@ -30,7 +30,7 @@ from ximpol.utils.matplotlib_ import save_current_figure
 from ximpol.evt.binning import xBinnedPhasogram
 from ximpol.config.gk_per import phasogram_spline, pol_degree_spline,\
     pol_angle_spline
-
+from ximpol.evt.fitting import xSpectralFitter
 
 """Script-wide simulation and analysis settings.
 """
@@ -79,7 +79,7 @@ def generate():
 
 def bin():
     """Bin the event file in different flavors for the actual analysis.
-    """    
+    """
     PIPELINE.xpbin(EVT_FILE_PATH, algorithm='CMAP')
     PIPELINE.xpbin(EVT_FILE_PATH, algorithm='PHA1')
     _ebinning = zip(E_BINNING[:-1], E_BINNING[1:])
@@ -181,14 +181,26 @@ def plot(save_plots=False):
             plt.savefig('gk_per_phasogram_%d.png' % i)
     plt.show()
 
+def fit(save_plots=False):
+    pha_file = OUT_FILE_PATH_BASE + '_pha1.fits'
+    xspec_model = 'wabs*pcfabs*(bremss+gaussian)'
+    fitter = xSpectralFitter(pha_file, model= xspec_model, emin=1., emax=10.)
+    fitter.set_parameters([4.247, 24.2507, 0.598867, 97.1898, 0.0756629,
+            6.35897, 0.203741, 0.00076903])
+    fitter.model.show()
+    fitter.plot(['ldata', 'ufspec'], title='XIPE 800 ks')
+    if save_plots:
+        fitter.save_plot('gk_per_spectrum.ps')
+
 def run(save_plots):
     """
     """
     generate()
     bin()
     analyze()
+    fit(save_plots)
     plot(save_plots)
 
 
 if __name__ == '__main__':
-    run(save_plots=True)
+    run(save_plots=False)
