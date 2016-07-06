@@ -1,9 +1,10 @@
 Release notes
 =============
 
+* Refactoring of evt.fitting.xSpectralFitter class.
 * Implemented the vignetting in the chandra2ximpol converter.
 * Added a function to draw the psf circle in irf.psf.xPointSpreadFunction
-  (issue closing #151).
+  (closing issue #151).
 * Scripts to simulate GRS1519+105 and the txt files provided by Banafsheh.
 * Minor refactoring of the IRF plotting code (closing issue #150).
 
