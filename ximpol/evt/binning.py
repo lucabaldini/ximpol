@@ -111,7 +111,7 @@ class xEventBinningBase:
 
     @classmethod
     def bin_edge_pairs(cls, bin_edges, uber=False):
-        """Return a list of (min, max) tuples of length 2 given an array of 
+        """Return a list of (min, max) tuples of length 2 given an array of
         bin edges. This is handy when one needs to loop explicitly over the
         intervals defined by the array bounds, e.g., when running xpselect
         in specific energy, time or phase intervals.
@@ -617,7 +617,7 @@ class xEventBinningMCUBE(xEventBinningBase):
             assert isinstance(ebinning, list)
             ebinning = numpy.array(ebinning, 'd')
         else:
-            abort('ebinalg %s not implemented yet' % ebinalg)            
+            abort('ebinalg %s not implemented yet' % ebinalg)
         phibinning = numpy.linspace(0, 2*numpy.pi, self.get('phibins') + 1)
         return (ebinning, phibinning)
 
@@ -732,7 +732,7 @@ class xBinnedModulationCube(xBinnedFileBase):
         if fit:
             fit_results = self.fit_bin(i)
             fit_results.plot(label=label)
-       
+
         plt.axis([0., 2*numpy.pi, 0.0, 1.2*self.phi_y[i].max()])
         plt.xlabel('Azimuthal angle [rad]')
         plt.ylabel('Counts/bin')
@@ -799,6 +799,8 @@ class xBinnedModulationCube(xBinnedFileBase):
         """
         if analyze:
             fit = True
+        if fit:
+            self.fit_results = []
         for i, _emean in enumerate(self.emean):
             if xsubplot == 0:
                 plt.figure()
