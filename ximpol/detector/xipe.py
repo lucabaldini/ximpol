@@ -55,6 +55,8 @@ QUAL_CUT_EFFICIENCY = 0.8   #
 WINDOW_MATERIAL = 'Be'      #
 WINDOW_THICKNESS = 50.      # um
 NUM_CHANNELS = 256          #
+TLMIN = 0                   #
+TLMAX = 255                 #
 E_CHAN_OFFSET = 0.          # keV
 E_CHAN_SLOPE = ENERGY_MAX/float(NUM_CHANNELS) # keV/channel
 
@@ -192,8 +194,10 @@ def make_rmf(eres_file_path, irf_name, comments=[]):
     logger.info('Creating PRIMARY HDU...')
     primary_hdu = xPrimaryHDU('ximpol', INSTR_KEYWORDS, comments)
     print(repr(primary_hdu.header))
-    keyword = ('DETCHANS', NUM_CHANNELS, 'Total number of detector channels')
-    rmf_header_keywords = INSTR_KEYWORDS + [keyword]
+    keyword = [('DETCHANS', NUM_CHANNELS, 'Total number of detector channels'),
+               ('TLMIN4', TLMIN, 'First channel number'),
+               ('TLMAX4', TLMAX, 'Last channel number')]
+    rmf_header_keywords = INSTR_KEYWORDS + keyword
     logger.info('Creating MATRIX HDU...')
     nrows = len(ENERGY_LO)
     ngrp = numpy.ones(nrows)
@@ -210,6 +214,10 @@ def make_rmf(eres_file_path, irf_name, comments=[]):
     matrix_hdu = xBinTableHDUMATRIX(NUM_CHANNELS, data, rmf_header_keywords,
                                     comments)
     print(repr(matrix_hdu.header))
+    keyword = [('DETCHANS', NUM_CHANNELS, 'Total number of detector channels'),
+               ('TLMIN1', TLMIN, 'First channel number'),
+               ('TLMAX1', TLMAX, 'Last channel number')]
+    rmf_header_keywords = INSTR_KEYWORDS + keyword
     logger.info('Creating EBOUNDS HDU...')
     ch = numpy.arange(NUM_CHANNELS)
     emin = ch*E_CHAN_SLOPE + E_CHAN_OFFSET
@@ -226,7 +234,7 @@ def make_rmf(eres_file_path, irf_name, comments=[]):
 
 def make_all_legacy():
     """Create all the XIPE response functions.
-    
+
     This was the original implementation and we soon realized that calling
     IRF sets "baseline" and "goal" was not capturing the variety of
     configurations that we can build up starting from the basic block.
@@ -265,7 +273,7 @@ def make_all_legacy():
 def make_all():
     """
     """
-    
+
     baseline_gpd_info = [
         'Gas mixture: %s' % GAS_MIXTURE,
         'Pressure: %.3f Atm' % GAS_PRESSURE,
@@ -273,10 +281,10 @@ def make_all():
         'Quality cut efficiency: %.3f' % QUAL_CUT_EFFICIENCY,
         'Window: %s, %d um' % (WINDOW_MATERIAL, WINDOW_THICKNESS)
     ]
-    
+
     # Effective area configuration file(s).
     qeff_file_path = _full_path('eff_hedme8020_1atm_1cm_cuts80p_be50um_p_x.asc')
-    aeff_file_path = _full_path('Area_XIPE_201602g_x3.asc')   
+    aeff_file_path = _full_path('Area_XIPE_201602g_x3.asc')
     off_axis_data = [(4., _full_path('Area_XIPE_201602g_x3_4arcmin.asc')),
                      (7., _full_path('Area_XIPE_201602g_x3_7arcmin.asc')),
                      (10., _full_path('Area_XIPE_201602g_x3_10arcmin.asc'))
@@ -286,27 +294,27 @@ def make_all():
     # Modulation factor configuration file(s).
     modf_file_path = _full_path('modfact_hedme8020_1atm_1cm_mng.asc')
 
-    
+
     # Optics with 4 m focal length and 30 shells, baseline GPD, JET-X PSF.
     irf_name = 'xipe_mirror-30s-f4_psf-jetx_gpd-baseline'
     comments = [
         'Mirrors: 30 shells, 4-m focal length',
         'PSF: measured with the JET-X optics, http://arxiv.org/abs/1403.7200'
     ] + baseline_gpd_info
-    
+
     make_arf(aeff_file_path, qeff_file_path, irf_name, off_axis_data, comments)
     make_rmf(eres_file_path, irf_name)
     make_mrf(modf_file_path, irf_name)
     make_psf(irf_name)
 
-    
+
     # Same as above, but with the PSF rescaled to get an HEW of 30 arcsec.
     irf_name = 'xipe_mirror-30s-f4_psf-jetx-rescaled-hew30_gpd-baseline'
     comments = [
         'Mirrors: 30 shells, 4-m focal length',
         'PSF: rescaled from the JET-X values to get a HEW of 30 arcsec'
     ] + baseline_gpd_info
-    
+
     make_arf(aeff_file_path, qeff_file_path, irf_name, off_axis_data, comments)
     make_rmf(eres_file_path, irf_name)
     make_mrf(modf_file_path, irf_name)
