@@ -194,10 +194,10 @@ def make_rmf(eres_file_path, irf_name, comments=[]):
     logger.info('Creating PRIMARY HDU...')
     primary_hdu = xPrimaryHDU('ximpol', INSTR_KEYWORDS, comments)
     print(repr(primary_hdu.header))
-    keyword = [('DETCHANS', NUM_CHANNELS, 'Total number of detector channels'),
-               ('TLMIN4', TLMIN, 'First channel number'),
-               ('TLMAX4', TLMAX, 'Last channel number')]
-    rmf_header_keywords = INSTR_KEYWORDS + keyword
+    keywords = [('DETCHANS', NUM_CHANNELS, 'Total number of detector channels'),
+                ('TLMIN4', TLMIN, 'First channel number'),
+                ('TLMAX4', TLMAX, 'Last channel number')]
+    rmf_header_keywords = INSTR_KEYWORDS + keywords
     logger.info('Creating MATRIX HDU...')
     nrows = len(ENERGY_LO)
     ngrp = numpy.ones(nrows)
@@ -214,10 +214,10 @@ def make_rmf(eres_file_path, irf_name, comments=[]):
     matrix_hdu = xBinTableHDUMATRIX(NUM_CHANNELS, data, rmf_header_keywords,
                                     comments)
     print(repr(matrix_hdu.header))
-    keyword = [('DETCHANS', NUM_CHANNELS, 'Total number of detector channels'),
-               ('TLMIN1', TLMIN, 'First channel number'),
-               ('TLMAX1', TLMAX, 'Last channel number')]
-    rmf_header_keywords = INSTR_KEYWORDS + keyword
+    keywords = [('DETCHANS', NUM_CHANNELS, 'Total number of detector channels'),
+                ('TLMIN1', TLMIN, 'First channel number'),
+                ('TLMAX1', TLMAX, 'Last channel number')]
+    rmf_header_keywords = INSTR_KEYWORDS + keywords
     logger.info('Creating EBOUNDS HDU...')
     ch = numpy.arange(NUM_CHANNELS)
     emin = ch*E_CHAN_SLOPE + E_CHAN_OFFSET
