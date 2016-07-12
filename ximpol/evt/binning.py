@@ -252,7 +252,7 @@ class xEventBinningPHA1(xEventBinningBase):
         evt_header = self.event_file.hdu_list['PRIMARY'].header
         num_chans = evt_header['DETCHANS']
         total_time = self.event_file.total_good_time()
-        binning = numpy.linspace(-0.5, num_chans - 0.5, num_chans)
+        binning = numpy.linspace(-0.5, num_chans -0.5, num_chans+1)
         n, bins = numpy.histogram(self.event_data['PHA'], bins=binning)
         primary_hdu = self.build_primary_hdu()
         data = [numpy.arange(num_chans),
