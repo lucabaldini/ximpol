@@ -35,10 +35,13 @@ class xSpectralFitter:
         """
         xspec.AllData.clear()
         self.count_spectrum = xBinnedCountSpectrum(file_path)
-        irf_name = self.count_spectrum.primary_header_keyword('IRFNAME')
         self.spectrum = xspec.Spectrum(file_path)
-        self.spectrum.response = irf_file_path(irf_name, 'rmf')
-        self.spectrum.response.arf = irf_file_path(irf_name, 'arf')
+        try:
+            self.spectrum.response
+        except Exception:
+            irf_name = self.count_spectrum.primary_header_keyword('IRFNAME')
+            self.spectrum.response = irf_file_path(irf_name, 'rmf')
+            self.spectrum.response.arf = irf_file_path(irf_name, 'arf')
         self.spectrum.ignore('**-%f' % kwargs['emin'])
         self.spectrum.ignore('%f-**' % kwargs['emax'])
         self.model = xspec.Model(kwargs['model'])
@@ -78,7 +81,7 @@ class xSpectralFitter:
         return [self.fit_parameter(i) for i in \
                 range(1, self.model.nParameters + 1)]
 
-    def plot(self, arg_list=['ldata', 'resid'], device='/xs', title=None,
+    def plot(self, arg_list=['ldata', 'delchi'], device='/xs', title=None,
              xaxis='keV'):
         """Plot the data and the input model. With arg_list parameter it's
         possible to change the displayed quantity (e.g. 'ufspec' to show the
