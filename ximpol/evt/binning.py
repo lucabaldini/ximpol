@@ -31,6 +31,7 @@ from ximpol.irf.mrf import xAzimuthalResponseGenerator
 from ximpol.utils.matplotlib_ import pyplot as plt
 from ximpol.srcmodel.img import xFITSImage
 from ximpol import xpColor
+from ximpol.irf import irf_file_path
 
 
 
@@ -219,10 +220,9 @@ class xBinTableHDUPHA1(xBinTableHDUBase):
         ('CHANTYPE', 'PI'),
         ('HDUVERS' , '1.2.1', 'OGIP version number'),
         ('TLMIN1'  , 0      , 'first channel number'),
+        ('TLMAX1'  , 255    , 'last channel number'),
         ('CORRSCAL', 1.     , 'scaling for correction file'),
-        ('POISSERR', 'T'    , 'is error Poisson?'),
-        ('RESPFILE', None),
-        ('ANCRFILE', None),
+        ('POISSERR', False  , 'use statistical errors'),
         ('BACKFILE', None),
         ('CORRFILE', None),
         ('SYS_ERR' , 0.),
@@ -261,7 +261,10 @@ class xEventBinningPHA1(xEventBinningBase):
         ]
         spec_hdu = xBinTableHDUPHA1(data)
         spec_hdu.setup_header(self.event_file.primary_keywords())
-        keywords = [('EXPOSURE', total_time, 'exposure time')]
+        irf_name = evt_header['IRFNAME']
+        keywords = [('EXPOSURE', total_time, 'exposure time'),
+                    ('RESPFILE', irf_file_path(irf_name, 'rmf')),
+                    ('ANCRFILE', irf_file_path(irf_name, 'arf'))]
         spec_hdu.setup_header(keywords)
         hdu_list = fits.HDUList([primary_hdu, spec_hdu])
         hdu_list.info()
