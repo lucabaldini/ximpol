@@ -86,7 +86,7 @@ class xEnergyDispersionMatrix(xUnivariateAuxGenerator):
     Arguments
     ---------
     hdu : FITS hdu
-       The MATRIX hdu in the .mrf FITS file.
+       The MATRIX hdu in the .rmf FITS file.
 
     num_aux_point : int
        The number of points that the energy dispersion matrix should be\
@@ -98,16 +98,6 @@ class xEnergyDispersionMatrix(xUnivariateAuxGenerator):
     underlying spline tends to have blob-like features, and the vertical slices
     are no longer necessarily accurate representations of the energy dispersion.
     We should keep an eye on it.
-
-    Warning
-    -------
-    We really have to understand the -0.5 at the end of
-
-    >>> numpy.arange(0, len(_matrix['MATRIX'][0]), 1) - 0.5
-
-    We might be writing the rmf file wrong and compesate here, but the -0.5
-    is necessary to recover the spectral parameters when analyzing the thing in
-    XSPEC.
     """
 
     def __init__(self, hdu, num_aux_points=200):
@@ -116,7 +106,7 @@ class xEnergyDispersionMatrix(xUnivariateAuxGenerator):
         # First build a bivariate spline with the full data grid.
         _matrix = hdu.data
         _x = 0.5*(_matrix['ENERG_LO'] + _matrix['ENERG_HI'])
-        _y = numpy.arange(0, len(_matrix['MATRIX'][0]), 1) - 0.5
+        _y = numpy.arange(0, len(_matrix['MATRIX'][0]), 1)
         _z = _matrix['MATRIX']
         _pdf = xInterpolatedBivariateSplineLinear(_y, _x, _z.transpose())
         # Then initialize the actual xUnivariateAuxGenerator object
@@ -133,7 +123,7 @@ class xEnergyDispersionMatrix(xUnivariateAuxGenerator):
         We want to return an integer, here.
         """
         val = xUnivariateAuxGenerator.rvs(self, aux)
-        return  numpy.ndarray.astype(numpy.floor(val), numpy.int16)
+        return numpy.ndarray.astype(numpy.rint(val), numpy.int16)
 
 
 class xEnergyDispersionBounds(xInterpolatedUnivariateSplineLinear):
@@ -159,7 +149,7 @@ class xEnergyDispersion:
     Arguments
     ---------
     rmf_file_path : str
-        The path to the .mrf FITS file containing the energy dispersion tables.
+        The path to the .rmf FITS file containing the energy dispersion tables.
     """
 
     def __init__(self, mrf_file_path):
