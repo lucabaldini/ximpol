@@ -1,55 +1,53 @@
 ----------------------------------------------------------------------------------------------------------
-Source     |      J2000 Coords     |         |         |   <F_X> |sigma(F_X)| <P_opt> |sigma(P_opt)| Notes
-Name       |    Ra     |    Dec    |Opt Class|SED Class|    cgs  |   cgs    |    %    |    %       |
+Source     |      J2000 Coords     |         |         |   Xmax  |   Xmin   |P_opt,max|P_opt,min| Notes
+Name       |    Ra     |    Dec    |Opt Class|SED Class|    cgs  |   cgs    |    %    |    %    |
 ----------------------------------------------------------------------------------------------------------
                                    FIRST PRIORITY LIST
 ----------------------------------------------------------------------------------------------------------
-1ES1959+650  19h59m59.8s +65d08m55s   BL Lac      HSP    3.76e-12  2.00e-12   10.584      4.868       *
-3C 454.3     22h53m57.7s +16d08m54s   FSRQ        LSP    3.28e-11  2.92e-11    7.217      5.022       *
-Mrk 501      16h53m52.2s +39d45m37s   BL Lac      HSP    1.55e-10  9.07e-11    2.717      1.199       *
-Mrk 421      11h04m27.3s +38d12m32s   BL Lac      HSP    6.09e-10  1.72e-10    3.725      2.323       *
-PKS 2155-304 21h58m52.0s -30d13m32s   BL Lac      HSP    5.50e-11  4.50e-11    6.000      4.000       Estimates taken from XIPE Blazar-WG source-list: F_X(Min-Max)=(1-10)e-11 cgs, P_opt(Min-Max)=(2-10)%
-BL Lacertae  22h02m43.3s +42d16m40s   BL Lac      LSP    1.07e-11  6.34e-12    9.501      5.265       *
-3C 111       04h18m21.3s +38d01m36s   RG          LSP    4.50e-11  2.50e-11    4.000      3.000       Estimates taken from XIPE Blazar-WG source-list: F_X(Min-Max)=(2-7)e-11 cgs, P_opt(Min-Max)=(1-7)%
-4C 71.07     08h41m24.3s +70d53m42s   FSRQ        LSP    1.93e-11  7.48e-12    0.945      0.951       *
-3C 273       12h29m06.7s +02d03m09s   FSRQ        LSP    1.25e-10  3.72e-11    0.265      0.216       *
-OJ 287       08h54m48.9s +20d06m31s   BL Lac      LSP    5.09e-12  2.18e-12   15.251      7.654       *
-3C 279       12h56m11.1s -05d47m22s   FSRQ        LSP    1.07e-11  3.47e-12   14.651      7.195       *
-W Comae      12h21m31.7s +28d13m59s   BL Lac      ISP    2.00e-12  1.40e-12   10.426      5.027       *
-S5 0716+71   07h21m53.4s +71d20m36s   BL Lac      ISP    1.08e-12  7.39e-13    9.035      4.923       *
-OT 081       17h51m32.8s +09d39m01s   BL Lac      LSP    4.04e-12  2.92e-12    8.144      3.920       *
-3C 345       16h42m58.8s +39d48m37s   FSRQ        LSP    4.36e-12  1.30e-12    6.463      3.080       *
-3C 84        03h19m48.1s +41d30m42s   RG          LSP    3.50e-11  0.50e-11    1.750      1.250       Estimates taken from XIPE Blazar-WG source-list: F_X(Min-Max)=(3-4)e-11 cgs, P_opt(Min-Max)=(0.5-3)%           
-PKS 1510-089 15h12m50.5s -09d06m00s   FSRQ        LSP    7.40e-12  2.43e-12    4.406      4.280       *
-J0324+3410   03h24m41.1s +34d10m46s   RLNLS1      LSP    1.25e-11  0.75e-11    1.750      1.250       Estimates taken from XIPE Blazar-WG source-list: F_X(Min-Max)=(0.5-2)e-11 cgs, P_opt(Min-Max)=(0.5-3)%         
-J0948+0022   09h48m57.3s +00d22m26s   RLNLS1      LSP    0.45e-11  0.35e-11   19.000     17.000       Estimates taken from XIPE Blazar-WG source-list: F_X(Min-Max)=(0.1-0.8)e-11 cgs, P_opt(Min-Max)=(2-36)%
-1ES1426+428  14h28m32.6s +42d40m21s   BL Lac      HSP    2.50e-11  0.50e-11    1.750      1.250       Estimates taken from XIPE Blazar-WG source-list: F_X(Min-Max)=(2-3)e-11 cgs, P_opt(Min-Max)=(0.5???-3)%
-1ES1101-232  11h03m37.6s -23d29m31s   BL Lac      HSP    3.50e-11  0.50e-11    0.750      0.250       Estimates taken from XIPE Blazar-WG source-list: F_X(Min-Max)=(3-4)e-11 cgs, P_opt(Min-Max)=(0.5???-1)% 
+1ES1959+650  19h59m59.8s +65d08m55s   BL Lac      HSP    0.436E-09  0.119E-09  6.537  0.370       *
+3C 454.3     22h53m57.7s +16d08m54s   FSRQ        LSP    0.234E-09  0.316E-11  33.804 0.026       *
+Mrk 501      16h53m52.2s +39d45m37s   BL Lac      HSP    0.713E-09  0.153E-10  8.828  0.023       *
+Mrk 421      11h04m27.3s +38d12m32s   BL Lac      HSP    0.492E-08  0.115E-10  4.601  0.070       *
+PKS 2155-304 21h58m52.0s -30d13m32s   BL Lac      HSP    1.000E-10  1.000E-11  10.00  2.000       Estimates taken from XIPE Blazar-WG source-list
+BL Lacertae  22h02m43.3s +42d16m40s   BL Lac      LSP    0.650E-10  0.403E-11  4.631  0.044       *
+3C 111       04h18m21.3s +38d01m36s   RG          LSP    7.000E-11  1.000E-11  7.000  2.000       Estimates taken from XIPE Blazar-WG source-list
+4C 71.07     08h41m24.3s +70d53m42s   FSRQ        LSP    0.671E-10  0.872E-11  13.549 0.025       *
+3C 273       12h29m06.7s +02d03m09s   FSRQ        LSP    0.266E-09  0.582E-10  4.611  0.007       *
+OJ 287       08h54m48.9s +20d06m31s   BL Lac      LSP    0.129E-10  0.191E-11  0.139  0.055       *
+3C 279       12h56m11.1s -05d47m22s   FSRQ        LSP    0.110E-09  0.321E-11  37.257 0.044       *
+W Comae      12h21m31.7s +28d13m59s   BL Lac      ISP    0.185E-10  0.402E-12  8.059  0.475       *
+S5 0716+71   07h21m53.4s +71d20m36s   BL Lac      ISP    0.405E-10  0.293E-11  6.077  0.088       *
+OT 081       17h51m32.8s +09d39m01s   BL Lac      LSP    0.148E-10  0.159E-11  9.771  0.079       *
+3C 345       16h42m58.8s +39d48m37s   FSRQ        LSP    0.640E-11  0.214E-11  20.786 0.099       *
+3C 84        03h19m48.1s +41d30m42s   RG          LSP    4.000E-11  3.000E-11  3.000  0.500       Estimates taken from XIPE Blazar-WG source-list          
+PKS 1510-089 15h12m50.5s -09d06m00s   FSRQ        LSP    0.196E-10  0.264E-11  36.693 0.026       *
+J0324+3410   03h24m41.1s +34d10m46s   RLNLS1      LSP    2.000E-11  0.500E-11  3.000  0.500       Estimates taken from XIPE Blazar-WG source-list       
+J0948+0022   09h48m57.3s +00d22m26s   RLNLS1      LSP    0.800E-11  0.100E-11  36.000 2.000       Estimates taken from XIPE Blazar-WG source-list
+1ES1426+428  14h28m32.6s +42d40m21s   BL Lac      HSP    3.000E-11  2.000E-11  3.000  0.500       Estimates taken from XIPE Blazar-WG source-list
+1ES1101-232  11h03m37.6s -23d29m31s   BL Lac      HSP    4.000E-11  3.000E-11  1.000  0.500       Estimates taken from XIPE Blazar-WG source-list 
 ---------------------------------------------------------------------------------------------------------
                                   SECOND PRIORITY LIST
 ----------------------------------------------------------------------------------------------------------
-3C 66A       02h22m39.6s +43d02m08s   BL Lac      ISP    3.76e-12  2.00e-12   10.584      4.868       *  
-AO 0235+16   02h38m38.9s +16d36m59s   BL Lac      LSP    2.10e-12  1.67e-12   11.871      7.659       *  
-PKS 0735+17  07h38m07.3s +17d42m19s   BL Lac      LSP    8.12e-13  3.75e-13    3.675      2.583       *  
-OJ 49        08h31m48.9s +04d29m39s   BL Lac      LSP    1.19e-12  6.15e-13    8.842      4.437       *  
-S4 0954+65   09h58m47.3s +65d33m55s   BL Lac      ISP    2.94e-12  3.10e-12   13.822      6.004       *  
-PKS 1055+01  10h58m29.6s +01d33m59s   BL Lac      LSP    2.96e-12  9.51e-13   18.746      6.355       *  
-CTA 26       03h39m30.9s −01d46m36s   FSRQ        LSP    1.45e-12  5.86e-13    7.529      6.845       *  
-PKS 0420−01  04h23m15.8s −01d20m33s   FSRQ        LSP    2.62e-12  6.86e-13   15.659      7.589       *  
-PKS 0528+134 05h30m56.4s +13d31m55s   FSRQ        LSP    2.43e-12  1.57e-12    1.864      2.195       *  
-OJ 248       08h30m52.1s +24d10m59s   FSRQ        LSP    3.04e-12  2.35e-12    2.013      3.010       *  
-PKSB1127-145 11h30m07.1s −14d49m27s   FSRQ        LSP    5.50e-12  1.74e-12    0.912      0.576       *  
-4C 29.45     11h59m31.8s +29d14m44s   FSRQ        LSP    1.50e-12  8.21e-13   10.809      8.331       *  
-PG 1222+216  12h24m54.5s +21d22m47s   FSRQ        LSP    3.91e-12  1.40e-12    5.107      3.628       *  
-B2 1308+30   13h10m28.7s +32d20m44s   FSRQ        LSP    1.46e-12  8.70e-13   11.840      9.151       *  
-PKS 1416−076 14h08m56.5s −07d52m27s   FSRQ        LSP    7.23e-13  1.84e-13    6.804      5.491       *  
-DA 406       16h13m41.1s +34d12m48s   FSRQ        LSP    1.34e-12  3.62e-13    1.575      0.989       *  
-PKS 1622-29  16h26m06.0s −29d51m27s   FSRQ        LSP    2.19e-12  9.28e-13    1.044      1.358       *  
-4C 38.41     16h35m15.5s +38d08m05s   FSRQ        LSP    2.79e-12  1.96e-12    8.355      6.166       *  
-NRAO 530     17h33m02.7s −13d04m50s   FSRQ        LSP    1.75e-12  6.94e-13    1.767      1.516       *  
-3C 446       22h25m47.3s −04d57m01s   FSRQ        LSP    1.77e-12  7.73e-13    1.507      1.548       *  
-CTA 102      22h32m36.4s +11d43m51s   FSRQ        LSP    4.74e-12  2.62e-12    3.968      4.373       *  
+3C 66A       02h22m39.6s +43d02m08s   BL Lac      ISP    0.122E-10  0.113E-11  7.866  0.210       *  
+AO 0235+16   02h38m38.9s +16d36m59s   BL Lac      LSP    0.255E-10  0.511E-12  2.906  0.036       *  
+PKS 0735+17  07h38m07.3s +17d42m19s   BL Lac      LSP    0.460E-11  0.556E-12  3.155  0.021       *  
+OJ 49        08h31m48.9s +04d29m39s   BL Lac      LSP    0.331E-11  0.676E-12  2.603  1.140       *  
+S4 0954+65   09h58m47.3s +65d33m55s   BL Lac      ISP    0.294E-10  0.121E-11  1.274  0.046       *  
+PKS 1055+01  10h58m29.6s +01d33m59s   BL Lac      LSP    0.585E-11  0.179E-11  8.538  1.669       *  
+CTA 26       03h39m30.9s -01d46m36s   FSRQ        LSP    0.433E-11  0.837E-12  38.582 0.000       *  
+PKS 0420-01  04h23m15.8s -01d20m33s   FSRQ        LSP    0.541E-11  0.666E-12  36.167 0.186       *  
+PKS 0528+134 05h30m56.4s +13d31m55s   FSRQ        LSP    0.103E-10  0.822E-12  17.487 0.770       *  
+OJ 248       08h30m52.1s +24d10m59s   FSRQ        LSP    0.188E-10  0.127E-11  18.090 0.009       *  
+PKSB1127-145 11h30m07.1s -14d49m27s   FSRQ        LSP    0.873E-11  0.202E-11   6.045 0.045       *  
+4C 29.45     11h59m31.8s +29d14m44s   FSRQ        LSP    0.543E-11  0.797E-12  43.498 0.027       *  
+PG 1222+216  12h24m54.5s +21d22m47s   FSRQ        LSP    0.707E-11  0.183E-11  29.100 0.041       *  
+B2 1308+30   13h10m28.7s +32d20m44s   FSRQ        LSP    0.406E-11  0.708E-12  39.356 1.436       *  
+PKS 1406-076 14h08m56.5s -07d52m27s   FSRQ        LSP    0.279E-11  0.492E-12  19.005 1.198       *  
+DA 406       16h13m41.1s +34d12m48s   FSRQ        LSP    0.192E-11  0.818E-12  17.408 0.058       *  
+PKS 1622-29  16h26m06.0s -29d51m27s   FSRQ        LSP    0.541E-11  0.666E-12  12.170 0.715       *  
+4C 38.41     16h35m15.5s +38d08m05s   FSRQ        LSP    0.161E-10  0.804E-12  27.260 0.045       *  
+NRAO 530     17h33m02.7s -13d04m50s   FSRQ        LSP    0.591E-11  0.118E-11  15.753 0.001       *  
+3C 446       22h25m47.3s -04d57m01s   FSRQ        LSP    0.271E-11  0.857E-12  24.574 0.370       *  
+CTA 102      22h32m36.4s +11d43m51s   FSRQ        LSP    0.165E-10  0.210E-11  23.970 0.005       *  
 --------------------------------------------------------------------------------------------------------
-* <X-ray> and Xsigma are the weighted averages of X-ray flux in the ????? band and its standard deviation, as in Willamson et al. (2014, ApJ, 789, 135), <P> and - sigma are the same for optical polarization from the Boston University Blazar Group monitoring program.
-
-
+* X-ray and p_opt data provided by Svetlana Jorstad, unless indicated otherwise.
