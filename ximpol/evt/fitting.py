@@ -82,7 +82,7 @@ class xSpectralFitter:
                 range(1, self.model.nParameters + 1)]
 
     def plot(self, arg_list=['ldata', 'delchi'], device='/xs', title=None,
-             xaxis='keV'):
+             xaxis='keV', logx=True):
         """Plot the data and the input model. With arg_list parameter it's
         possible to change the displayed quantity (e.g. 'ufspec' to show the
         unfolded spectrum (ph/cm^2/s/keV) or 'ldata' for the folded spectrum
@@ -90,17 +90,19 @@ class xSpectralFitter:
         """
         xspec.Plot.device = device
         xspec.Plot.xAxis = xaxis
+        xspec.Plot.xLog = logx
         if title is not None:
             xspec.Plot.addCommand('label top '+ title)
         args = ', '.join(x for x in arg_list)
         xspec.Plot(args)
 
     def save_plot(self, outfile, arg_list=[], device='/cps', title=None,
-                  xaxis='keV'):
+                  xaxis='keV', logx=True):
         """Save the plot to the outfile directory. The default format is '.ps'.
         """
         xspec.Plot.device = outfile + device
         xspec.Plot.xAxis = xaxis
+        xspec.Plot.xLog = logx
         if title is not None:
             xspec.Plot.addCommand('label top '+ title)
         args = ', '.join(x for x in arg_list)
