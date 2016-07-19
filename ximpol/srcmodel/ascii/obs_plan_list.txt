@@ -1,0 +1,18 @@
+#Name           Class       Flux    Time    MDP%    Notes
+Crab Nebula     PWN         1950    20      1       (phase resolved)
+Vela            PWN         6       100     6       
+Cas A           SNR         116     1000    3.5     (spatially resolved)
+Cyg X-1         μQSO        1000    170     0.5    
+Mrk 421         Blazar      27      100     3       
+Cen A           RG          4       200     5       (spatially resolved)
+Am Her          MCV         10      1000    3       (phase resolved)
+SAX J1808       AMP         100     100     3       (phase resolved)
+Her X-1         LMXRB       90      100     3       (phase resolved)
+1RXS J1708      Magnetar    4       250     9.3     (phase resolved)
+GX 339-4        XRB         500     100     0.6     (outburst)
+GX 339-4        XRB         4       1000    2.2     (quiescent)
+NGC 1068        AGN         0.5     1000    4       
+IC 4329A        AGN         10      100     3       
+SGR B complex   MC          0.3     1000    4       
+GRS 1915+105    μQSO        1300    500     0.5    
+MCG-6-30-15     AGN         4       1000    1.3     
