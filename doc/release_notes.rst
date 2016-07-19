@@ -9,6 +9,7 @@ Release notes
 * Minor refactoring of the IRF plotting code (closing issue #150).
 * Some tweaks to the xpmdp.py script (closing issue #107).
 * Bug fix for issues #25 and #22 (closing them).
+* Observation plan plot added in the examples folder.
   
 *ximpol (0.51.1) - Fri, 01 Jul 2016 14:04:20 +0200*
 
