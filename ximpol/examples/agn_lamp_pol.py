@@ -37,9 +37,9 @@ elif i is 2:
 
 NAME_LIST = ['mcg_6_30_15', 'ark_120', 'ngc_1365']
 CFG_FILE = os.path.join(XIMPOL_CONFIG, NAME_LIST[i]+'.py')
-TIME = 30000000.
-E_BINNING = [2.,4.,6.,8.]
-SIM_NUM = 5
+TIME = 3000000.
+E_BINNING = [2.,3.,5.,8.]
+SIM_NUM = 10
 
 pol_degree_array = numpy.empty([SIM_NUM, len(E_BINNING)])
 pol_degree_error_array = numpy.empty([SIM_NUM, len(E_BINNING)])
