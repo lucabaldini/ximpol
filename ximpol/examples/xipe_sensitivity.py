@@ -38,7 +38,7 @@ BLAZAR_LIST_PATH = os.path.join(XIMPOL_SRCMODEL, 'ascii', 'blazar_list.txt')
 
 PRIORITY_ONLY = True
 GRID_COLOR = 'black'
-BLAZAR_COLOR = None
+#BLAZAR_COLOR = None
 
 def parse_blazar_list(PRIORITY_ONLY):
     """
@@ -86,12 +86,50 @@ mdp_ref = mdp_table.mdp_values()[-1]
 logger.info('Reference MDP for %s s: %.3f' % (OBS_TIME_REF, mdp_ref))
 
 blazar_list = parse_blazar_list(PRIORITY_ONLY)
+mirror_list = [1, 3, 9, 17, 18]
 
-numpy.random.seed(7)
+numpy.random.seed(10)
 _color = numpy.random.random((3, len(blazar_list)))
-numpy.random.seed(1)
-_disp = numpy.random.uniform(0.7, 2., len(blazar_list))
+#numpy.random.seed(1)
+#_disp = numpy.random.uniform(0.7, 2., len(blazar_list))
 
+plt.figure('Average polarization degree', (11, 8))
+_x = numpy.logspace(-13, -7, 100)
+for obs_time in [1.e3, 10.e3, 100.e3, 1.e6]:
+    _y = 100.* mdp_ref * numpy.sqrt(OBS_TIME_REF/obs_time * FLUX_REF/_x)
+    plt.plot(_x, _y, color=GRID_COLOR, ls='dashed', lw=0.6)
+    _i = 51
+    if obs_time is 1.e3:
+        _x_text = _x[_i]
+        _y_text = _y[_i]
+    plt.text(_x_text, _y_text, '$T_{obs} =$ %d ks' % (obs_time/1000.),
+             color=GRID_COLOR, rotation=-43., size=14)
+    _x_text /= 10
+plt.xscale('log')
+plt.yscale('log')
+plt.xlabel('Integral energy flux %.0f-%.0f keV [erg cm$^{-2}$ s$^{-1}$]' %\
+           (E_MIN, E_MAX))
+plt.ylabel('MDP 99% CL [%]')
+
+for j, blazar in enumerate(blazar_list):
+    _x_max = blazar['flux_max']
+    _x_min = blazar['flux_min']
+    _y_max = blazar['p_opt_max']
+    _y_min = blazar['p_opt_min']
+    plt.plot([_x_min, _x_max, _x_max], [_y_max, _y_max, _y_min],
+        color=_color[:,j], lw=1.5)
+    _x_text = numpy.sqrt((_x_max)*(_x_min))
+    if j in mirror_list:
+        _y_text = 0.88*_y_max
+    else:
+        _y_text = 1.02*_y_max
+    plt.text(_x_text, _y_text, blazar['name'], color=_color[:,j],
+             horizontalalignment='center', size='large')
+plt.axis([1e-13, 1e-8, 0.5, 50])
+plt.savefig('blazar_mdp_average.png')
+
+
+"""
 plt.figure('Average polarization degree', (14, 10))
 _x = numpy.logspace(-13, -7, 100)
 for obs_time in [1.e3, 10.e3, 100.e3, 1.e6]:
@@ -127,7 +165,7 @@ for j, blazar in enumerate(blazar_list):
 plt.axis([1e-13, 1e-8, 0.5, 50])
 plt.savefig('blazar_mdp_average.png')
 
-"""
+
 plt.figure('Maximum polarization degree', (14, 10))
 _x = numpy.logspace(-13, -7, 100)
 for obs_time in [1.e3, 10.e3, 100.e3, 1.e6]:
