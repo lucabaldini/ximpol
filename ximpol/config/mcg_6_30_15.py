@@ -30,13 +30,20 @@ from ximpol.utils.units_ import keV2erg
 RA = 203.9742
 DEC = -34.2955
 
-SPIN = 0         #spin of the black hole (0 or 1)
-INCLINATION = 30 #degree
-INT_POL = 0     #intrinsic polarization degree (0 or 4)
+SPIN = 1         #spin of the black hole (0 or 1)
+INCLINATION = 30 #degree (fixed)
+INT_POL_DEG = 1  #intrinsic polarization degree (0, 1 or 4)
+INT_POL_ANG = 0  #intrinsic polarization angle (0 or 90)
 FLUX = 3.6e-11   #erg/s/cm2
 GAL_NH = 0.4e+21 #cm-2
 
-file_name = 'lamp_pol_%d_%d_003_0000_%d_00.dat' %(SPIN, INCLINATION, INT_POL)
+if INT_POL_ANG is 90:
+    H = 10       #height in gravitational radii (3 or 10)
+else:
+    H = 3
+
+file_name = 'lamp_pol_%d_%d_0%02d_0000_%d_%02d.dat' %(SPIN, INCLINATION, H,
+            INT_POL_DEG, INT_POL_ANG)
 file_path = os.path.join(XIMPOL_CONFIG, 'ascii', file_name)
 
 def parse(file_path, emin=1., emax=10.):
@@ -45,9 +52,11 @@ def parse(file_path, emin=1., emax=10.):
     logger.info('Parsing input file %s...' % file_path)
     energy, flux, degree, angle = numpy.loadtxt(file_path, unpack=True,
                                                         usecols = (0,1,5,6))
-    angle += 90.
+    if INT_POL_ANG is 0:
+        angle += 90.
     _mask = (energy >= emin)*(energy <= emax)
     return energy[_mask], flux[_mask], degree[_mask], angle[_mask]
+    #return energy[_mask], flux[_mask], numpy.full(degree[_mask].shape, INT_POL_DEG/100.), numpy.full(angle[_mask].shape, INT_POL_ANG+90.)
 
 def scale_flux(energy, flux, emin=2., emax=8.):
     ism_model = xpeInterstellarAbsorptionModel()
@@ -82,7 +91,8 @@ pol_angle = xInterpolatedUnivariateSplineLinear(energy, angle, **fmt)
 ROI_MODEL = xROIModel(RA, DEC)
 
 source = xPointSource('MCG-6-30-15', RA, DEC, energy_spectrum,
-                      polarization_degree, polarization_angle)
+                      polarization_degree, polarization_angle,
+                      max_validity_time=50000000.)
 
 ROI_MODEL.add_source(source)
 

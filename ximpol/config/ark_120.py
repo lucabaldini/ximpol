@@ -31,12 +31,15 @@ RA = 79.0475
 DEC = -0.1499
 
 SPIN = 0         #spin of the black hole (0 or 1)
-INCLINATION = 45 #degree
-INT_POL = 0      #intrinsic polarization degree (0 or 4)
+INCLINATION = 45 #degree (fixed)
+H = 3            #height in gravitational radii (fixed)
+INT_POL_DEG = 1  #intrinsic polarization degree (0 or 4)
+INT_POL_ANG = 0  #intrinsic polarization angle (fixed)
 FLUX = 3e-11     #erg/s/cm2
 GAL_NH = 1e+21   #cm-2
 
-file_name = 'lamp_pol_%d_%d_003_0000_%d_00.dat' %(SPIN, INCLINATION, INT_POL)
+file_name = 'lamp_pol_%d_%d_0%02d_0000_%d_%02d.dat' %(SPIN, INCLINATION, H,
+            INT_POL_DEG, INT_POL_ANG)
 file_path = os.path.join(XIMPOL_CONFIG, 'ascii', file_name)
 
 def parse(file_path, emin=1., emax=10.):
