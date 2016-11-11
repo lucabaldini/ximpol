@@ -122,7 +122,7 @@ def display():
     img = xFITSImage(he_img_file_path)
     fig = img.plot(show=False)
     polarization_map.build_grid_sample(ROI_MODEL.ra, ROI_MODEL.dec)
-    polarization_map.overlay_arrows(fig)
+    polarization_map.overlay_arrows(fig, markers=False)
     plt.show()
 
 
