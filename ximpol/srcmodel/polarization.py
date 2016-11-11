@@ -147,12 +147,13 @@ class xPolarizationMap:
                     self.__vx.append(0.01*px)
                     self.__vy.append(0.01*py)
 
-    def overlay_arrows(self, fig):
+    def overlay_arrows(self, fig, markers=True):
         """Overlay the polarization map arrows over an existing aplpy figure.
         """
         fig.show_arrows(self.__wx, self.__wy, self.__vx, self.__vy,
                         color='w', alpha=0.8)
-        fig.show_markers(self.__wx, self.__wy, marker='o')
+        if markers:
+            fig.show_markers(self.__wx, self.__wy, marker='o')
 
     def plot_xmap(self, overlay=True, show=False):
         """Plot the x polarization map.
