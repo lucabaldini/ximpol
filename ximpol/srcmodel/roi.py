@@ -233,7 +233,7 @@ class xModelComponentBase:
         # Extract the MC sky positions and smear them with the PSF.
         col_mc_ra, col_mc_dec = self.rvs_sky_coordinates(num_events)
         event_list.set_column('MC_RA', col_mc_ra)
-        event_list.set_column('MC_DEC', col_mc_dec)        
+        event_list.set_column('MC_DEC', col_mc_dec)
         col_ra, col_dec = psf.smear(col_mc_ra, col_mc_dec)
         event_list.set_column('RA', col_ra)
         event_list.set_column('DEC', col_dec)
@@ -697,7 +697,8 @@ class xROIModel(OrderedDict):
                         source.name)
             event_list += source.rvs_event_list(aeff, psf, modf, edisp,
                                                 **kwargs)
-            event_list.apply_vignetting(aeff, self.ra, self.dec)
+            if kwargs['vignetting']:
+                event_list.apply_vignetting(aeff, self.ra, self.dec)
         event_list.sort()
         return event_list
 

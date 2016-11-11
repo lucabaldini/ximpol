@@ -52,6 +52,9 @@ PARSER.add_argument('--tstart', type=float, default=0.,
                     help='the start time (MET in s) of the simulation')
 PARSER.add_argument('--seed', type=int, default=0,
                     help='the random seed for the simulation')
+PARSER.add_argument('--vignetting', type=ast.literal_eval,
+                    choices=[True, False], default=True,
+                    help='apply the effect of the vignetting')
 PARSER.add_argument('--clobber', type=ast.literal_eval, choices=[True, False],
                     default=True,
                     help='overwrite or do not overwrite existing output files')
