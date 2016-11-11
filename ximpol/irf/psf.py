@@ -231,7 +231,8 @@ class xPointSpreadFunction(xInterpolatedUnivariateSpline):
         text += 'HEW = %.1f arcsec' % self.hew
         return text
 
-    def draw_psf_circle(self, image, x, y, text='PSF', color='white', lw=2):
+    def draw_psf_circle(self, image, x, y, text='PSF', color='white', lw=2,
+                        number=False):
         """Add the PSF circle to the image with labels. This function must be
         called after the (possible) image recenter.
 
@@ -249,6 +250,7 @@ class xPointSpreadFunction(xInterpolatedUnivariateSpline):
         image.add_label(ra_circ, dec_text_up, text, size='x-large', color=color,
                         horizontalalignment='center')
         image.show_circles(ra_circ, dec_circ, psf_rad, lw=lw, color=color)
-        text_psf = '%d"' %round(self.hew)
-        image.add_label(ra_circ, dec_text_down, text_psf, size='large',
-                        color=color, horizontalalignment='center')
+        if number:
+            text_psf = '%d"' %round(self.hew)
+            image.add_label(ra_circ, dec_text_down, text_psf, size='large',
+                           color=color, horizontalalignment='center')
