@@ -1,0 +1,9 @@
+# Region file format: DS9 version 4.1
+global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1
+icrs
+circle(13:25:41.343,-42:59:23.27,33.9505") # G
+circle(13:25:36.725,-42:59:59.52,28.1484") # F
+circle(13:25:32.785,-43:00:29.13,23.8984") # C,B
+circle(13:25:29.605,-43:00:52.86,18.1578") # A
+circle(13:25:27.363,-43:01:09.98,15.9761") # core
+circle(13:25:38.398,-43:02:06.64,27.5508") # ULX
