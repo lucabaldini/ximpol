@@ -10,6 +10,9 @@ Release notes
 * Some tweaks to the xpmdp.py script (closing issue #107).
 * Bug fix for issues #25 and #22 (closing them).
 * Observation plan plot added in the examples folder.
+* Scripts to simulate GRS1519+105 using the txt files provided by Michal.
+* Added analysis pipeline to simulate Cen A using chandra-to-ximpol converter.
+
   
 *ximpol (0.51.1) - Fri, 01 Jul 2016 14:04:20 +0200*
 
