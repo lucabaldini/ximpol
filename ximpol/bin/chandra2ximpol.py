@@ -191,7 +191,7 @@ def chandra2ximpol(file_path, **kwargs):
     """
     assert(file_path.endswith('.fits'))
     if kwargs['outfile'] is None:
-        outfile = os.path.basename(file_path).replace('.fits','_xipe.fits')
+        outfile = os.path.basename(file_path).replace('.fits','_ximpol.fits')
         mkdir(XIMPOL_DATA)
         kwargs['outfile'] = os.path.join(XIMPOL_DATA, outfile)
         logger.info('Setting output file path to %s...' % kwargs['outfile'])
