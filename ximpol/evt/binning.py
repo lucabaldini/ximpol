@@ -799,7 +799,8 @@ class xBinnedModulationCube(xBinnedFileBase):
             plt.show()
         return fig
 
-    def plot(self, show=True, fit=True, analyze=True, xsubplot=0):
+    def plot(self, show=True, fit=True, analyze=True, xsubplot=0,
+             full_range=True, simple_stat=False):
         """Plot the azimuthal distributions for all the energy bins.
         """
         if analyze:
@@ -807,15 +808,17 @@ class xBinnedModulationCube(xBinnedFileBase):
         if fit:
             self.fit_results = []
         for i, _emean in enumerate(self.emean):
+            if  full_range is False and i == (len(self.emean) - 1):
+                continue
             if xsubplot == 0:
                 plt.figure()
             else:
-                plt.subplot(len(self.emean), xsubplot + 1,
+                plt.subplot(len(self.emean) + int(full_range) - 1, xsubplot + 1,
                             (xsubplot + 1)*(i + 1))
             self.plot_bin(i, False, False)
             if fit:
                 _res = self.fit_bin(i)
-                _res.plot(color=xpColor(i))
+                _res.plot(color=xpColor(i), simple_stat=simple_stat)
         if analyze:
             fig = plt.figure('Polarization degree vs. energy')
             self.plot_polarization_degree(show=False)
