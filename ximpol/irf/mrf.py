@@ -52,7 +52,7 @@ def mdp99(mu_effective, num_signal, num_bkg=0.):
 
 class XMDPRecord:
 
-    """Small utility class to keep track 
+    """Small utility class to keep track
     """
 
     def __init__(self, mdp, min_energy, max_energy, mu_effective, num_signal,
@@ -358,7 +358,8 @@ class xModulationFitResults:
         self.polarization_degree = self.visibility/modulation_factor
         self.polarization_degree_error = self.visibility_error/modulation_factor
 
-    def plot(self, show=False, stat=True, text_size=15, **options):
+    def plot(self, show=False, stat=True, text_size=15, simple_stat=False,
+             **options):
         """Plot the fit results.
         """
         from ximpol.utils.matplotlib_ import pyplot as plt
@@ -369,7 +370,10 @@ class xModulationFitResults:
             posh = 0.02
             posv = 0.25
             delv = 0.07
-            for text in self.latex().split(','):
+            for i, text in enumerate(self.latex().split(',')):
+                if simple_stat and (i is 0 or i is 2):
+                    posv -= delv
+                    continue
                 text = text.strip()
                 plt.text(posh, posv, text, transform=plt.gca().transAxes,
                          fontsize=text_size)
@@ -508,7 +512,7 @@ class xModulationFactor(xInterpolatedUnivariateSplineLinear):
         array of energies.
 
         .. math::
-        \\mu_{\\rm eff} = 
+        \\mu_{\\rm eff} =
 
         Arguments
         ---------
