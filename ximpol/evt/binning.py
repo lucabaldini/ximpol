@@ -761,11 +761,12 @@ class xBinnedModulationCube(xBinnedFileBase):
             _dx = [_x - self.emin[:-1], self.emax[:-1] - _x]
             _y = _y[:-1]
             _dy = _dy[:-1]
-        plt.errorbar(_x, _y, _dy, _dx, fmt='o', **kwargs)
+        fig = plt.errorbar(_x, _y, _dy, _dx, fmt='o', **kwargs)
         plt.xlabel('Energy [keV]')
         plt.ylabel('Polarization degree')
         if show:
             plt.show()
+        return fig
 
     def plot_polarization_angle(self, show=True, degree=False, **kwargs):
         """Plot the polarization angle as a function of energy.
@@ -788,7 +789,7 @@ class xBinnedModulationCube(xBinnedFileBase):
             _dx = [_x - self.emin[:-1], self.emax[:-1] - _x]
             _y = _y[:-1]
             _dy = _dy[:-1]
-        plt.errorbar(_x, _y, _dy, _dx, fmt='o', **kwargs)
+        fig = plt.errorbar(_x, _y, _dy, _dx, fmt='o', **kwargs)
         plt.xlabel('Energy [keV]')
         if degree:
             plt.ylabel('Polarization angle [$^\circ$]')
@@ -796,6 +797,7 @@ class xBinnedModulationCube(xBinnedFileBase):
             plt.ylabel('Polarization angle [rad]')
         if show:
             plt.show()
+        return fig
 
     def plot(self, show=True, fit=True, analyze=True, xsubplot=0):
         """Plot the azimuthal distributions for all the energy bins.
