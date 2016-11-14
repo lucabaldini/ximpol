@@ -184,6 +184,18 @@ def plot(cmap_file, draw_regions=True):
                 size='xx-large', color='white', horizontalalignment='left')
     #fig.show_contour(IMAGE_FITS_PATH, levels=[1, 2, 5, 50], colors='green',
     #                 smooth=5)
+    if draw_regions:
+        region = pyregion.open(REG_SOURCE_FILE_PATH)
+        list_coord = region[0].coord_list
+        x = numpy.array(list_coord[::2])
+        y = numpy.array(list_coord[1::2])
+        fig2.show_polygons([numpy.array([x,y])], color='green', lw=2)
+        ra, dec, rad = region[1].coord_list
+        fig2.show_circles(ra, dec, rad, color='green', lw=2)
+        fig2.add_label(0.71,0.25,'Core', relative=True, size='x-large',
+                      color='white')
+        fig2.add_label(0.53,0.57,'Jet', relative=True, size='x-large',
+                      color='white')
     plt.show()
 
 if __name__ == '__main__':
