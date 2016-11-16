@@ -406,6 +406,79 @@ class xModulationFitResults:
         return text
 
 
+class xStokesAccumulator:
+
+    """Small utility class implementing the event-by-event analysis dexcribed
+    in https://arxiv.org/abs/1409.6214
+    """
+
+    def __init__(self):
+        """Constructor.
+        """
+        self.I = 0.
+        self.Q = 0.
+        self.U = 0.
+
+    def reset(self):
+        """Reset the Stokes parameters.
+        """
+        self.I = 0.
+        self.Q = 0.
+        self.U = 0.
+
+    def fill(self, phi):
+        """Fill the accumulator with one or more values of measured azimuthal
+        directions.
+
+        Arguments
+        ---------
+        phi : float or array
+            The (independent) azimuthal angle variable, in radians.
+        """
+        if isinstance(phi, numpy.ndarray):
+            self.I += len(phi)
+            self.Q += (numpy.cos(2*phi)).sum()
+            self.U += (numpy.sin(2*phi)).sum()
+        else:
+            self.I += 1
+            self.Q += numpy.cos(2*phi)
+            self.U += numpy.sin(2*phi)
+
+    def u(self):
+        """Return the normalized U parameter (11a).
+        """
+        if self.I == 0.:
+            return 0.
+        return self.U/self.I
+
+    def q(self):
+        """Return the normalized Q parameter (11b).
+        """
+        if self.I == 0.:
+            return 0.
+        return self.Q/self.I
+
+    def visibility(self):
+        """Return the current accumulated visibility and associated uncertainty.
+        """
+        if self.I < 2:
+            return (None, None)
+        _v = 2*numpy.sqrt(self.q()**2 + self.u()**2)
+        _dv = numpy.sqrt((2 - _v**2)/(self.I - 1))
+        return _v, _dv
+
+    def phase(self):
+        """Return the current accumulated phase and associated undertainty.
+        """
+        if self.I < 2:
+            return (None, None)
+        _p = 0.5*numpy.arctan2(self.u(), self.q())
+        _v = 2*numpy.sqrt(self.q()**2 + self.u()**2)
+        _dp = 1./(_v*numpy.sqrt(2*(self.I - 1)))
+        return _p, _dp
+ 
+
+
 class xModulationFactor(xInterpolatedUnivariateSplineLinear):
 
     """Class describing the modulation factor.
