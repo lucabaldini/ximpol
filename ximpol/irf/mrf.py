@@ -459,7 +459,7 @@ class xStokesAccumulator:
         return self.Q/self.I
 
     def visibility(self):
-        """Return the current accumulated visibility and associated uncertainty.
+        """Return the current accumulated visibility and associated uncertainty. Recall that the visibility is the polarization fraction times the modulation function. The polarization function comes from eq 21 and here we set the modulation function to 1.
         """
         if self.I < 2:
             return (None, None)
@@ -468,7 +468,7 @@ class xStokesAccumulator:
         return _v, _dv
 
     def phase(self):
-        """Return the current accumulated phase and associated undertainty.
+        """Return the current accumulated phase and associated undertainty. Based on eq 22.
         """
         if self.I < 2:
             return (None, None)
@@ -478,6 +478,15 @@ class xStokesAccumulator:
         return _p, _dp
  
 
+    def polarization_frac(self,mu):
+        """Return the polarization fraction given the visibility divided by effective mu.
+        """
+        eff_mu = mu
+        v,dv = self.visibility()
+        pol_frac = v/eff_mu
+        dpol_frac = dv/eff_mu
+        return pol_frac, dpol_frac
+    
 
 class xModulationFactor(xInterpolatedUnivariateSplineLinear):
 
