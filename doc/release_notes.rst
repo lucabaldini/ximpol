@@ -1,6 +1,8 @@
 Release notes
 =============
 
+*Added polarization fraction method to class xStokesAccumulator
+
 * Refactoring of evt.fitting.xSpectralFitter class.
 * Implemented the vignetting in the chandra2ximpol converter.
 * Added a function to draw the psf circle in irf.psf.xPointSpreadFunction
