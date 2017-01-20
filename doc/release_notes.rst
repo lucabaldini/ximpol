@@ -1,6 +1,7 @@
 Release notes
 =============
 
+* Added example script to compare polarization values found via mcube vs stokes, using a single point source.
 *Added polarization fraction method to class xStokesAccumulator
 
 * Refactoring of evt.fitting.xSpectralFitter class.
