@@ -1,6 +1,7 @@
 Release notes
 =============
 
+* Added xppimms to the pipeline.
 * A couple of modifications introduced by mistake reverted.
 * xppimms and chandra2ximpol scripts made executable.
 
