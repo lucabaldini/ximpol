@@ -40,6 +40,7 @@ from ximpol.core.spline import xInterpolatedUnivariateSplineLinear
 from ximpol.core.spline import xInterpolatedBivariateSplineLinear
 from ximpol.srcmodel.spectrum import power_law
 from ximpol.srcmodel.polarization import constant
+from xpmdp import _make_energy_binning
 
 EBIN_ALGS = ['FILE', 'LIN', 'LOG', 'LIST']
 
@@ -68,10 +69,6 @@ PARSER.add_argument('--duration', type=float, default=10000,
                     help='the duration (in s) of the simulation')
 PARSER.add_argument('--tstart', type=float, default=0.,
                     help='the start time (MET in s) of the simulation')
-#PARSER.add_argument('--phasemin', type=float, default=0.,
-#                    help='minimum phase')
-#PARSER.add_argument('--phasemax', type=float, default=1.,
-#                    help='maximum phase')
 PARSER.add_argument('--ebinalg', choices=EBIN_ALGS, default='LIN',
                     help='energy binning specification')
 PARSER.add_argument('--emin', type=float, default=2.,
@@ -101,38 +98,6 @@ def _build_source(**kwargs):
                           column_density, redshift)
     return source
 
-def _make_energy_binning(**kwargs):
-    """Build the energy binning for the MDP calculation.
-
-    While there's surely some overlap with the code in ximpol.evt.binning
-    module, none of the binning methods implemented there is exactly what
-    we need here---the closest being that for the modulation cube, which
-    is also supporting the extra EQP binning mode that really does not make
-    a lot of sense here (we don't have an event file with the column energy).
-    I guess we'll just go along with some code duplication. Too bad.
-    """
-    ebinalg = kwargs['ebinalg']
-    emin = kwargs['emin']
-    emax = kwargs['emax']
-    ebins = kwargs['ebins']
-    ebinning = kwargs['ebinning']
-    if ebinalg == 'LIN':
-        ebinning = numpy.linspace(emin, emax, ebins + 1)
-    elif ebinalg == 'LOG':
-        ebinning = numpy.linspace(numpy.log10(emin), numpy.log10(emax),
-                                  ebins + 1)
-    elif ebinalg == 'FILE':
-        ebinfile = self.get('ebinfile')
-        assert ebinfile is not None
-        ebinning = numpy.loadtxt(ebinfile)
-    elif ebinalg == 'LIST':
-        assert isinstance(ebinning, list)
-        ebinning = numpy.array(ebinning, 'd')
-    else:
-        abort('ebinalg %s not implemented yet' % ebinalg)
-    return ebinning
-
-
 def xppimms(**kwargs):
     """Calculate the MDP.
     """
@@ -154,16 +119,6 @@ def xppimms(**kwargs):
         tstop = source.max_validity_time
         logger.info('Simulation stop time set to %s...' % tstop)
     kwargs['tstop'] = tstop
-    
-    """
-    if isinstance(source, xPeriodicPointSource):
-        observation_time = kwargs['tstop'] - kwargs['tstart']
-        psamples = numpy.linspace(kwargs['phasemin'], kwargs['phasemax'], 100)
-        logger.info('Sampling phases: %s' % psamples)
-        count_spectrum = xCountSpectrum(source.energy_spectrum, aeff, psamples,
-                                        source.column_density, source.redshift,
-                                        scale_factor=observation_time)
-    """
     
     tsamples = source.sampling_time(kwargs['tstart'], tstop)
     logger.info('Sampling times: %s' % tsamples)
