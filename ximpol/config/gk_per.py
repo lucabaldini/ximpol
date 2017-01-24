@@ -96,7 +96,7 @@ magic that we do for the integral flux above.
 pol_degree_file_path = _full_path('gk_per_pol_degree_angle_ph10.txt')
 _dummy, _phase, _degree, _angle = numpy.loadtxt(pol_degree_file_path,
                                                 unpack=True)
-_degree /= 100.
+#_degree /= 100.
 # Duplicate the values at phi=0 for phi=1.
 _phase = numpy.append(_phase, 1.)
 _degree = numpy.append(_degree, _degree[0])

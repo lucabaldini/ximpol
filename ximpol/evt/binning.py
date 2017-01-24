@@ -826,3 +826,13 @@ class xBinnedModulationCube(xBinnedFileBase):
             self.plot_polarization_angle(show=False)
         if show:
             plt.show()
+
+class xEventBinningSCUBE(xEventBinningBase):
+    
+    """Class for SCUBE binning.
+    """
+    
+    def process_kwargs(self):
+        """Overloaded method.
+        """
+        xEventBinningBase.process_kwargs(self)

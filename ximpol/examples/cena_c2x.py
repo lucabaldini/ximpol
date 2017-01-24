@@ -30,6 +30,7 @@ from ximpol.utils.matplotlib_ import pyplot as plt
 from ximpol.irf.mrf import mdp99
 from ximpol.srcmodel.img import xFITSImage
 from ximpol.irf import load_psf, DEFAULT_IRF_NAME
+from ximpol.evt.fitting import xSpectralFitter
 
 """Script-wide simulation and analysis settings.
 """
@@ -50,7 +51,7 @@ RA = 201.38912
 DEC = -43.004776
 
 ALGORITHM = ['MCUBE', 'CMAP', 'PHA1']
-EMIN = 2.
+EMIN = 1.
 EMAX = 8.
 E_BINNING = [2.,4.,8.]
 TIME = 1500000
@@ -74,6 +75,11 @@ def run():
     cmap_file = PIPELINE.xpbin(out_file, algorithm=ALGORITHM[1], nxpix=512,
                                nypix=512, binsz=1.25)
     analysis_file = open(ANALYSIS_FILE_PATH, 'w')
+    
+    spect_file = PIPELINE.xpselect(out_file, ra=201.39073, dec=-43.002768,
+                              rad=1.81547)
+    pha_file = PIPELINE.xpbin(spect_file, algorithm=ALGORITHM[2], emin=EMIN,
+                              emax=EMAX)
     
     #Now begin to analyze the data for each region
     for j, region in enumerate(knots):
@@ -136,14 +142,14 @@ def run():
         logger.info(_line)
         analysis_file.write(_line + '\n')
     analysis_file.close()
-    return cmap_file
+    return cmap_file, pha_file
     
 def plot(cmap_file, draw_regions=True):
     #Plot first the ximpol map we got
     full_map = xBinnedMap(cmap_file)
     fig = full_map.plot(show=False)
     fig.recenter(RA, DEC, 2.6/60.)
-    PSF.draw_psf_circle(fig, 0.1, 0.1, number=False)
+    PSF.draw_psf_circle(fig, 0.1, 0.1, text='HPD', number=False)
     fig.show_colorscale(stretch='log', cmap = 'afmhot', vmin=2, vmax=100)
     fig.add_label(0.1, 0.9, 'Centaurus A (IXPE 1.5 Ms)', relative=True,
                     size='xx-large', color='white', horizontalalignment='left')
@@ -180,7 +186,7 @@ def plot(cmap_file, draw_regions=True):
     fig2 = image.plot(show=False)
     fig2.recenter(RA, DEC, 2.6/60.)
     fig2.show_colorscale(stretch='log', cmap = 'afmhot', vmin=0.2, vmax=200)
-    fig2.add_label(0.1, 0.9, 'Chandra 96.8 ks', relative=True,
+    fig2.add_label(0.1, 0.9, 'Centaurus A (Chandra 97 ks)', relative=True,
                 size='xx-large', color='white', horizontalalignment='left')
     #fig.show_contour(IMAGE_FITS_PATH, levels=[1, 2, 5, 50], colors='green',
     #                 smooth=5)
@@ -197,7 +203,18 @@ def plot(cmap_file, draw_regions=True):
         fig2.add_label(0.53,0.57,'Jet', relative=True, size='x-large',
                       color='white')
     plt.show()
+    
+def plot_spectrum(pha_file, save_plots=True):
+    xspec_model = 'wabs*(bremss+powerlaw)'
+    fitter = xSpectralFitter(pha_file, model=xspec_model, emin=1., emax=8.)
+    fitter.model.show()
+    fitter.plot(['ldata', 'ufspec'], title='IXPE 1.5 Ms')
+    if save_plots:
+        fitter.save_plot('cena_spectrum.ps')
+        fitter.save_spectrum('cena_spectrum_ixpe.txt')
+    
 
 if __name__ == '__main__':
-    file = run()
-    plot(file, draw_regions=True)
+    cmap_file, pha_file = run()
+    plot(cmap_file, draw_regions=False)
+    #plot_spectrum(pha_file, save_plots=False)

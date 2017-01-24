@@ -134,31 +134,35 @@ def plot(save_plots=False):
     plt.figure('Polarization degree')
     _good_fit = _pol_deg > 2*_pol_deg_err
     _bad_fit = numpy.logical_not(_good_fit)
-    plt.errorbar(_phase[_good_fit], _pol_deg[_good_fit],
-                 xerr=_phase_err[_good_fit], yerr=_pol_deg_err[_good_fit],
+    plt.errorbar(_phase[_good_fit], _pol_deg[_good_fit]*100,
+                 xerr=_phase_err[_good_fit], yerr=_pol_deg_err[_good_fit]*100,
                  fmt='o', label=sim_label, color='blue')
     plt.errorbar(_phase[_bad_fit], _pol_deg[_bad_fit],
                  xerr=_phase_err[_bad_fit], yerr=_pol_deg_err[_bad_fit],
                  fmt='o', color='gray')
     pol_degree_spline.plot(show=False, label=mod_label, color='green')
-    plt.axis([0., 1., 0., 0.1])
+    #plt.axis([0., 1., 0., 0.1])
+    plt.axis([0., 1., 0., 10.])
+    plt.xlabel('Phase')
+    plt.ylabel('Polarization degree [$\\%$]')
     plt.legend(bbox_to_anchor=(0.37, 0.95))
     plt.figtext(0.6, 0.8, '%.2f--%.2f keV' %\
                 (E_BINNING[0], E_BINNING[-1]), size=16)
     if save_plots:
         plt.savefig('gk_per_polarization_degree.png')
     plt.figure('Polarization angle')
-    plt.errorbar(_phase[_good_fit], _pol_angle[_good_fit],
-                 xerr=_phase_err[_good_fit], yerr=_pol_angle_err[_good_fit],
+    plt.errorbar(_phase[_good_fit], _pol_angle[_good_fit]/numpy.radians(1.),
+                 xerr=_phase_err[_good_fit],
+                 yerr=_pol_angle_err[_good_fit]/numpy.radians(1.),
                  fmt='o', label=sim_label, color='blue')
     plt.errorbar(_phase[_bad_fit], _pol_angle[_bad_fit],
                  xerr=_phase_err[_bad_fit], yerr=_pol_angle_err[_bad_fit],
                  fmt='o', color='gray')
-    pol_angle_spline.plot(show=False, label=mod_label, color='green',
-                          scale=numpy.radians(1.))
-    plt.axis([0., 1., -0.1, 1.5])
-    plt.xlabel('Rotational phase')
-    plt.ylabel('Polarization angle [rad]')
+    pol_angle_spline.plot(show=False, label=mod_label, color='green')
+    #                      scale=numpy.radians(1.))
+    plt.axis([0., 1., -5., 70.])
+    plt.xlabel('Phase')
+    plt.ylabel('Polarization angle [$^\\circ$]')
     plt.legend(bbox_to_anchor=(0.37, 0.95))
     plt.figtext(0.6, 0.8, '%.2f--%.2f keV' %\
                 (E_BINNING[0], E_BINNING[-1]), size=16)
@@ -198,7 +202,7 @@ def run(save_plots):
     generate()
     bin()
     analyze()
-    fit(save_plots)
+    #fit(save_plots)
     plot(save_plots)
 
 

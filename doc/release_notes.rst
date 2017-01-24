@@ -1,6 +1,9 @@
 Release notes
 =============
 
+
+*ximpol (0.52.0) - Tue, 24 Jan 2017 12:14:17 +0100*
+
 * First implementation of xppimms for MDP calculation with source paramteres
   provided through command-line switches (issue #153)
 * Added example script to compare polarization values found via mcube vs stokes,
