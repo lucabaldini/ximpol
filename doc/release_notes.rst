@@ -1,6 +1,9 @@
 Release notes
 =============
 
+* A couple of modifications introduced by mistake reverted.
+* xppimms and chandra2ximpol scripts made executable.
+
 
 *ximpol (0.52.0) - Tue, 24 Jan 2017 12:14:17 +0100*
 
