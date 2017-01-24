@@ -1,9 +1,11 @@
 Release notes
 =============
 
-* Added example script to compare polarization values found via mcube vs stokes, using a single point source.
-*Added polarization fraction method to class xStokesAccumulator
-
+* First implementation of xppimms for MDP calculation with source paramteres
+  provided through command-line switches (issue #153)
+* Added example script to compare polarization values found via mcube vs stokes,
+  using a single point source.
+* Added polarization fraction method to class xStokesAccumulator
 * Refactoring of evt.fitting.xSpectralFitter class.
 * Implemented the vignetting in the chandra2ximpol converter.
 * Added a function to draw the psf circle in irf.psf.xPointSpreadFunction
