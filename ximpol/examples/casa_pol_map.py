@@ -28,10 +28,11 @@ from ximpol.core.pipeline import xPipeline
 from ximpol.evt.binning import xBinnedMap, xBinnedModulationCube
 from ximpol.srcmodel.img import xFITSImage
 from ximpol.utils.matplotlib_ import pyplot as plt
-
+from ximpol.irf.mrf import xStokesAccumulator
+from ximpol.evt.event import xEventFile
 
 CFG_FILE = os.path.join(XIMPOL_CONFIG, 'casa.py')
-DURATION = 250000.
+DURATION = 150000.
 E_BINNING = [1., 10.]
 
 
@@ -47,11 +48,15 @@ ra_max =  350.733
 dec_min = 58.747
 dec_max = 58.877
 
-num_points = 30
-RADIUS = 0.25
+num_points = 10
+RADIUS = 0.35
+
+#num_points = 30
+#RADIUS = 0.25
 
 #OUTPUT_FILE = 'casa_polmap_info_Ebins_%s_%sarcmin.txt'%(num_points,radius)
 OUTPUT_FILE = 'casa_polmap_info_%s_%sarcmin.txt'%(num_points,RADIUS)
+OUTPUT_FILE_STOKES = 'casa_polmap_info_%s_%sarcmin_stokes.txt'%(num_points,RADIUS)
 
 _ra = numpy.linspace(ra_min, ra_max, num_points)
 _dec = numpy.linspace(dec_min, dec_max, num_points)
@@ -75,11 +80,13 @@ def generate():
     pipeline.xpobssim(configfile=CFG_FILE, duration=DURATION,
                       outfile=evt_file_path)
 
-def get_output_file():
+def get_output_file(stokes=False):
     """
     """
-    
-    return os.path.join(XIMPOL_DATA, OUTPUT_FILE)
+    if stokes:
+        return os.path.join(XIMPOL_DATA, OUTPUT_FILE_STOKES)
+    else:
+        return os.path.join(XIMPOL_DATA, OUTPUT_FILE)
     
 #loop over ra and dec (two loops) and run xpselect and xpbin to get yourself some small regions. The radius of the region you are selecting should be of the order of the psf so roughly 20 arcsecs. Then make the mcube for each of these regions and fetch the pol degree. At this point you will have arrays for ra and dec of 1-d (n and m) and the array for the pol degree needs to be of dimensions nxm.
 
@@ -97,6 +104,54 @@ def select_and_bin(radius = RADIUS):
             pipeline.xpbin(sel_file_path, algorithm='MCUBE', ebinalg='LIST',
                            ebinning=E_BINNING, outfile = mcube_file_path)
 
+
+
+def select_and_stokes(radius = RADIUS):
+    
+    output_file =  file('%s/%s'%(XIMPOL_DATA,OUTPUT_FILE_STOKES),'w')
+    
+    from ximpol.irf import load_mrf
+    event_file = xEventFile(evt_file_path)
+    modf = load_mrf(event_file.irf_name())
+   
+    Emin = E_BINNING[0]
+    Emax = E_BINNING[-1]
+    for i,ra in enumerate(_ra):
+        for j,dec in enumerate(_dec):
+            logger.info('Analyzing region at ra = %s, dec = %s' %(ra, dec))
+            sel_file_path = get_sel_file_path(i,j)
+            logger.info('Going to use %s for the outputfile..'%(sel_file_path))
+            pipeline.xpselect(evt_file_path, ra=ra, dec=dec, rad=radius,
+                              emin=1.,emax=10., outfile=sel_file_path)
+
+            sel_file = xEventFile(sel_file_path)
+           
+            phi = sel_file.hdu_list[1].data['PE_ANGLE']
+            stokes = xStokesAccumulator()
+            
+            energy = sel_file.hdu_list[1].data['ENERGY']
+                      
+            eff_mu = modf.weighted_average(energy)
+            
+            stokes.fill(phi)
+            counts = stokes.I
+            visibility, dvisibility = stokes.visibility()
+            phase, dphase = numpy.degrees(stokes.phase())
+            polarization_frac, dpol_frac = stokes.polarization_frac(eff_mu)
+          
+            if dpol_frac >= polarization_frac or counts < 10000:
+                    polarization_frac = 0.0
+            else:
+                polarization_frac = polarization_frac*100
+                dpol_frac = dpol_frac*100
+               
+            #write the fit values to a txt file the first time you run the code and then simply read the txt file for fast plotting after.
+            line = '%s,%s,%s,%s,%s,%s,%s,%s,%s\n'%(Emin,Emax,polarization_frac,dpol_frac, phase, dphase, counts, stokes.q(),stokes.u())
+            print "Info",line
+            output_file.write(line)
+    
+    output_file.close()
+    
 def fit_pol_map():
     
     
@@ -129,6 +184,7 @@ def fit_pol_map():
                 
                 if degree > 50:
                     mcube.plot_bin(0)
+                    
                 #write the fit values to a txt file the first time you run the code and then simply read the txt file for fast plotting after.
                 line = '%s,%s,%s,%s,%s,%s,%s\n'%(emin,emax,degree, degree_error, angle, angle_error, counts)
                 print "Info",line
@@ -138,12 +194,16 @@ def fit_pol_map():
     
 
 
-def plot_pol_map_from_ascii():
-    
-    output_file = get_output_file()
+def plot_pol_map_from_ascii(stokes):
+#    stokes = True
+    output_file = get_output_file(stokes)
     logger.info('Opening file %s for plotting...' % output_file)
-    emin,emax, degree, degree_error, angle, angle_error, counts = numpy.loadtxt(output_file, delimiter=',', unpack=True)
     
+    #load from stokes file
+    if stokes:
+        emin,emax, degree, degree_error, angle, angle_error, counts, q, u = numpy.loadtxt(output_file, delimiter=',', unpack=True)
+    else:
+        emin,emax, degree, degree_error, angle, angle_error, counts = numpy.loadtxt(output_file, delimiter=',', unpack=True)
         
     _ra = numpy.linspace(ra_min, ra_max, num_points)
     _dec = numpy.linspace(dec_min, dec_max, num_points)
@@ -191,7 +251,8 @@ def plot_input_model():
 if __name__ == '__main__':
     
     #generate()
+    select_and_stokes()
     #select_and_bin()
     #fit_pol_map()
-    plot_pol_map_from_ascii()
+    plot_pol_map_from_ascii(True)
     #plot_input_model()
