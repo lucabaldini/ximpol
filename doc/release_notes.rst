@@ -1,6 +1,8 @@
 Release notes
 =============
 
+*Added method to use stokes parameters to build the polarization maps in example script casa_pol_map.py.
+
 * Added xppimms to the pipeline.
 * A couple of modifications introduced by mistake reverted.
 * xppimms and chandra2ximpol scripts made executable.
