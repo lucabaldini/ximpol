@@ -28,6 +28,7 @@ from ximpol.evt.binning import xEventBinningLC
 from ximpol.evt.binning import xEventBinningPHASG
 from ximpol.evt.binning import xEventBinningCMAP
 from ximpol.evt.binning import xEventBinningMCUBE
+from ximpol.evt.binning import xEventBinningSCUBE
 
 
 BIN_ALG_DICT = {
@@ -35,7 +36,8 @@ BIN_ALG_DICT = {
     'LC'   : xEventBinningLC,
     'PHASG': xEventBinningPHASG,
     'CMAP' : xEventBinningCMAP,
-    'MCUBE': xEventBinningMCUBE
+    'MCUBE': xEventBinningMCUBE,
+    'SCUBE': xEventBinningSCUBE
 }
 BIN_ALGS = BIN_ALG_DICT.keys()
 BIN_ALGS.sort()
