@@ -1004,50 +1004,71 @@ class xBinnedStokesCube(xBinnedFileBase):
         map = self.data[ebin]
         return map[2,:,:]
     
-    def polarization_degree(self, ebin=0):
+    def polarization_degree(self, ebin=0, cut=800):
         """Return the polarization degree map in the selected ebin.
         """
         I = self.I(ebin=ebin)
         Q = self.Q(ebin=ebin)
         U = self.U(ebin=ebin)
-        _mask = (I >= 2)
+        _mask = (I >= cut)
         pol_deg = numpy.zeros(I.shape)
         pol_deg[_mask] = numpy.sqrt(Q[_mask]**2+U[_mask]**2)/I[_mask]
         return pol_deg
 
-    def plot_polarization_degree(self, pol_deg=None, ebin=0, show=True):
+    def plot_polarization_degree(self, pol_deg=None, ebin=0, smooth=0,
+            show=True):
         """Plot the polarization degree map in the selected ebin.
         """
         if pol_deg is None:
-            #pol_frac, dpol_frac = self.polarization_degree(ebin)
             pol_deg = self.polarization_degree(ebin)
+        if smooth != 0:
+            pol_deg = self.smooth(pol_deg, width=smooth)
         hdul = fits.HDUList()
         image = fits.ImageHDU(pol_deg, header=self.wcs.to_header())
         hdul.append(image)
         return self._make_plot(hdul, 'Polarization degree', show=show)
     
-    def polarization_angle(self, ebin=0, degree=True):
+    def polarization_angle(self, ebin=0, cut=800, degree=True):
         """Return the polarization angle map in the selected ebin.
         """
         I = self.I(ebin=ebin)
         Q = self.Q(ebin=ebin)
         U = self.U(ebin=ebin)
-        _mask = (I >= 2)
+        _mask = (I >= cut)
         pol_ang = numpy.zeros(I.shape)
         pol_ang[_mask] = 0.5*numpy.arctan2(U[_mask], Q[_mask])
+        pol_ang[pol_ang<0.] += numpy.pi
         if degree:
             pol_ang = numpy.degrees(pol_ang)
         return pol_ang
 
-    def plot_polarization_angle(self, pol_ang=None, ebin=0, show=True):
+    def plot_polarization_angle(self, pol_ang=None, ebin=0, smooth=0,
+            show=True):
         """Plot the polarization angle map in the selected ebin.
         """
         if pol_ang is None:
             pol_ang = self.polarization_angle(ebin)
+        if smooth != 0:
+            pol_ang = self.smooth(pol_ang, width=smooth)
         hdul = fits.HDUList()
         image = fits.ImageHDU(pol_ang, header=self.wcs.to_header())
         hdul.append(image)
-        return self._make_plot(hdul, 'Polarization angle', show=show)
+        return self._make_plot(hdul, 'Polarization angle [deg]', show=show)
+    
+    def smooth(self, pol, width=1):
+        """Smooth the polarization map making the average over the adjacent
+        pixels.
+        
+        Warning
+        -------
+        The N outer pixels per side are set to zero (N==width).
+        """
+        temp_pol = numpy.zeros(pol.shape)
+        for i in range(width, len(pol[:,0])-width):
+            for j in range(width, len(pol[0,:])-width):
+                temp_pol[i,j] =\
+                    numpy.mean(pol[i-width:i+width+1,j-width:j+width+1])
+        return temp_pol
     
     def plot(self, ebin=0, slice=0, show=True, zlabel=None, subplot=(1, 1, 1)):
         """Plot the Stokes parameters (I, Q or U) map in the selected ebin.
@@ -1078,7 +1099,7 @@ class xBinnedStokesCube(xBinnedFileBase):
                 fig = aplpy.FITSFigure(hdul, slices=[slice], subplot=subplot,
                 figure=plt.figure(0,figsize=(10*subplot[1], 10*subplot[0])))
         fig.add_grid()
-        fig.show_colorscale(cmap = 'afmhot')
+        fig.show_colorscale(cmap = 'afmhot')#cmap='plasma')
         fig.add_colorbar()
         fig.colorbar.set_axis_label_text(zlabel)
         if show:
