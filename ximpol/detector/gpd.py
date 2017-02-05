@@ -38,7 +38,7 @@ O_MASS = 15.999
 DME_MASS = 2*C_MASS + 6*H_MASS + O_MASS
 
 
-def perfect_gas_molar_volume(temperature, pressure):
+def perf_gas_molar_volume(temperature, pressure):
     """Return the molar volume (in cm^3) at a given temperature and pressure.
 
     This is using the law of perfect gases.
@@ -53,7 +53,7 @@ def perfect_gas_molar_volume(temperature, pressure):
     """
     return R*(temperature + 273.15)/pressure*1000.
 
-def perfect_gas_density(mass, temperature, pressure):
+def perf_gas_density(mass, temperature, pressure):
     """Return the density (in g cm^{-3}) for a perfect gas of a given 
     molecular mass at a given temperature and pressure.
 
@@ -68,7 +68,7 @@ def perfect_gas_density(mass, temperature, pressure):
     pressure : float
         The pressure in atm.
     """
-    return mass/perfect_gas_molar_volume(temperature, pressure)
+    return mass/perf_gas_molar_volume(temperature, pressure)
 
 def window_transparency(thickness=0.0050, separator=','):
     """Calculate the transparency of a Be window and write the output to file.
@@ -98,9 +98,25 @@ def window_transparency(thickness=0.0050, separator=','):
     output_file.close()
     logger.info('Done.')
 
-def quantum_efficiency(thickness=1.0, he_pp=0.2, dme_pp=0.8, T=0.,
+def quantum_efficiency(thickness=1.0, he_pp=0.2, dme_pp=0.8, temperature=0.,
                        cut_efficiency=1., separator=','):
     """Calculate the quantum efficiency of a Ne/DME gass cell.
+
+    Arguments
+    ---------
+    thickness : float
+        The thickness of the gas cell (in cm).
+
+    he_pp : float
+        The He partial pressure (in atm).
+
+    dme_pp : float
+        The DME partial pressure (in atm).
+
+    
+
+    separator : string
+        The column separator for the output file.
     """
     he_data = numpy.loadtxt(_full_path('xcom_he_xsec.txt'), unpack=True)
     energy, he_coher_xsec, he_incoher_xsec, he_photo_xsec = he_data
@@ -108,8 +124,8 @@ def quantum_efficiency(thickness=1.0, he_pp=0.2, dme_pp=0.8, T=0.,
     energy, dme_coher_xsec, dme_incoher_xsec, dme_photo_xsec = dme_data
     # Convert MeV to keV
     energy *= 1000.
-    lambda_inv = he_photo_xsec*perfect_gas_density(HE_MASS, T, he_pp) +\
-                 dme_photo_xsec*perfect_gas_density(DME_MASS, T, dme_pp)
+    lambda_inv = he_photo_xsec*perf_gas_density(HE_MASS, temperature, he_pp) +\
+                 dme_photo_xsec*perf_gas_density(DME_MASS, temperature, dme_pp)
     efficiency = 1 - numpy.exp(-lambda_inv*thickness)
     efficiency *= cut_efficiency
     file_path = _full_path('gpd_quantum_efficiency_he%d_dme%d_%dmm.csv' %\
