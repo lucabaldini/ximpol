@@ -1,10 +1,12 @@
 Release notes
 =============
 
+* Added a script (ximpol/detector/gpd.py) and associated files to cross check
+  the calculation of the window transmission and the GPD efficiency.
 * Added SCUBE algorithm to xpbin.
 * Added new events binning classes to make and read the stokes cubes (SCUBE).
-* Added method to use stokes parameters to build the polarization maps in example
-  script casa_pol_map.py.
+* Added method to use stokes parameters to build the polarization maps in
+  example script casa_pol_map.py.
 * Added xppimms to the pipeline.
 * A couple of modifications introduced by mistake reverted.
 * xppimms and chandra2ximpol scripts made executable.
