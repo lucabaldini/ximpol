@@ -21,15 +21,23 @@ import numpy
 
 from ximpol.srcmodel.roi import xUniformDisk, xROIModel
 from ximpol.srcmodel.spectrum import power_law
-from ximpol.srcmodel.polarization import constant
 
+RA = 10.
+DEC = 10.
+RAD = 0.03
+POL_MAX = 0.8
 
-ROI_MODEL = xROIModel(10., 10.)
+ROI_MODEL = xROIModel(RA, DEC)
+
+def polarization_degree(E, t, ra, dec):
+    distance = numpy.sqrt((ra-RA)**2 + (dec-DEC)**2)
+    return POL_MAX*(distance/RAD)
+
+def polarization_angle(E, t, ra, dec):
+    return numpy.arctan2(ra-RA,dec-DEC)
 
 energy_spectrum = power_law(10., 2.)
-polarization_degree = constant(0.5)
-polarization_angle = constant(numpy.radians(65.))
-disk = xUniformDisk('disk', 10., 10., 0.01, energy_spectrum,
+disk = xUniformDisk('disk', RA, DEC, RAD, energy_spectrum,
                     polarization_degree, polarization_angle)
 
 ROI_MODEL.add_source(disk)
