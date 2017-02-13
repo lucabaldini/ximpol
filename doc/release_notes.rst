@@ -1,6 +1,8 @@
 Release notes
 =============
 
+* Added an example script (examples/uniform_disk_stokes.py) to plot the
+  polarization degree and angle using the stokes cube.
 * Added a script (ximpol/detector/gpd.py) and associated files to cross check
   the calculation of the window transmission and the GPD efficiency.
 * Added SCUBE algorithm to xpbin.
