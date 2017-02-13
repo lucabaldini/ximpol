@@ -836,7 +836,8 @@ class xBinTableHDUSCUBE(xBinTableHDUBase):
     HEADER_KEYWORDS = []
     DATA_SPECS = [
         ('ENERGY_LO'   , 'E', 'keV'),
-        ('ENERGY_HI'   , 'E', 'keV')
+        ('ENERGY_HI'   , 'E', 'keV'),
+        ('EFFECTIVE_MU', 'E')
     ]
 
 
@@ -938,6 +939,7 @@ class xEventBinningSCUBE(xEventBinningBase):
         ebinning = self.make_binning()
         logger.info('Energy binning: %s' %ebinning)
         emin, emax = ebinning[:-1], ebinning[1:]
+        mu_list = []
         #if len(emin) > 1:
         #    emin = numpy.append(emin, emin[0])
         #    emax = numpy.append(emax, emax[-1])
@@ -954,15 +956,18 @@ class xEventBinningSCUBE(xEventBinningBase):
                 n, x, y = numpy.histogram2d(pix[:,1], pix[:,0],
                                             bins=(binsx, binsy), weights=array)
                 levels.append(n)
+            eff_mu = levels[3].sum()/levels[0].sum()
+            mu_list.append(eff_mu)
             _mask = (levels[0] > 0)
             levels[3][_mask] /= levels[0][_mask]
             levels[2][_mask] = 2*levels[2][_mask]/levels[3][_mask]
             levels[1][_mask] = 2*levels[1][_mask]/levels[3][_mask]
             image = fits.ImageHDU(numpy.array(levels[:3]), header=header,
                                   name='STOKES: %.1f--%.1f keV'%(_emin, _emax))
+            
             hdul.append(image)
         logger.info('Creating EBOUNDS...')
-        data = [emin, emax]
+        data = [emin, emax, numpy.array(mu_list)]
         ebounds = xBinTableHDUSCUBE(data)
         ebounds.setup_header(self.event_file.primary_keywords())
         hdul.append(ebounds)
@@ -985,6 +990,7 @@ class xBinnedStokesCube(xBinnedFileBase):
                      len(self.hdu_list)-1)]
         self.emin = self.hdu_list['EBOUNDS'].data['ENERGY_LO']
         self.emax = self.hdu_list['EBOUNDS'].data['ENERGY_HI']
+        self.eff_mu = self.hdu_list['EBOUNDS'].data['EFFECTIVE_MU']
         
     def I(self, ebin=0):
         """Return the I counts map (slice=0) in the selected ebin.
@@ -1004,71 +1010,86 @@ class xBinnedStokesCube(xBinnedFileBase):
         map = self.data[ebin]
         return map[2,:,:]
     
-    def polarization_degree(self, ebin=0, cut=800):
-        """Return the polarization degree map in the selected ebin.
+    def getIQU(self, ebin=0):
+        """Return the I, Q, U maps in the selected ebin.
         """
-        I = self.I(ebin=ebin)
-        Q = self.Q(ebin=ebin)
-        U = self.U(ebin=ebin)
-        _mask = (I >= cut)
-        pol_deg = numpy.zeros(I.shape)
-        pol_deg[_mask] = numpy.sqrt(Q[_mask]**2+U[_mask]**2)/I[_mask]
-        return pol_deg
-
-    def plot_polarization_degree(self, pol_deg=None, ebin=0, smooth=0,
-            show=True):
-        """Plot the polarization degree map in the selected ebin.
-        """
-        if pol_deg is None:
-            pol_deg = self.polarization_degree(ebin)
-        if smooth != 0:
-            pol_deg = self.smooth(pol_deg, width=smooth)
-        hdul = fits.HDUList()
-        image = fits.ImageHDU(pol_deg, header=self.wcs.to_header())
-        hdul.append(image)
-        return self._make_plot(hdul, 'Polarization degree', show=show)
+        return self.I(ebin), self.Q(ebin), self.U(ebin)
     
-    def polarization_angle(self, ebin=0, cut=800, degree=True):
-        """Return the polarization angle map in the selected ebin.
-        """
-        I = self.I(ebin=ebin)
-        Q = self.Q(ebin=ebin)
-        U = self.U(ebin=ebin)
-        _mask = (I >= cut)
-        pol_ang = numpy.zeros(I.shape)
-        pol_ang[_mask] = 0.5*numpy.arctan2(U[_mask], Q[_mask])
-        pol_ang[pol_ang<0.] += numpy.pi
-        if degree:
-            pol_ang = numpy.degrees(pol_ang)
-        return pol_ang
-
-    def plot_polarization_angle(self, pol_ang=None, ebin=0, smooth=0,
-            show=True):
-        """Plot the polarization angle map in the selected ebin.
-        """
-        if pol_ang is None:
-            pol_ang = self.polarization_angle(ebin)
-        if smooth != 0:
-            pol_ang = self.smooth(pol_ang, width=smooth)
-        hdul = fits.HDUList()
-        image = fits.ImageHDU(pol_ang, header=self.wcs.to_header())
-        hdul.append(image)
-        return self._make_plot(hdul, 'Polarization angle [deg]', show=show)
-    
-    def smooth(self, pol, width=1):
-        """Smooth the polarization map making the average over the adjacent
-        pixels.
+    def smooth(self, ebin=0, width=1):
+        """Smooth the I, Q, U maps making the sum over the adjacent
+        pixels in the selected ebin.
         
         Warning
         -------
         The N outer pixels per side are set to zero (N==width).
         """
-        temp_pol = numpy.zeros(pol.shape)
-        for i in range(width, len(pol[:,0])-width):
-            for j in range(width, len(pol[0,:])-width):
-                temp_pol[i,j] =\
-                    numpy.mean(pol[i-width:i+width+1,j-width:j+width+1])
-        return temp_pol
+        I, Q, U = self.getIQU(ebin)
+        I_new = numpy.zeros(I.shape)
+        Q_new = numpy.zeros(Q.shape)
+        U_new = numpy.zeros(U.shape)
+        for i in range(width, len(I[:,0])-width):
+            for j in range(width, len(I[0,:])-width):
+                I_new[i,j] = I[i-width:i+width+1,j-width:j+width+1].sum()
+                Q_new[i,j] = Q[i-width:i+width+1,j-width:j+width+1].sum()
+                U_new[i,j] = U[i-width:i+width+1,j-width:j+width+1].sum()
+        return I_new, Q_new, U_new
+    
+    def polarization_degree_angle(self, ebin, smooth=0, I_cut=15, sigma=2,
+        degree=True):
+        """Return the polarization degree, angle and errors maps in the
+        selected ebin.
+        """
+        if smooth is 0:
+            I, Q, U = self.getIQU(ebin)
+        else:
+            I, Q, U = self.smooth(ebin, width=smooth)
+        eff_mu = self.eff_mu[ebin]
+        _mask = (I >= I_cut)
+        pol_deg = numpy.zeros(I.shape)
+        pol_ang = numpy.zeros(I.shape)
+        pol_deg_err = numpy.zeros(I.shape)
+        pol_ang_err = numpy.zeros(I.shape)
+        pol_deg[_mask] = numpy.sqrt(Q[_mask]**2+U[_mask]**2)/I[_mask]
+        pol_deg_err[_mask] =\
+            numpy.sqrt((2./eff_mu**2-pol_deg[_mask]**2)/(I[_mask]-1))
+        pol_ang[_mask] = 0.5*numpy.arctan2(U[_mask], Q[_mask])
+        pol_ang[pol_ang<0.] += numpy.pi
+        pol_ang_err[_mask] =\
+            1./(pol_deg[_mask]*eff_mu*numpy.sqrt(2*(I[_mask]-1)))
+        if degree:
+            pol_ang = numpy.degrees(pol_ang)
+            pol_ang_err = numpy.degrees(pol_ang_err)
+        _sigma_mask = (((pol_deg + sigma*pol_deg_err) > 1) +\
+                       ((pol_deg - sigma*pol_deg_err) < 0))
+        pol_deg[_sigma_mask] = 0.
+        pol_deg_err[_sigma_mask] = 0.
+        pol_ang[_sigma_mask] = 0.
+        pol_ang_err[_sigma_mask] = 0.
+        return [pol_deg, pol_deg_err, pol_ang, pol_ang_err]
+    
+    def plot_polarization_degree_angle(self, pol_list, show=True):
+        """Plot the polarization degree and angle maps.
+        """
+        zlabel = 'Polarization degree'
+        fig_deg, fig_deg_err = self._make_pol_plot(pol_list[0], pol_list[1],
+                                                   zlabel, show=show)
+        zlabel = 'Polarization angle'
+        fig_ang, fig_ang_err = self._make_pol_plot(pol_list[2], pol_list[3],
+                                                   zlabel, show=show)
+        return [fig_deg, fig_deg_err, fig_ang, fig_ang_err]
+
+    def _make_pol_plot(self, pol, pol_err, zlabel, show=True):
+        """Make the polarization plot.
+        """
+        hdul = fits.HDUList()
+        img_pol = fits.ImageHDU(pol, header=self.wcs.to_header())
+        img_pol_err =fits.ImageHDU(pol_err, header=self.wcs.to_header())
+        hdul.append(img_pol)
+        hdul.append(img_pol_err)
+        fig_pol = self._make_plot(hdul[0], zlabel, show=show)
+        zlabel += ' error'
+        fig_pol_err = self._make_plot(hdul[1], zlabel, show=show)
+        return fig_pol, fig_pol_err
     
     def plot(self, ebin=0, slice=0, show=True, zlabel=None, subplot=(1, 1, 1)):
         """Plot the Stokes parameters (I, Q or U) map in the selected ebin.
