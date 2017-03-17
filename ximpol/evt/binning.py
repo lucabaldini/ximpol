@@ -220,7 +220,7 @@ class xBinTableHDUPHA1(xBinTableHDUBase):
         ('CHANTYPE', 'PI'),
         ('HDUVERS' , '1.2.1', 'OGIP version number'),
         ('TLMIN1'  , 0      , 'first channel number'),
-        ('TLMAX1'  , 255    , 'last channel number'),
+        ('TLMAX1'  , 4095    , 'last channel number'),
         ('CORRSCAL', 1.     , 'scaling for correction file'),
         ('POISSERR', False  , 'use statistical errors'),
         ('BACKFILE', None),
