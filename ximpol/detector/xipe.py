@@ -54,9 +54,9 @@ ABS_GAP_THICKNESS = 1.      # cm
 QUAL_CUT_EFFICIENCY = 0.8   #
 WINDOW_MATERIAL = 'Be'      #
 WINDOW_THICKNESS = 50.      # um
-NUM_CHANNELS = 256          #
+NUM_CHANNELS = 4096          #
 TLMIN = 0                   #
-TLMAX = 255                 #
+TLMAX = NUM_CHANNELS - 1    #
 E_CHAN_OFFSET = 0.          # keV
 E_CHAN_SLOPE = ENERGY_MAX/float(NUM_CHANNELS) # keV/channel
 
