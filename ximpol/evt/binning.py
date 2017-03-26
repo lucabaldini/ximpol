@@ -376,6 +376,100 @@ class xBinnedMap:
         return self.image.plot(show=show,subplot=subplot)
 
 
+class xEventBinningARATE(xEventBinningBase):
+
+    """Class for ARATE binning.
+    """
+
+    def process_kwargs(self):
+        """Overloaded method.
+        """
+        xEventBinningBase.process_kwargs(self)
+        primary_header = self.event_file.hdu_list['PRIMARY'].header
+        if self.get('xref') is None:
+            self.set('xref', primary_header['ROIRA'])
+        if self.get('yref') is None:
+            self.set('yref', primary_header['ROIDEC'])
+
+    def bin_(self):
+        """Overloaded method.
+
+        Warning
+        -------
+        This is horrible, as I shamelessly copied the CMAP code and added the
+        missing bits. We should refactor the code in common instead.
+        """
+        if self.get('mc'):
+            ra = self.event_data['MC_RA']
+            dec = self.event_data['MC_DEC']
+        else:
+            ra = self.event_data['RA']
+            dec = self.event_data['DEC']
+        xref = self.get('xref')
+        yref = self.get('yref')
+        nxpix = self.get('nxpix')
+        nypix = self.get('nypix')
+        pixsize = self.get('binsz')/3600.
+        proj = self.get('proj')
+        sidex = nxpix*pixsize
+        sidey = nypix*pixsize
+        logger.info('Output image dimensions are %.1f x %.1f arcmin.' %\
+                    (sidex*60, sidey*60))
+        binsx = numpy.linspace(0, nxpix, nxpix + 1)
+        binsy = numpy.linspace(0, nypix, nypix + 1)
+        # Build the WCS object
+        w = wcs.WCS(naxis=2)
+        w.wcs.crpix = [0.5*nxpix, 0.5*nypix]
+        w.wcs.cdelt = [-pixsize, pixsize]
+        w.wcs.crval = [xref, yref]
+        w.wcs.ctype = ['RA---%s' % proj, 'DEC--%s' % proj]
+        w.wcs.equinox = 2000.
+        w.wcs.radesys = 'ICRS'
+        header = w.to_header()
+        # And here we need to tweak the header by hand to replicate what we
+        # do in xEventBinningBase.build_primary_hdu() for the other binning
+        # algorithms.
+        header.set('BINALG', self.get('algorithm'),'the binning algorithm used')
+        for key, val, comment in self.event_file.primary_keywords():
+            header.set(key, val, comment)
+        header['COMMENT'] = '%s run with kwargs %s' %\
+                            (self.__class__.__name__, self.kwargs)
+        # Ready to go!
+        pix = w.wcs_world2pix(zip(ra, dec), 1)
+        n, x, y = numpy.histogram2d(pix[:,1], pix[:,0], bins=(binsx, binsy))
+        # Divide by the time to get the rate in counts per pixel.
+        n /= self.event_file.total_good_time()
+        # Ok, self.get('binsz') is the pixel size in arcseconds, and we have
+        # to convert a solid angle in the sky to an area onto the detector.
+        # self.get('focalscale') is the linear scale from arcmin in the sky to
+        # mm on the focal plane.
+        n /= (self.get('focalscale')*self.get('binsz')/60.)**2
+        # And now, normalize to the number of telescopes on the focal plane.
+        n /= self.get('ntelescopes')
+        hdu = fits.PrimaryHDU(n, header=header)
+        logger.info('Writing binned CMAP data to %s...' % self.get('outfile'))
+        hdu.writeto(self.get('outfile'), clobber=True)
+        logger.info('Done.')
+
+
+class xBinnedAreaRateMap:
+
+    """Display interface to binned ARATE files.
+    """
+
+    def __init__(self, file_path):
+        """Constructor.
+        """
+        self.image = xFITSImage(file_path, build_cdf=False)
+
+    def plot(self, show=True, subplot=(1,1,1)):
+        """Plot the data.
+        """
+        return self.image.plot(show=show, zlabel='Counts / mm2 / s / GPD',
+                               subplot=subplot)
+
+    
+
 class xBinTableHDULC(xBinTableHDUBase):
 
     """Binary table for binned LC data.

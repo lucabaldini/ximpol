@@ -29,6 +29,7 @@ from ximpol.evt.binning import xBinnedMap
 from ximpol.evt.binning import xBinnedModulationCube
 from ximpol.evt.binning import xBinnedLightCurve
 from ximpol.evt.binning import xBinnedPhasogram
+from ximpol.evt.binning import xBinnedAreaRateMap
 
 
 VIEW_DICT = {
@@ -36,7 +37,8 @@ VIEW_DICT = {
     'LC'   : xBinnedLightCurve,
     'PHASG': xBinnedPhasogram,
     'CMAP' : xBinnedMap,
-    'MCUBE': xBinnedModulationCube
+    'MCUBE': xBinnedModulationCube,
+    'ARATE': xBinnedAreaRateMap
 }
 
 def xpviewbin(file_path):
