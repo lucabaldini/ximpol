@@ -228,6 +228,40 @@ class xModelComponentBase:
         col_mc_energy = count_spectrum.rvs(col_time)
         event_list.set_column('MC_ENERGY', col_mc_energy)
         col_pha = edisp.matrix.rvs(col_mc_energy)
+        ##################
+        # Testing the effect of time dependent gain, need to incorporate
+        #properly. To turn on set the varGain to True and pick the
+        #function you would like to use to describe how the gain varies
+        #with time. Here are two examples of a combined exponential and
+        #a single rising exponential.- mpr
+        def comb_exp(x, C, D1, D2, tau1, tau2, x0):
+            """
+            """
+            return C - D1*numpy.exp(-(x - x0)/tau1) + D2*numpy.exp(-(x - x0)/tau2)
+        def rising_exp(x, C, D, tau, x0):
+            """
+            """
+            return C - D*numpy.exp(-(x - x0)/tau)
+        #Worst case scenario
+        #popt3 = numpy.array([1.0, 0.4, 0.47, 1000, 1100,  2000.0])
+        #Single exp rising ranging from -0.05 - 1 in a few hours, then constant up to 100ks
+        popt3 = numpy.array([1.0, 0.05, 5000, 90.])
+        #This works for the 10ks case
+        #popt3 = numpy.array([1.0, 0.08, 1000, 60.])
+        
+        varGain=False
+        
+        logger.info('Using the var gain option on %s, if set to True will multiply the pha with a function!'%varGain)
+        
+        
+        if varGain:
+            #f = (comb_exp(col_time, *popt3))
+            f = (rising_exp(col_time, *popt3))
+            print f.max(),f.min()
+        else:
+            f = 1
+        col_pha = numpy.rint(col_pha*f)
+        ##################
         event_list.set_column('PHA', col_pha)
         event_list.set_column('ENERGY', edisp.ebounds(col_pha))
         # Extract the MC sky positions and smear them with the PSF.
