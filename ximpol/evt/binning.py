@@ -376,6 +376,100 @@ class xBinnedMap:
         return self.image.plot(show=show,subplot=subplot)
 
 
+class xEventBinningARATE(xEventBinningBase):
+
+    """Class for ARATE binning.
+    """
+
+    def process_kwargs(self):
+        """Overloaded method.
+        """
+        xEventBinningBase.process_kwargs(self)
+        primary_header = self.event_file.hdu_list['PRIMARY'].header
+        if self.get('xref') is None:
+            self.set('xref', primary_header['ROIRA'])
+        if self.get('yref') is None:
+            self.set('yref', primary_header['ROIDEC'])
+
+    def bin_(self):
+        """Overloaded method.
+
+        Warning
+        -------
+        This is horrible, as I shamelessly copied the CMAP code and added the
+        missing bits. We should refactor the code in common instead.
+        """
+        if self.get('mc'):
+            ra = self.event_data['MC_RA']
+            dec = self.event_data['MC_DEC']
+        else:
+            ra = self.event_data['RA']
+            dec = self.event_data['DEC']
+        xref = self.get('xref')
+        yref = self.get('yref')
+        nxpix = self.get('nxpix')
+        nypix = self.get('nypix')
+        pixsize = self.get('binsz')/3600.
+        proj = self.get('proj')
+        sidex = nxpix*pixsize
+        sidey = nypix*pixsize
+        logger.info('Output image dimensions are %.1f x %.1f arcmin.' %\
+                    (sidex*60, sidey*60))
+        binsx = numpy.linspace(0, nxpix, nxpix + 1)
+        binsy = numpy.linspace(0, nypix, nypix + 1)
+        # Build the WCS object
+        w = wcs.WCS(naxis=2)
+        w.wcs.crpix = [0.5*nxpix, 0.5*nypix]
+        w.wcs.cdelt = [-pixsize, pixsize]
+        w.wcs.crval = [xref, yref]
+        w.wcs.ctype = ['RA---%s' % proj, 'DEC--%s' % proj]
+        w.wcs.equinox = 2000.
+        w.wcs.radesys = 'ICRS'
+        header = w.to_header()
+        # And here we need to tweak the header by hand to replicate what we
+        # do in xEventBinningBase.build_primary_hdu() for the other binning
+        # algorithms.
+        header.set('BINALG', self.get('algorithm'),'the binning algorithm used')
+        for key, val, comment in self.event_file.primary_keywords():
+            header.set(key, val, comment)
+        header['COMMENT'] = '%s run with kwargs %s' %\
+                            (self.__class__.__name__, self.kwargs)
+        # Ready to go!
+        pix = w.wcs_world2pix(zip(ra, dec), 1)
+        n, x, y = numpy.histogram2d(pix[:,1], pix[:,0], bins=(binsx, binsy))
+        # Divide by the time to get the rate in counts per pixel.
+        n /= self.event_file.total_good_time()
+        # Ok, self.get('binsz') is the pixel size in arcseconds, and we have
+        # to convert a solid angle in the sky to an area onto the detector.
+        # self.get('focalscale') is the linear scale from arcmin in the sky to
+        # mm on the focal plane.
+        n /= (self.get('focalscale')*self.get('binsz')/60.)**2
+        # And now, normalize to the number of telescopes on the focal plane.
+        n /= self.get('ntelescopes')
+        hdu = fits.PrimaryHDU(n, header=header)
+        logger.info('Writing binned CMAP data to %s...' % self.get('outfile'))
+        hdu.writeto(self.get('outfile'), clobber=True)
+        logger.info('Done.')
+
+
+class xBinnedAreaRateMap:
+
+    """Display interface to binned ARATE files.
+    """
+
+    def __init__(self, file_path):
+        """Constructor.
+        """
+        self.image = xFITSImage(file_path, build_cdf=False)
+
+    def plot(self, show=True, subplot=(1,1,1)):
+        """Plot the data.
+        """
+        return self.image.plot(show=show, zlabel='Counts / mm2 / s / GPD',
+                               subplot=subplot)
+
+    
+
 class xBinTableHDULC(xBinTableHDUBase):
 
     """Binary table for binned LC data.
@@ -826,3 +920,303 @@ class xBinnedModulationCube(xBinnedFileBase):
             self.plot_polarization_angle(show=False)
         if show:
             plt.show()
+
+class xBinTableHDUSCUBE(xBinTableHDUBase):
+
+    """Binary table for binned SCUBE data.
+    """
+
+    NAME = 'EBOUNDS'
+    HEADER_KEYWORDS = []
+    DATA_SPECS = [
+        ('ENERGY_LO'   , 'E', 'keV'),
+        ('ENERGY_HI'   , 'E', 'keV'),
+        ('EFFECTIVE_MU', 'E')
+    ]
+
+
+class xEventBinningSCUBE(xEventBinningBase):
+    
+    """Class for SCUBE binning.
+    """
+    
+    def process_kwargs(self):
+        """Overloaded method.
+        """
+        xEventBinningBase.process_kwargs(self)
+        primary_header = self.event_file.hdu_list['PRIMARY'].header
+        if self.get('xref') is None:
+            self.set('xref', primary_header['ROIRA'])
+        if self.get('yref') is None:
+            self.set('yref', primary_header['ROIDEC'])
+    
+    def make_binning(self):
+        """Build the stokes cube energy binning.
+        
+        This is copied form modulation cube binning and should be factored out.
+        """
+        ebinalg = self.get('ebinalg')
+        emin = self.get('emin')
+        emax = self.get('emax')
+        ebins = self.get('ebins')
+        if ebinalg == 'LIN':
+            ebinning = numpy.linspace(emin, emax, ebins + 1)
+        elif ebinalg == 'LOG':
+            ebinning = numpy.linspace(numpy.log10(emin), numpy.log10(emax),
+                                      ebins + 1)
+        elif ebinalg == 'EQP':
+            if self.get('mc'):
+                energy = self.event_data['MC_ENERGY']
+            else:
+                energy = self.event_data['ENERGY']
+            ebinning = self.equipopulated_binning(ebins, energy, emin, emax)
+        elif ebinalg == 'FILE':
+            ebinfile = self.get('ebinfile')
+            assert ebinfile is not None
+            ebinning = self.read_binning(ebinfile)
+        elif ebinalg == 'LIST':
+            ebinning = self.get('ebinning')
+            assert isinstance(ebinning, list)
+            ebinning = numpy.array(ebinning, 'd')
+        else:
+            abort('ebinalg %s not implemented yet' % ebinalg)
+        return ebinning
+        
+    def bin_(self):
+        """Overloaded method.
+        """
+        from ximpol.irf import load_mrf
+        modf = load_mrf(self.event_file.irf_name())
+        if self.get('mc'):
+            ra = self.event_data['MC_RA']
+            dec = self.event_data['MC_DEC']
+            energy = self.event_data['MC_ENERGY']
+        else:
+            ra = self.event_data['RA']
+            dec = self.event_data['DEC']
+            energy = self.event_data['ENERGY']
+        phi = self.event_data['PE_ANGLE']
+        # Calculate the stokes parameters
+        I = numpy.ones(len(phi))
+        Q = numpy.cos(2*phi)
+        U = numpy.sin(2*phi)
+        xref = self.get('xref')
+        yref = self.get('yref')
+        nxpix = self.get('nxpix')
+        nypix = self.get('nypix')
+        pixsize = self.get('binsz')/3600.
+        proj = self.get('proj')
+        sidex = nxpix*pixsize
+        sidey = nypix*pixsize
+        logger.info('Output image dimensions are %.1f x %.1f arcmin.' %\
+                    (sidex*60, sidey*60))
+        binsx = numpy.linspace(0, nxpix, nxpix + 1)
+        binsy = numpy.linspace(0, nypix, nypix + 1)
+        # Build the WCS object
+        w = wcs.WCS(naxis=2)
+        w.wcs.crpix = [0.5*nxpix, 0.5*nypix]
+        w.wcs.cdelt = [-pixsize, pixsize]
+        w.wcs.crval = [xref, yref]
+        w.wcs.ctype = ['RA---%s' % proj, 'DEC--%s' % proj]
+        w.wcs.equinox = 2000.
+        w.wcs.radesys = 'ICRS'
+        header = w.to_header()
+        # And here we need to tweak the header by hand to replicate what we
+        # do in xEventBinningBase.build_primary_hdu() for the other binning
+        # algorithms.
+        header.set('BINALG', self.get('algorithm'),'the binning algorithm used')
+        for key, val, comment in self.event_file.primary_keywords():
+            header.set(key, val, comment)
+        header['COMMENT'] = '%s run with kwargs %s' %\
+                            (self.__class__.__name__, self.kwargs)
+        hdul = fits.HDUList()
+        ebinning = self.make_binning()
+        logger.info('Energy binning: %s' %ebinning)
+        emin, emax = ebinning[:-1], ebinning[1:]
+        mu_list = []
+        #if len(emin) > 1:
+        #    emin = numpy.append(emin, emin[0])
+        #    emax = numpy.append(emax, emax[-1])
+        for _emin, _emax in zip(emin, emax):
+            _emask = (energy > _emin)*(energy < _emax)
+            array_list = [I[_emask], Q[_emask], U[_emask], modf(energy)[_emask]]
+            header.set('EMIN', _emin, 'minimum bin energy')
+            header.set('EMAX', _emax, 'maximum bin energy')
+            # Ready to go!
+            pix = w.wcs_world2pix(zip(ra[_emask], dec[_emask]), 1)
+            levels = []
+            logger.info('Creating SCUBE for %.2f--%.2f keV...' %(_emin, _emax))
+            for array in array_list:
+                n, x, y = numpy.histogram2d(pix[:,1], pix[:,0],
+                                            bins=(binsx, binsy), weights=array)
+                levels.append(n)
+            eff_mu = levels[3].sum()/levels[0].sum()
+            mu_list.append(eff_mu)
+            _mask = (levels[0] > 0)
+            levels[3][_mask] /= levels[0][_mask]
+            levels[2][_mask] = 2*levels[2][_mask]/levels[3][_mask]
+            levels[1][_mask] = 2*levels[1][_mask]/levels[3][_mask]
+            image = fits.ImageHDU(numpy.array(levels[:3]), header=header,
+                                  name='STOKES: %.1f--%.1f keV'%(_emin, _emax))
+            
+            hdul.append(image)
+        logger.info('Creating EBOUNDS...')
+        data = [emin, emax, numpy.array(mu_list)]
+        ebounds = xBinTableHDUSCUBE(data)
+        ebounds.setup_header(self.event_file.primary_keywords())
+        hdul.append(ebounds)
+        logger.info('Writing SCUBE data to %s...' % self.get('outfile'))
+        hdul.writeto(self.get('outfile'), clobber=True)
+        logger.info('Done.')
+
+class xBinnedStokesCube(xBinnedFileBase):
+
+    """Read-mode interface to a SCUBE FITS file.
+    """
+
+    def __init__(self, file_path):
+        """Constructor.
+        """
+        xBinnedFileBase.__init__(self, file_path)
+        self.hdu_list = fits.open(file_path)
+        self.wcs = wcs.WCS(self.hdu_list[0].header)
+        self.data = [self.hdu_list[i].data for i in range(0,
+                     len(self.hdu_list)-1)]
+        self.emin = self.hdu_list['EBOUNDS'].data['ENERGY_LO']
+        self.emax = self.hdu_list['EBOUNDS'].data['ENERGY_HI']
+        self.eff_mu = self.hdu_list['EBOUNDS'].data['EFFECTIVE_MU']
+        
+    def I(self, ebin=0):
+        """Return the I counts map (slice=0) in the selected ebin.
+        """
+        map = self.data[ebin]
+        return map[0,:,:]
+    
+    def Q(self, ebin=0):
+        """Return the Q map (slice=1) in the selected ebin.
+        """
+        map = self.data[ebin]
+        return map[1,:,:]
+        
+    def U(self, ebin=0):
+        """Return the U map (slice=2) in the selected ebin.
+        """
+        map = self.data[ebin]
+        return map[2,:,:]
+    
+    def getIQU(self, ebin=0):
+        """Return the I, Q, U maps in the selected ebin.
+        """
+        return self.I(ebin), self.Q(ebin), self.U(ebin)
+    
+    def smooth(self, ebin=0, width=1):
+        """Smooth the I, Q, U maps making the sum over the adjacent
+        pixels in the selected ebin.
+        
+        Warning
+        -------
+        The N outer pixels per side are set to zero (N==width).
+        """
+        I, Q, U = self.getIQU(ebin)
+        I_new = numpy.zeros(I.shape)
+        Q_new = numpy.zeros(Q.shape)
+        U_new = numpy.zeros(U.shape)
+        for i in range(width, len(I[:,0])-width):
+            for j in range(width, len(I[0,:])-width):
+                I_new[i,j] = I[i-width:i+width+1,j-width:j+width+1].sum()
+                Q_new[i,j] = Q[i-width:i+width+1,j-width:j+width+1].sum()
+                U_new[i,j] = U[i-width:i+width+1,j-width:j+width+1].sum()
+        return I_new, Q_new, U_new
+    
+    def polarization_degree_angle(self, ebin, smooth=0, I_cut=15, sigma=2,
+        degree=True):
+        """Return the polarization degree, angle and errors maps in the
+        selected ebin.
+        """
+        if smooth is 0:
+            I, Q, U = self.getIQU(ebin)
+        else:
+            I, Q, U = self.smooth(ebin, width=smooth)
+        eff_mu = self.eff_mu[ebin]
+        _mask = (I >= I_cut)
+        pol_deg = numpy.zeros(I.shape)
+        pol_ang = numpy.zeros(I.shape)
+        pol_deg_err = numpy.zeros(I.shape)
+        pol_ang_err = numpy.zeros(I.shape)
+        pol_deg[_mask] = numpy.sqrt(Q[_mask]**2+U[_mask]**2)/I[_mask]
+        pol_deg_err[_mask] =\
+            numpy.sqrt((2./eff_mu**2-pol_deg[_mask]**2)/(I[_mask]-1))
+        pol_ang[_mask] = 0.5*numpy.arctan2(U[_mask], Q[_mask])
+        pol_ang[pol_ang<0.] += numpy.pi
+        pol_ang_err[_mask] =\
+            1./(pol_deg[_mask]*eff_mu*numpy.sqrt(2*(I[_mask]-1)))
+        if degree:
+            pol_ang = numpy.degrees(pol_ang)
+            pol_ang_err = numpy.degrees(pol_ang_err)
+        _sigma_mask = (((pol_deg + sigma*pol_deg_err) > 1) +\
+                       ((pol_deg - sigma*pol_deg_err) < 0))
+        pol_deg[_sigma_mask] = 0.
+        pol_deg_err[_sigma_mask] = 0.
+        pol_ang[_sigma_mask] = 0.
+        pol_ang_err[_sigma_mask] = 0.
+        return [pol_deg, pol_deg_err, pol_ang, pol_ang_err]
+    
+    def plot_polarization_degree_angle(self, pol_list, show=True):
+        """Plot the polarization degree and angle maps.
+        """
+        zlabel = 'Polarization degree'
+        fig_deg, fig_deg_err = self._make_pol_plot(pol_list[0], pol_list[1],
+                                                   zlabel, show=show)
+        zlabel = 'Polarization angle'
+        fig_ang, fig_ang_err = self._make_pol_plot(pol_list[2], pol_list[3],
+                                                   zlabel, show=show)
+        return [fig_deg, fig_deg_err, fig_ang, fig_ang_err]
+
+    def _make_pol_plot(self, pol, pol_err, zlabel, show=True):
+        """Make the polarization plot.
+        """
+        hdul = fits.HDUList()
+        img_pol = fits.ImageHDU(pol, header=self.wcs.to_header())
+        img_pol_err =fits.ImageHDU(pol_err, header=self.wcs.to_header())
+        hdul.append(img_pol)
+        hdul.append(img_pol_err)
+        fig_pol = self._make_plot(hdul[0], zlabel, show=show)
+        zlabel += ' error'
+        fig_pol_err = self._make_plot(hdul[1], zlabel, show=show)
+        return fig_pol, fig_pol_err
+    
+    def plot(self, ebin=0, slice=0, show=True, zlabel=None, subplot=(1, 1, 1)):
+        """Plot the Stokes parameters (I, Q or U) map in the selected ebin.
+        """
+        label_list = ['I', 'Q', 'U']
+        if zlabel is None:
+            zlabel = label_list[slice]
+        return self._make_plot(self.hdu_list[ebin], zlabel, slice=slice,
+                               show=show, subplot=subplot)
+    
+    def _make_plot(self, hdul, zlabel, slice=0, show=True, subplot=(1, 1, 1)):
+        """Make and show the plot.
+
+        This is using aplpy to render the image.
+
+        Warning
+        -------
+        We have to figure out the subplot issue, here. I put in a horrible
+        hack to recover the previous behavior when there's only one
+        subplot.
+        """
+        import aplpy
+        from ximpol.utils.matplotlib_ import context_no_grids
+        with context_no_grids():
+            if subplot == (1, 1, 1):
+                fig = aplpy.FITSFigure(hdul,figure=plt.figure(), slices=[slice])
+            else:
+                fig = aplpy.FITSFigure(hdul, slices=[slice], subplot=subplot,
+                figure=plt.figure(0,figsize=(10*subplot[1], 10*subplot[0])))
+        fig.add_grid()
+        fig.show_colorscale(cmap = 'afmhot')#cmap='plasma')
+        fig.add_colorbar()
+        fig.colorbar.set_axis_label_text(zlabel)
+        if show:
+            plt.show()
+        return fig

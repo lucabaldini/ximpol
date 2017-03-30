@@ -28,6 +28,8 @@ from ximpol.evt.binning import xEventBinningLC
 from ximpol.evt.binning import xEventBinningPHASG
 from ximpol.evt.binning import xEventBinningCMAP
 from ximpol.evt.binning import xEventBinningMCUBE
+from ximpol.evt.binning import xEventBinningSCUBE
+from ximpol.evt.binning import xEventBinningARATE
 
 
 BIN_ALG_DICT = {
@@ -35,7 +37,9 @@ BIN_ALG_DICT = {
     'LC'   : xEventBinningLC,
     'PHASG': xEventBinningPHASG,
     'CMAP' : xEventBinningCMAP,
-    'MCUBE': xEventBinningMCUBE
+    'MCUBE': xEventBinningMCUBE,
+    'SCUBE': xEventBinningSCUBE,
+    'ARATE': xEventBinningARATE
 }
 BIN_ALGS = BIN_ALG_DICT.keys()
 BIN_ALGS.sort()
@@ -83,6 +87,10 @@ PARSER.add_argument('--yref', type=float, default=None,
                     help='the vertical position of the image center')
 PARSER.add_argument('--proj', choices=PRJCTS, default='TAN',
                     help='coordinate projection')
+PARSER.add_argument('--focalscale', type=float, default=1.,
+                    help='arcmin to mm on the focal plane scale factor')
+PARSER.add_argument('--ntelescopes', type=int, default=3,
+                    help='number of telescopes in the instrument')
 PARSER.add_argument('--ebinalg', choices=EBIN_ALGS, default='LIN',
                     help='energy binning specification')
 PARSER.add_argument('--emin', type=float, default=1.,
