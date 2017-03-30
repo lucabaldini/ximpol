@@ -30,7 +30,7 @@ from ximpol.config.single_point_source import PL_NORM, PL_INDEX
 CFG_FILE = os.path.join(XIMPOL_CONFIG, 'single_point_source.py')
 OUT_FILE_PATH_BASE = os.path.join(XIMPOL_DATA, 'single_point_source')
 EVT_FILE_PATH = '%s.fits' % OUT_FILE_PATH_BASE
-SIM_DURATION = 10000.
+SIM_DURATION = 1000.
 OUTPUT_FOLDER = os.path.join(XIMPOL_DOC, 'figures', 'showcase')
 
 

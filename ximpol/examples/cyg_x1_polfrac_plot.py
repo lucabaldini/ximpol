@@ -41,7 +41,7 @@ from ximpol.config.cyg_x1_spherical_corona import pol_angle_spline as  pol_angle
 
 from cyg_x1 import SIM_DURATION
 
-NUM_RUNS = 2
+NUM_RUNS = 3
 #SPHERICAL_CFG_FILE = os.path.join(XIMPOL_CONFIG, 'cyg_x1_spherical.py')
 
 

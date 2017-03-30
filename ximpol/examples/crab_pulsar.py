@@ -34,10 +34,12 @@ from ximpol.config.crab_pulsar import pol_degree_spline, pol_angle_spline,\
 """Script-wide simulation and analysis settings.
 """
 CFG_FILE_PATH = os.path.join(XIMPOL_CONFIG, 'crab_pulsar.py')
+#OUT_FILE_PATH_BASE = os.path.join(XIMPOL_DATA, 'crab_pulsar_varGain_singleExp')
 OUT_FILE_PATH_BASE = os.path.join(XIMPOL_DATA, 'crab_pulsar')
 EVT_FILE_PATH = '%s.fits' % OUT_FILE_PATH_BASE
 ANALYSIS_FILE_PATH = '%s_analysis.txt' % OUT_FILE_PATH_BASE
 SIM_DURATION = 100000.
+DETECTOR = 'IXPE'
 NUM_PHASE_BINS = 25
 EQP_BINNING = False
 PHASE_BINNING = None
@@ -129,7 +131,7 @@ def analyze():
 def plot(save=False):
     """Plot the stuff in the analysis file.
     """
-    sim_label = 'XIPE %s ks' % (SIM_DURATION/1000.)
+    sim_label = '%s %s ks' % (DETECTOR,SIM_DURATION/1000.)
     mod_label = 'Input model'
     lc_label = 'Light curve'
     _phase, _phase_err, _pol_deg, _pol_deg_err, _pol_angle,\

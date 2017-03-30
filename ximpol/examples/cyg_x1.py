@@ -30,8 +30,10 @@ from ximpol.srcmodel.img import xFITSImage
 from ximpol.utils.matplotlib_ import pyplot as plt
 
 #Here you need to speficy which configuration file you want, it must coincide with the model for the corona
-from ximpol.config.cyg_x1_wedge_corona import pol_degree_spline, pol_angle_spline
-from ximpol.config.cyg_x1_wedge_corona import model_type
+#from ximpol.config.cyg_x1_wedge_corona import pol_degree_spline, pol_angle_spline
+from ximpol.config.cyg_x1_spherical_corona import pol_degree_spline, pol_angle_spline
+#from ximpol.config.cyg_x1_wedge_corona import model_type
+from ximpol.config.cyg_x1_spherical_corona import model_type
 
 from ximpol.utils.os_ import rm
 from ximpol.utils.system_ import cmd
@@ -49,7 +51,7 @@ OUT_FILE_PATH_BASE = os.path.join(XIMPOL_DATA, base_name)
 MCUBE_FILE_PATH = '%s_mcube.fits'%OUT_FILE_PATH_BASE
 ANALYSIS_FILE_PATH = '%s_analysis.txt' % OUT_FILE_PATH_BASE
 EVT_FILE_PATH = '%s.fits' % OUT_FILE_PATH_BASE
-SIM_DURATION = 90000.
+SIM_DURATION = 60000.
 
 #2.0 - 3.0 keV, 3.0 - 4.5 keV,  4.5 keV - 6.0 keV, 6.0 - 8.0 
 

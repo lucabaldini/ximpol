@@ -482,6 +482,9 @@ class xStokesAccumulator:
         """Return the polarization fraction given the visibility divided by effective mu.
         """
         eff_mu = mu
+        #pol_frac = (2/mu)*numpy.sqrt(self.q()**2 + self.u()**2)
+        #denominator = (self.I - 1)*eff_mu**2
+        #dpol_frac = numpy.sqrt((2-pol_frac**2*eff_mu**2)/denominator)
         v,dv = self.visibility()
         pol_frac = v/eff_mu
         dpol_frac = dv/eff_mu

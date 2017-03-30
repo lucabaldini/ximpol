@@ -34,9 +34,9 @@ import numpy
 """Script-wide simulation and analysis settings.
 """
 CFG_FILE = os.path.join(XIMPOL_CONFIG, 'single_point_source.py')
-OUT_FILE_PATH_BASE = os.path.join(XIMPOL_DATA, 'single_point_source')
+OUT_FILE_PATH_BASE = os.path.join(XIMPOL_DATA, 'single_point_source_ixpe')
 EVT_FILE_PATH = '%s.fits' % OUT_FILE_PATH_BASE
-SIM_DURATION = 10000.
+SIM_DURATION = 100.
 OUTPUT_FOLDER = os.path.join(XIMPOL_DOC, 'figures', 'showcase')
 mcbube_file_path = os.path.join(XIMPOL_DATA,'single_point_source_mcube.fits')
 
