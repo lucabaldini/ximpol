@@ -55,7 +55,7 @@ EMAX = 8.
 E_BINNING = [2.,4.,8.]
 TIME = 1500000
 
-IRF_NAME = 'ixpe_baseline' #DEFAULT_IRF_NAME
+IRF_NAME = DEFAULT_IRF_NAME
 PSF = load_psf(IRF_NAME)
 
 knots = pyregion.open(REG_KNOTS_FILE_PATH)
@@ -145,7 +145,7 @@ def plot(cmap_file, draw_regions=True):
     fig.recenter(RA, DEC, 2.6/60.)
     PSF.draw_psf_circle(fig, 0.1, 0.1, number=False)
     fig.show_colorscale(stretch='log', cmap = 'afmhot', vmin=2, vmax=100)
-    fig.add_label(0.1, 0.9, 'Centaurus A (IXPE 1.5 Ms)', relative=True,
+    fig.add_label(0.1, 0.9, 'Centaurus A (XIPE %s ks)'%TIME/1000., relative=True,
                     size='xx-large', color='white', horizontalalignment='left')
     
     #If draw_regions flag is set to True draw the regions with labels

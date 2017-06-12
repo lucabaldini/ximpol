@@ -31,9 +31,9 @@ from ximpol.utils.matplotlib_ import pyplot as plt
 from ximpol.irf import load_psf, DEFAULT_IRF_NAME
 
 CFG_FILE = os.path.join(XIMPOL_CONFIG, 'casa.py')
-DURATION = 1500000.
+DURATION = 150000.
 E_BINNING = [2., 4., 8.]
-IRF_NAME = 'ixpe_baseline' #DEFAULT_IRF_NAME
+IRF_NAME = #DEFAULT_IRF_NAME
 PSF = load_psf(IRF_NAME)
 
 evt_file_path = os.path.join(XIMPOL_DATA, 'casa.fits')
@@ -62,9 +62,6 @@ def get_mcube_file_path(i):
 def generate(vignetting=True):
     """
     """
-    #Disable vignetting for IXPE (not implemented yet)
-    if IRF_NAME is 'ixpe_baseline':
-        vignetting = False
     pipeline.xpobssim(configfile=CFG_FILE, duration=DURATION,
                       outfile=evt_file_path, irfname=IRF_NAME,
                       vignetting=vignetting)
@@ -100,7 +97,7 @@ def plot(save=False, arrows=False):
         ra, dec, rad = region.coord_list
         fig_all.show_circles(ra, dec, rad, lw=2, color='#7ec0ee')
     PSF.draw_psf_circle(fig_all,0.9,0.85, number=False)
-    fig_all.add_label(0.05,0.95, 'IXPE 1.5 Ms', relative=True, size='x-large',
+    fig_all.add_label(0.05,0.95, 'XIPE %s ks'%DURATION/1000., relative=True, size='x-large',
                       color='white', horizontalalignment='left')
     if save:
         fig_all.save(os.path.join(XIMPOL_DATA, 'casa_reg_all.png'))
@@ -124,7 +121,7 @@ def plot(save=False, arrows=False):
         fig.show_circles(ra, dec, rad, lw=1.5, color='#7ec0ee')
         fig.recenter(350.86125, 58.8175, 3.3/60.)
         PSF.draw_psf_circle(fig,0.9,0.85, number=False)
-        fig.add_label(0.05,0.95, 'IXPE 1.5 Ms', relative=True, size='x-large',
+        fig.add_label(0.05,0.95, 'XIPE %s ks'%DURATION/1000., relative=True, size='x-large',
                       color='white', horizontalalignment='left')
         plt.subplots_adjust(hspace=0.001)
         
