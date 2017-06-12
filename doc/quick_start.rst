@@ -13,19 +13,20 @@ and its signature is
 
 .. code-block:: bash
 
-    ximpol/bin/xpobssim.py 
-    usage: xpobssim.py [-h] -o OUTPUT_FILE -c CONFIG_FILE [-r IRF_NAME]
-                       [-d DURATION] [-t START_TIME] [-n TIME_STEPS]
-                       [-s RANDOM_SEED]
+ximpol/bin/xpobssim.py
+usage: xpobssim.py [-h] [--outfile OUTFILE] --configfile CONFIGFILE
+                   [--irfname IRFNAME] [--duration DURATION] [--tstart TSTART]
+                   [--seed SEED] [--vignetting {True,False}]
+                   [--clobber {True,False}]
 
 Assuming that the current working directory is the ximpol root folder, the
 command
 
 .. code-block:: bash
 
-    ximpol/bin/xpobssim.py -c ximpol/srcmodel/config/stationary_point_pl.py -d 100 -o test.fits
+    ximpol/bin/xpobssim.py --configfile ximpol/config/single_point_source.py --duration 10000
 
-should produce an event (FITS) file with a 100 s simulation of a stationary
+should produce an event (FITS) file with a 10 ks simulation of a stationary
 source with a power-law spectrum (with an index of 2 and normalization of 10)
 with energy- and time-independent polarization degree and angle (correctly
 folded with all the instrument response functions: effective area, modulation
@@ -33,28 +34,34 @@ factor, energy dispersion and point-spread function).
 The format definition for the event file is in `ximpol/evt/event.py
 <https://github.com/lucabaldini/ximpol/blob/master/ximpol/evt/event.py>`_.
 
-You can take a quick look at the output file by typing
+Now in order to bin the event file in energy (from 2 keV to 8 keV in one single bin) we run the command
 
 .. code-block:: bash
 
-    ximpol/bin/xpevtview.py test.fits
+    ximpol/bin/xpbin.py ximpol/data/single_point_source.fits --algorithm MCUBE --emin 2. --emax 8. --ebins 1
+
+that should produce a new FITS file (called modulation cube), containing the MDP value (at 99%) and the histogram of the azimuthal distribution of photoelectrons emission for every bin.
+
+The binned output file can be easily visualized using the xpviewbin tool:
+
+.. code-block:: bash
+
+    ximpol/bin/xpviewbin.py ximpol/data/single_point_source_mcube.fits
 
 .. image:: figures/evtview_screenshot.png
 
-We are already fully equipped for a basic spectral analysis with XSPEC. The
-first step is to bin the event file by running the xpbin tool (which creates a
-`test.pha` file):
+We are already fully equipped for a basic spectral analysis with XSPEC. The first step is to bin again the event file by running the xpbin tool with the PHA1 algorithm.
 
 .. code-block:: bash
 
-    ximpol/bin/xpbin.py test.fits
+    ximpol/bin/xpbin.py ximpol/data/single_point_source.fits --algorithm PHA1
 
 Finally we can feed the binned file (along with the corresponding .arf and .rmf
 response functions) into XSPEC and recover the input parameters of our source.
 
 .. code-block:: bash
 
-    ximpol/bin/xpxspec.py test.pha
+    ximpol/bin/xpxspec.py ximpol/data/single_point_source_pha1.fits
 
 Note that xpspec.py is an example of how to use
 `pyXspec <https://heasarc.gsfc.nasa.gov/xanadu/xspec/python/html/index.html>`_,
@@ -68,14 +75,16 @@ Below is the output from XSPEC on test.pha:
 
     Model powerlaw<1> Source No.: 1   Active/On
     Model Model Component  Parameter  Unit     Value
-     par  comp
-      1    1   powerlaw   PhoIndex            2.00546      +/-  9.41951E-03  
-      2    1   powerlaw   norm                10.0265      +/-  7.12876E-02  
+      par  comp
+       1    1   powerlaw   PhoIndex            1.99866      +/-  7.42715E-04  
+       2    1   powerlaw   norm                9.99055      +/-  7.66357E-03  
+     ________________________________________________________________________
 
 
-    Test statistic : Chi-Squared =         196.87 using 220 PHA bins.
-    Reduced chi-squared =        0.90308 for    218 degrees of freedom 
-    Null hypothesis probability =   8.447913e-01
+   Fit statistic : Chi-Squared =         188.76 using 191 PHA bins.
 
+   Test statistic : Chi-Squared =         188.76 using 191 PHA bins.
+    Reduced chi-squared =        0.99875 for    189 degrees of freedom 
+    Null hypothesis probability =   4.911785e-01
 
 .. image:: figures/xspec_screenshot.png
