@@ -67,7 +67,7 @@ unfortunately not all of the XSPEC capabilties have been implemented in
 pyXspec (for example how to save a plot) so it is left to the user to decide
 whether to use XSPEC or pyXSPEC for the spectral analysis.
 
-Below is the output from XSPEC on test.pha:
+Below is the output from XSPEC on single_point_source_pha1.fits:
 
 .. code-block:: bash
 
