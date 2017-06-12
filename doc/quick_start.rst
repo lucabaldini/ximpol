@@ -13,11 +13,11 @@ and its signature is
 
 .. code-block:: bash
 
-ximpol/bin/xpobssim.py
-usage: xpobssim.py [-h] [--outfile OUTFILE] --configfile CONFIGFILE
-                   [--irfname IRFNAME] [--duration DURATION] [--tstart TSTART]
-                   [--seed SEED] [--vignetting {True,False}]
-                   [--clobber {True,False}]
+  ximpol/bin/xpobssim.py
+  usage: xpobssim.py [-h] [--outfile OUTFILE] --configfile CONFIGFILE
+                     [--irfname IRFNAME] [--duration DURATION] [--tstart TSTART]
+                     [--seed SEED] [--vignetting {True,False}]
+                     [--clobber {True,False}]
 
 Assuming that the current working directory is the ximpol root folder, the
 command
@@ -47,8 +47,6 @@ The binned output file can be easily visualized using the xpviewbin tool:
 .. code-block:: bash
 
     ximpol/bin/xpviewbin.py ximpol/data/single_point_source_mcube.fits
-
-.. image:: figures/evtview_screenshot.png
 
 We are already fully equipped for a basic spectral analysis with XSPEC. The first step is to bin again the event file by running the xpbin tool with the PHA1 algorithm.
 
