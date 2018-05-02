@@ -39,9 +39,9 @@ PARSER.add_argument('phafile', type=str,
                     help='the path to the input .pha file')
 PARSER.add_argument('--model', type=str, default='powerlaw',
                     help='the spectral model for the fit')
-PARSER.add_argument('--emin', type=float, default=0.5,
+PARSER.add_argument('--emin', type=float, default=2.,
                     help='minimum energy for the fit')
-PARSER.add_argument('--emax', type=float, default=10.,
+PARSER.add_argument('--emax', type=float, default=8.,
                     help='maximum energy for the fit')
 PARSER.add_argument('--plot', type=ast.literal_eval, choices=[True, False],
                     default=True,
