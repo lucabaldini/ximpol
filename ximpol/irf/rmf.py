@@ -87,35 +87,18 @@ class xEnergyDispersionMatrix(xUnivariateAuxGenerator):
     ---------
     hdu : FITS hdu
        The MATRIX hdu in the .rmf FITS file.
-
-    num_aux_point : int
-       The number of points that the energy dispersion matrix should be\
-       down-sampled to.
-
-    Warning
-    -------
-    If the value of `num_aux_points` is too small, then the two-dimensional
-    underlying spline tends to have blob-like features, and the vertical slices
-    are no longer necessarily accurate representations of the energy dispersion.
-    We should keep an eye on it.
     """
 
-    def __init__(self, hdu, num_aux_points=200):
+    def __init__(self, hdu):
         """Constructor.
         """
-        # First build a bivariate spline with the full data grid.
         _matrix = hdu.data
         _x = 0.5*(_matrix['ENERG_LO'] + _matrix['ENERG_HI'])
         _y = numpy.arange(0, len(_matrix['MATRIX'][0]), 1)
         _z = _matrix['MATRIX']
-        _pdf = xInterpolatedBivariateSplineLinear(_y, _x, _z.transpose())
-        # Then initialize the actual xUnivariateAuxGenerator object
-        # with a down-sampled aux axis.
-        _aux = numpy.linspace(_pdf.ymin(), _pdf.ymax(), num_aux_points)
-        _rv = _y
         fmt = dict(auxname='Energy', auxunits='keV', rvname='Channel',
                    pdfname='Probability density')
-        xUnivariateAuxGenerator.__init__(self, _aux, _rv, _pdf, **fmt)
+        xUnivariateAuxGenerator.__init__(self, _x, _y, _z, **fmt)
 
     def rvs(self, aux):
         """Overloaded method.
