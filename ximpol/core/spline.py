@@ -603,7 +603,7 @@ class xInterpolatedBivariateSpline(xBivariateSplineBase, RectBivariateSpline):
         from `True` to `False`, since we're typically interested in evaluating
         the splined at given physical coordinates, rather than grid points.
         """
-        return RectBivariateSpline.__call__(self, x, y, None, dx, dy, grid)
+        return RectBivariateSpline.__call__(self, x, y, dx=dx, dy=dy, grid=grid)
 
     def vslice(self, x):
         """Return a vertical slice at a given x of the bivariate spline.
